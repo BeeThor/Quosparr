@@ -48,23 +48,23 @@ Quosparr est une application native de barre de menus / zone de notification pou
     <th colspan="2">Estimation du quota d’abonnement</th>
   </tr>
   <tr>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp" alt="Quosparr Panneau principal" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp" alt="Quosparr Coût équivalent API" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp" alt="Quosparr Estimation du quota d’abonnement" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp?v1" alt="Quosparr Panneau principal" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp?v1" alt="Quosparr Coût équivalent API" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr Estimation du quota d’abonnement" width="240"></td>
   </tr>
   <tr>
     <th colspan="3">Multi-comptes</th>
     <th colspan="3">Réglages d’affichage</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp" alt="Quosparr Multi-comptes" width="370"></td>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp" alt="Quosparr Réglages d’affichage" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr Multi-comptes" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr Réglages d’affichage" width="370"></td>
   </tr>
   <tr>
     <th colspan="6">Windows : réglages et panneau Grok</th>
   </tr>
   <tr>
-    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp" alt="Quosparr Windows : réglages et panneau Grok" width="780"></td>
+    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp?v1" alt="Quosparr Windows : réglages et panneau Grok" width="780"></td>
   </tr>
 </table>
 

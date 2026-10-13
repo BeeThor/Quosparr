@@ -48,23 +48,23 @@ Quosparr는 macOS, Windows, Linux용 네이티브 메뉴 막대 / 시스템 트�
     <th colspan="2">구독 한도 추정</th>
   </tr>
   <tr>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp" alt="Quosparr 메인 패널" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp" alt="Quosparr API 환산 비용" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp" alt="Quosparr 구독 한도 추정" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp?v1" alt="Quosparr 메인 패널" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp?v1" alt="Quosparr API 환산 비용" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr 구독 한도 추정" width="240"></td>
   </tr>
   <tr>
     <th colspan="3">다중 계정</th>
     <th colspan="3">표시 설정</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp" alt="Quosparr 다중 계정" width="370"></td>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp" alt="Quosparr 표시 설정" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr 다중 계정" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr 표시 설정" width="370"></td>
   </tr>
   <tr>
     <th colspan="6">Windows 설정 및 Grok 패널</th>
   </tr>
   <tr>
-    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp" alt="Quosparr Windows 설정 및 Grok 패널" width="780"></td>
+    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp?v1" alt="Quosparr Windows 설정 및 Grok 패널" width="780"></td>
   </tr>
 </table>
 

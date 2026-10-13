@@ -48,23 +48,23 @@ Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. I
     <th colspan="2">Subscription quota estimate</th>
   </tr>
   <tr>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp" alt="Quosparr Main panel" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp" alt="Quosparr API-equivalent cost" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp" alt="Quosparr Subscription quota estimate" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp?v1" alt="Quosparr Main panel" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp?v1" alt="Quosparr API-equivalent cost" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr Subscription quota estimate" width="240"></td>
   </tr>
   <tr>
     <th colspan="3">Multi-account</th>
     <th colspan="3">Display settings</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp" alt="Quosparr Multi-account" width="370"></td>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp" alt="Quosparr Display settings" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr Multi-account" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr Display settings" width="370"></td>
   </tr>
   <tr>
     <th colspan="6">Windows settings and Grok panel</th>
   </tr>
   <tr>
-    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp" alt="Quosparr Windows settings and Grok panel" width="780"></td>
+    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp?v1" alt="Quosparr Windows settings and Grok panel" width="780"></td>
   </tr>
 </table>
 

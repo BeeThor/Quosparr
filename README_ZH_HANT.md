@@ -48,23 +48,23 @@ Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應�
     <th colspan="2">訂閱額度推算</th>
   </tr>
   <tr>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp" alt="Quosparr 主面板" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp" alt="Quosparr API 等價成本" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp" alt="Quosparr 訂閱額度推算" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp?v1" alt="Quosparr 主面板" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp?v1" alt="Quosparr API 等價成本" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr 訂閱額度推算" width="240"></td>
   </tr>
   <tr>
     <th colspan="3">多帳號</th>
     <th colspan="3">顯示設定</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp" alt="Quosparr 多帳號" width="370"></td>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp" alt="Quosparr 顯示設定" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr 多帳號" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr 顯示設定" width="370"></td>
   </tr>
   <tr>
     <th colspan="6">Windows 設定與 Grok 面板</th>
   </tr>
   <tr>
-    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp" alt="Quosparr Windows 設定與 Grok 面板" width="780"></td>
+    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp?v1" alt="Quosparr Windows 設定與 Grok 面板" width="780"></td>
   </tr>
 </table>
 

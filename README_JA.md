@@ -48,23 +48,23 @@ Quosparr は macOS、Windows、Linux 向けのネイティブなメニューバ�
     <th colspan="2">サブスク枠の推定</th>
   </tr>
   <tr>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp" alt="Quosparr メインパネル" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp" alt="Quosparr API 換算コスト" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp" alt="Quosparr サブスク枠の推定" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp?v1" alt="Quosparr メインパネル" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp?v1" alt="Quosparr API 換算コスト" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr サブスク枠の推定" width="240"></td>
   </tr>
   <tr>
     <th colspan="3">複数アカウント</th>
     <th colspan="3">表示設定</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp" alt="Quosparr 複数アカウント" width="370"></td>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp" alt="Quosparr 表示設定" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr 複数アカウント" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr 表示設定" width="370"></td>
   </tr>
   <tr>
     <th colspan="6">Windows の設定と Grok パネル</th>
   </tr>
   <tr>
-    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp" alt="Quosparr Windows の設定と Grok パネル" width="780"></td>
+    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp?v1" alt="Quosparr Windows の設定と Grok パネル" width="780"></td>
   </tr>
 </table>
 

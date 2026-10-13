@@ -48,23 +48,23 @@ Quosparr — нативное приложение для строки меню 
     <th colspan="2">Оценка лимита подписки</th>
   </tr>
   <tr>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp" alt="Quosparr Главная панель" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp" alt="Quosparr Эквивалентная стоимость API" width="240"></td>
-    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp" alt="Quosparr Оценка лимита подписки" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp?v1" alt="Quosparr Главная панель" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp?v1" alt="Quosparr Эквивалентная стоимость API" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr Оценка лимита подписки" width="240"></td>
   </tr>
   <tr>
     <th colspan="3">Несколько аккаунтов</th>
     <th colspan="3">Настройки отображения</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp" alt="Quosparr Несколько аккаунтов" width="370"></td>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp" alt="Quosparr Настройки отображения" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr Несколько аккаунтов" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr Настройки отображения" width="370"></td>
   </tr>
   <tr>
     <th colspan="6">Windows: настройки и панель Grok</th>
   </tr>
   <tr>
-    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp" alt="Quosparr Windows: настройки и панель Grok" width="780"></td>
+    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp?v1" alt="Quosparr Windows: настройки и панель Grok" width="780"></td>
   </tr>
 </table>
 
