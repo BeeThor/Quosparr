@@ -2,6 +2,7 @@ package sqliteruntime
 
 import (
 	"bytes"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -87,5 +88,26 @@ func TestEmbeddedLibraryConcurrentFirstExtraction(t *testing.T) {
 		if err := <-results; err != nil {
 			t.Error(err)
 		}
+	}
+}
+
+func TestPublishedLibraryCannotBeReplaced(t *testing.T) {
+	path, err := prepareLibrary(filepath.Join(t.TempDir(), ".quosparr"), amd64.Library, amd64.SHA256)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := publishLibrary(path, []byte("another concurrent publisher")); !errors.Is(err, os.ErrExist) {
+		t.Fatalf("existing library publication must report file exists: %v", err)
+	}
+	after, err := os.Stat(path)
+	if err != nil || !os.SameFile(before, after) {
+		t.Fatalf("published library was replaced: %v", err)
+	}
+	if err := verifyLibrary(path, amd64.Library); err != nil {
+		t.Fatal(err)
 	}
 }

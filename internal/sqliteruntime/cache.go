@@ -32,11 +32,11 @@ func prepareLibrary(root string, data []byte, expected string) (string, error) {
 	}
 	path := filepath.Join(root, "mygo-sqlite3.dll")
 	if _, err := os.Lstat(path); errors.Is(err, os.ErrNotExist) {
-		if err := platform.WriteFileAtomic(path, data, 0o600); err != nil {
-			if verifyErr := verifyLibrary(path, data); verifyErr != nil {
-				return "", fmt.Errorf("sqlite runtime extraction: %w", errors.Join(err, verifyErr))
+		if err := publishLibrary(path, data); err != nil {
+			if !errors.Is(err, os.ErrExist) {
+				return "", fmt.Errorf("sqlite runtime extraction: %w", err)
 			}
-			log.Printf("sqlite runtime: reused identical library published during extraction: %v", err)
+			log.Printf("sqlite runtime: concurrent publication detected, validating existing library: %v", err)
 		}
 	} else if err != nil {
 		return "", err
@@ -45,6 +45,24 @@ func prepareLibrary(root string, data []byte, expected string) (string, error) {
 		return "", err
 	}
 	return path, nil
+}
+
+func publishLibrary(path string, data []byte) error {
+	tmp, err := os.CreateTemp(filepath.Dir(path), ".sqlite-*.tmp")
+	if err != nil {
+		return err
+	}
+	name := tmp.Name()
+	defer os.Remove(name)
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+	if err := platform.WriteFileAtomic(name, data, 0o600); err != nil {
+		return err
+	}
+	// Publish without replacing: another caller may already be reading/loading
+	// the immutable DLL, which Windows must never attempt to overwrite.
+	return publishFile(name, path)
 }
 
 func privateDirectory(path string) error {
