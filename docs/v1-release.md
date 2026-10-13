@@ -51,10 +51,12 @@ macOS 输出目录为 `build/v1-<arm64|x86_64>`，Windows/Linux 为 `build/v1-<o
 |---|---|
 | darwin-arm64 | `Quosparr-macos-arm64.zip`、`.dmg`、`quosparr-<version>-darwin-arm64.tar.gz`、`update-darwin-arm64.json`、`quosparr-appcast-arm64.xml`、手动下载提示 `appcast-arm64.xml` |
 | darwin-amd64 | `Quosparr-macos-x86_64.zip`、`.dmg`、`quosparr-<version>-darwin-amd64.tar.gz`、`update-darwin-amd64.json`、`quosparr-appcast-x86_64.xml`、手动下载提示 `appcast-x86_64.xml` |
-| windows-amd64 / arm64 | `Quosparr Setup <version> <arch>.exe`、`quosparr-<version>-windows-<arch>.tar.gz`、`update-windows-<arch>.json` |
+| windows-amd64 / arm64 | `Quosparr.Setup.<version>.<arch>.exe`、`quosparr-<version>-windows-<arch>.tar.gz`、`update-windows-<arch>.json` |
 | linux-amd64 / arm64 | `quosparr_<debVersion>_<arch>.deb`、`quosparr-<version>-linux-<arch>.tar.gz`、`update-linux-<arch>.json`、`install.sh` |
 
 Windows 使用 mygo 默认的用户级 NSIS 安装器，安装到 `%LOCALAPPDATA%\Programs\Quosparr`，`RequestExecutionLevel user`，不要求管理员权限；未生成 EXE 安装器时脚本报错；Linux tar 使用用户目录安装器，deb 声明 GTK3、AppIndicator 与密钥存储依赖，由包管理器管理更新；正式包内的 SQLite 动态库缺失或架构错误会阻止验收，应用不依赖首次启动时下载该库
+
+Windows 构建目录保留 mygo 的 `Quosparr Setup <version> <arch>.exe` 名称，发布汇总时将空格替换为点号，再生成校验和，确保文件名与 GitHub 下载资产一致；独立的 `Quosparr.exe` 只属于应用载荷，不单独上传到 Release
 
 普通 CI 在 Windows 与 Linux 的 amd64、arm64 原生运行器上执行完整 Go 测试、构建开发安装包、核对载荷，并加载包内 SQLite 执行参数化查询；Windows 在一次性 Actions VM 内验证静默安装、临时 HOME 下的 `--self-check` 和卸载，Linux 用 `dpkg-deb` 解包后运行相同基础诊断；两者均不启动桌面界面、不登录真实账号；macOS 继续运行全量 race、Swift 回归和六目标交叉构建
 

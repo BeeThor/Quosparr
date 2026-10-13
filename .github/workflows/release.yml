@@ -287,7 +287,10 @@ jobs:
             stage="$V1_BUILD_DIR/$PLATFORM-$arch"
             cp "$stage"/*.tar.gz "$stage"/update-*.json dist-v1/
             if [[ "$PLATFORM" == windows ]]; then
-              cp "$stage"/*.exe dist-v1/
+              for installer in "$stage"/*Setup*.exe; do
+                name="${installer##*/}"
+                cp "$installer" "dist-v1/${name// /.}"
+              done
             else
               cp "$stage"/*.deb dist-v1/
             fi

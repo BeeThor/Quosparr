@@ -59,13 +59,13 @@ def verify_deb(dist,version,arch):
 def verify_windows(dist,version,arch):
     expected=payloads(dist/f"quosparr-{version}-windows-{arch}.tar.gz")
     with tempfile.TemporaryDirectory(prefix="runway-nsis-") as temporary:
-        setup=dist/f"Quosparr Setup {version} {arch}.exe"
+        setup=dist/f"Quosparr.Setup.{version}.{arch}.exe"
         subprocess.run(["7z","x","-tPE","-y",f"-o{temporary}/pe",str(setup),".rsrc/MANIFEST/1"],check=True,stdout=subprocess.DEVNULL)
         manifest=ET.parse(pathlib.Path(temporary)/"pe/.rsrc/MANIFEST/1")
         execution=manifest.findall(".//{*}requestedExecutionLevel")
         if len(execution)!=1 or execution[0].attrib.get("level")!="asInvoker":
             raise ValueError("Windows installer must request user privileges")
-        subprocess.run(["7z","x","-y",f"-o{temporary}",str(dist/f"Quosparr Setup {version} {arch}.exe")],check=True,stdout=subprocess.DEVNULL)
+        subprocess.run(["7z","x","-y",f"-o{temporary}",str(setup)],check=True,stdout=subprocess.DEVNULL)
         for name,digest in expected.items():
             matches=[path for path in pathlib.Path(temporary).rglob(pathlib.Path(name).name)
                      if path.is_file() and path.as_posix().endswith("/"+name)]
