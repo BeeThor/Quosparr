@@ -249,11 +249,26 @@ func IconButton(c *ui.Context, icon *ui.SVG, label string, disabled bool) ui.Ele
 	return b.Children(func() { ui.Icon(c, icon).Size(14, 14).TextColor(col) })
 }
 
+// inverseColors is the tooltip fill and ink of t, as mygo resolves them.
+func inverseColors(t *ui.Theme) (fill, text ui.Color) {
+	fill, text = t.Inverse, t.InverseText
+	if fill == ui.Transparent {
+		fill = t.Text
+	}
+	if text == ui.Transparent {
+		text = t.Background
+	}
+	return fill, text
+}
+
 // applyPanelTheme shows native material only when the host actually provides it.
 func applyPanelTheme(c *ui.Context, style store.PanelBackground) *ui.Theme {
 	t := applyTheme(c)
 	if style == store.PanelBackgroundTranslucent && c.Vibrancy() {
 		material := *t
+		// Tooltips draw the inverse colours, which fall back to Text on
+		// Background; keep that ink opaque once the background is cleared.
+		material.Inverse, material.InverseText = inverseColors(t)
 		material.Background = ui.Transparent
 		c.SetTheme(&material)
 		c.Root().Background(ui.Transparent)

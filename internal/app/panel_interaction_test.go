@@ -282,3 +282,46 @@ func TestResetEvidenceOpensSnapshotURL(t *testing.T) {
 		t.Fatalf("evidence opened %q, want %q", got, url)
 	}
 }
+
+func TestChartHoverTipInkStaysOpaqueOverMaterial(t *testing.T) {
+	const detail = "Oct 12 · 1.2M tokens"
+	var fill ui.Color
+	tt := ui.NewTester(func(c *ui.Context) {
+		th := applyPanelTheme(c, store.PanelBackgroundTranslucent)
+		fill, _ = inverseColors(th)
+		ui.Column(c).Fill().AlignItems(ui.Center).Justify(ui.Center).Children(func() {
+			chartHoverTip(c, ui.Box(c).Size(12, 12).Background(th.Accent), detail)
+		})
+	}, 240, 120)
+	tt.SetVibrancy(true)
+	tt.Move(120, 60)
+	tt.Frame()
+	r, ok := tt.Find(detail)
+	if !ok {
+		t.Fatalf("tooltip not shown: %q", tt.Texts())
+	}
+	img := tt.Image()
+	scale := float32(img.Bounds().Dx()) / 240
+	inked := 0
+	for y := int(r.Y * scale); y < int((r.Y+r.H)*scale); y++ {
+		for x := int(r.X * scale); x < int((r.X+r.W)*scale); x++ {
+			px := img.RGBAAt(x, y)
+			if px.A == 255 && colorDistance(px.R, px.G, px.B, fill) > 96 {
+				inked++
+			}
+		}
+	}
+	if inked == 0 {
+		t.Fatal("tooltip text is invisible over native material")
+	}
+}
+
+func colorDistance(r, g, b uint8, c ui.Color) int {
+	d := func(a, b uint8) int {
+		if a > b {
+			return int(a - b)
+		}
+		return int(b - a)
+	}
+	return d(r, c.R) + d(g, c.G) + d(b, c.B)
+}

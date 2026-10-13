@@ -67,11 +67,11 @@ func chartHoverTip(c *ui.Context, cell ui.Element, detail string) {
 	if !cell.Hovered() {
 		return
 	}
-	t := c.Theme()
+	fill, ink := inverseColors(c.Theme())
 	ui.Overlay(c, func() {
 		ui.Box(c).Absolute().PassThrough().Role(ui.RoleTooltip).
 			AttachTo(cell, ui.AnchorTop, ui.AnchorBottom).Margin(0, 0, 6, 0).
-			MaxWidth(280).Padding(6, 8).Radius(5).Background(t.Text).TextColor(t.Background).
+			MaxWidth(280).Padding(6, 8).Radius(5).Background(fill).TextColor(ink).
 			Shadow(0, 2, 8, 0, ui.RGBA(0, 0, 0, 0.2)).Children(func() {
 			ui.Text(c, detail).FontSize(fsCaption)
 		})
