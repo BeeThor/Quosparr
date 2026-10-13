@@ -15,6 +15,7 @@ import (
 	"github.com/licoy/quosparr/internal/codex"
 	"github.com/licoy/quosparr/internal/codexapi"
 	"github.com/licoy/quosparr/internal/l10n"
+	"github.com/licoy/quosparr/internal/platform"
 )
 
 func oauthTestPort(t *testing.T) uint16 {
@@ -112,9 +113,8 @@ func TestCodexOAuthImportsWithoutSwitchingOfficial(t *testing.T) {
 	if err != nil || len(index.Accounts) != 1 {
 		t.Fatal("managed account missing")
 	}
-	info, err := os.Stat(filepath.Join(store.Root(), index.Accounts[0].ID, "auth.json"))
-	if err != nil || info.Mode().Perm() != 0600 {
-		t.Fatal("managed credential permissions")
+	if err := platform.VerifyOwnerOnly(filepath.Join(store.Root(), index.Accounts[0].ID, "auth.json"), 0600); err != nil {
+		t.Fatalf("managed credential permissions: %v", err)
 	}
 }
 

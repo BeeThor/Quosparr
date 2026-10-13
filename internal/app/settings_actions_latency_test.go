@@ -65,7 +65,7 @@ func TestSettingsSelfCheckUsesRedactedTemporaryHomeReport(t *testing.T) {
 	tt.Key(0, ui.KeySpace)
 	t.Logf("temporary-home actual self-check event=%s", time.Since(start))
 	awaitSettingsTask(t, e, &u.selfCheckTask)
-	if !u.noticeOpen || !strings.Contains(u.notice, "quosparr dir: ok (~/.quosparr") || strings.Contains(u.notice, home) {
+	if !u.noticeOpen || !strings.Contains(u.notice, "quosparr dir: ok ("+filepath.Join("~", ".quosparr")) || strings.Contains(u.notice, home) {
 		t.Fatal("temporary-home report was lost or unredacted")
 	}
 }

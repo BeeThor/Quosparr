@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"path/filepath"
 	"sync"
 	"testing"
 
 	"github.com/licoy/quosparr/internal/export"
+	"github.com/licoy/quosparr/internal/platform"
 )
 
 func okBody(count int) string {
@@ -230,9 +230,8 @@ func TestClickSendsOriginRefererAndCookie(t *testing.T) {
 		req.Header.Get("Referer") != ReactionReferer || req.Header.Get("Cookie") != "hr_react=abcdef0123456789abcdef0123456789" {
 		t.Errorf("headers = %v", req.Header)
 	}
-	info, err := os.Stat(store.Path)
-	if err != nil || info.Mode().Perm() != 0o600 {
-		t.Errorf("store mode = %v, %v", info, err)
+	if err := platform.VerifyOwnerOnly(store.Path, 0o600); err != nil {
+		t.Errorf("store permissions: %v", err)
 	}
 }
 

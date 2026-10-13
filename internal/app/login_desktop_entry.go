@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -39,9 +40,10 @@ func previousDesktopEntry(data []byte) (bool, error) {
 	if fields["Type"] != "Application" || !strings.HasPrefix(command, `"`) || !strings.HasSuffix(command, `" --mygo-login`) {
 		return false, errors.New("unrecognised legacy desktop entry; retained")
 	}
-	path := strings.TrimSuffix(command[1:], `" --mygo-login`)
-	path = strings.NewReplacer(`\\\\`, `\`, `\\"`, `"`, `\\$`, `$`, `\\`+"`", "`", "%%", "%").Replace(path)
-	if !filepath.IsAbs(path) || !previousExecutable(path) {
+	executable := strings.TrimSuffix(command[1:], `" --mygo-login`)
+	executable = strings.NewReplacer(`\\\\`, `\`, `\\"`, `"`, `\\$`, `$`, `\\`+"`", "`", "%%", "%").Replace(executable)
+	// A .desktop entry always contains a Unix path, including when parsed on Windows.
+	if !path.IsAbs(executable) || !previousExecutable(executable) {
 		return false, errors.New("legacy desktop target cannot be identified; retained")
 	}
 	return fields["Hidden"] != "true" && fields["X-GNOME-Autostart-enabled"] != "false", nil

@@ -15,16 +15,24 @@ import (
 func clickAccountPrivacySwitch(t *testing.T, u *settingsUI, tt *ui.Tester) {
 	t.Helper()
 	label := u.L().Text(l10n.KeyAccountPrivacyMode)
-	r, ok := tt.Find(label)
-	if !ok {
-		t.Fatal("privacy switch row missing")
+	row := func() ui.Rect {
+		r, ok := tt.Find(label)
+		detail, detailOK := tt.Find(tx(u.L(), xPrivacyDisplayDescription))
+		if !ok || !detailOK {
+			t.Fatal("privacy switch row missing")
+		}
+		// The switch is centered beside both label and description, which
+		// wraps differently with each platform's native fonts.
+		r.H = detail.Y + detail.H - r.Y
+		return r
 	}
+	r := row()
 	size := tt.Image().Bounds()
 	if r.Y+r.H > float32(size.Dy()-40) {
 		tt.Scroll(float32(size.Dx()-80), float32(size.Dy()-80), 0, r.Y+r.H-float32(size.Dy())+80)
-		r, ok = tt.Find(label)
+		r = row()
 	}
-	if !ok || r.Y < 0 || r.Y+r.H > float32(size.Dy()) {
+	if r.Y < 0 || r.Y+r.H > float32(size.Dy()) {
 		t.Fatalf("privacy switch row is outside the window: %+v", r)
 	}
 	tt.ClickAt(float32(size.Dx()-48), r.Y+r.H/2)

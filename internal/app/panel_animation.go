@@ -56,7 +56,7 @@ func reactionFloat(c *ui.Context, button ui.Element, rs *panelReactionState) {
 	ui.Overlay(c, func() {
 		ui.Text(c, resettoday.FormatDelta(rs.delta)).Absolute().PassThrough().Role(ui.RoleNone).
 			AttachTo(button, ui.AnchorTopRight, ui.AnchorBottomRight).Margin(0, 2, offset, 0).
-			FontSize(fsCaption).FontWeight(500).TextColor(inkSecondary(c.Theme())).Opacity(float32(min(1, 2-elapsed)))
+			FontSize(fsCaption).FixedLineHeight(13).FontWeight(500).TextColor(inkSecondary(c.Theme())).Opacity(float32(min(1, 2-elapsed)))
 	})
 }
 

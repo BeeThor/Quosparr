@@ -12,6 +12,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/licoy/quosparr/internal/platform"
 )
 
 const catalogMarkdown = `# Pricing
@@ -130,12 +132,8 @@ func TestCatalogDownloadAndCache(t *testing.T) {
 			if cost, ok := book.Cost(c.model, million); !ok || cost.String() != "12" {
 				t.Fatalf("%s %v %v", c.model, cost, ok)
 			}
-			st, err := os.Stat(path)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if st.Mode().Perm() != 0o600 {
-				t.Fatalf("mode %v", st.Mode())
+			if err := platform.VerifyOwnerOnly(path, 0o600); err != nil {
+				t.Fatalf("cache permissions: %v", err)
 			}
 		})
 	}

@@ -102,7 +102,7 @@ jobs:
           $nsisDirectory >> $env:GITHUB_PATH
       - name: Install Linux desktop build dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libayatana-appindicator3-dev
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libayatana-appindicator3-dev fonts-noto-cjk
       - name: Test without desktop interaction
         shell: bash
         run: |

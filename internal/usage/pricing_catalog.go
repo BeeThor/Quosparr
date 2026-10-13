@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -17,6 +16,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/licoy/quosparr/internal/platform"
 	"github.com/licoy/quosparr/internal/usage/decimal"
 )
 
@@ -520,37 +520,5 @@ func (p *PricingCatalogProvider) save(c pricingCache) error {
 	if err != nil {
 		return err
 	}
-	return writeFileAtomic(p.cfg.CachePath, data, 0o700, 0o600)
-}
-
-// writeFileAtomic writes path through a temporary file in the same
-// directory, creating the directory when needed.
-func writeFileAtomic(path string, data []byte, dirMode, fileMode os.FileMode) error {
-	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, dirMode); err != nil {
-		return err
-	}
-	tmp, err := os.CreateTemp(dir, ".tmp-"+filepath.Base(path)+"-*")
-	if err != nil {
-		return err
-	}
-	name := tmp.Name()
-	cleanup := func() { tmp.Close(); os.Remove(name) }
-	if _, err := tmp.Write(data); err != nil {
-		cleanup()
-		return err
-	}
-	if err := tmp.Chmod(fileMode); err != nil && !errors.Is(err, os.ErrInvalid) {
-		cleanup()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		os.Remove(name)
-		return err
-	}
-	if err := os.Rename(name, path); err != nil {
-		os.Remove(name)
-		return err
-	}
-	return nil
+	return platform.WriteFileAtomic(p.cfg.CachePath, data, 0o600)
 }

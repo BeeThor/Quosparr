@@ -108,7 +108,7 @@ func TestSelfCheckReadsOnlyAndDoesNotCreate(t *testing.T) {
 	for _, want := range []string{
 		"quosparr: 1.2.3",
 		"home: ok",
-		"quosparr dir: missing (~/.quosparr",
+		"quosparr dir: missing (" + filepath.Join("~", ".quosparr"),
 		"lock: not created yet",
 		"codex dir: missing",
 		"not ported yet:",

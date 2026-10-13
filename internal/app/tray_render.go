@@ -142,7 +142,16 @@ func trayTextWidth(s string, size float32) float32 {
 	return width
 }
 
-func trayFont(size float32) ui.Font { return ui.Font{Size: size, Weight: 600, Features: "tnum"} }
+func trayFont(size float32) ui.Font {
+	font := ui.Font{Size: size, Weight: 600, Features: "tnum"}
+	if size <= 7 {
+		// Native fonts have different ascenders; compact labels must fit the
+		// 9pt battery body and the smaller ring without clipping their glyphs.
+		m := font.Metrics()
+		font.Size *= min(1, (size+2)/(m.Ascent+m.Descent))
+	}
+	return font
+}
 
 func drawTrayContent(p *ui.Painter, r TrayRender, l trayLayout, paint trayPaint) {
 	ink := paint.ink

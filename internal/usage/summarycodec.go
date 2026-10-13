@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/licoy/quosparr/internal/platform"
 	"github.com/licoy/quosparr/internal/usage/decimal"
 )
 
@@ -397,5 +398,5 @@ func (c CacheStore) Save(s Summary) error {
 	if err != nil {
 		return err
 	}
-	return writeFileAtomic(c.Path, data, 0o700, 0o600)
+	return platform.WriteFileAtomic(c.Path, data, 0o600)
 }

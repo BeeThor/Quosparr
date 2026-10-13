@@ -5,6 +5,7 @@ package sessions
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"golang.org/x/sys/windows"
@@ -19,11 +20,38 @@ func TestRepairRefusesWindowsACLUnreadableSessionTree(t *testing.T) {
 				t.Fatal(err)
 			}
 			denyDirectoryListing(t, dir)
+			withoutBackupPrivileges(t)
 			if _, err := os.ReadDir(dir); !os.IsPermission(err) {
 				t.Fatalf("ACL must deny enumeration: %v", err)
 			}
 			assertRepairFailsWithoutWriting(t, home)
 		})
+	}
+}
+
+// Hosted runners can have backup privileges enabled, which bypass a DACL
+// when Go opens a directory with FILE_FLAG_BACKUP_SEMANTICS. Disable privileges
+// only on this test thread so it exercises ordinary user access checks.
+func withoutBackupPrivileges(t *testing.T) {
+	t.Helper()
+	runtime.LockOSThread()
+	if err := windows.ImpersonateSelf(windows.SecurityImpersonation); err != nil {
+		runtime.UnlockOSThread()
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := windows.RevertToSelf(); err != nil {
+			t.Fatal(err)
+		}
+		runtime.UnlockOSThread()
+	})
+	var token windows.Token
+	if err := windows.OpenThreadToken(windows.CurrentThread(), windows.TOKEN_ADJUST_PRIVILEGES|windows.TOKEN_QUERY, false, &token); err != nil {
+		t.Fatal(err)
+	}
+	defer token.Close()
+	if err := windows.AdjustTokenPrivileges(token, true, nil, 0, nil, nil); err != nil {
+		t.Fatal(err)
 	}
 }
 

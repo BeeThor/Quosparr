@@ -19,6 +19,10 @@ func TestPanelDetailScrollKeepsHeaderVisibleAndReturnsToMainPosition(t *testing.
 	a, tt := newPanel(t, nil, snap, PanelActions{})
 	tt.SetSize(400, 504)
 	tt.SetPreferences(ui.Preferences{ReduceMotion: true, TextScale: 1})
+	initialAccount, ok := tt.Find("Ada Lovelace")
+	if !ok || initialAccount.H <= 0 {
+		t.Fatal("initial overview identity is missing")
+	}
 	title := a.L().Text(l10n.KeyQuotaEstimateThisWeek)
 	for i := 0; i < 20; i++ {
 		r, ok := tt.Find(title)
@@ -77,7 +81,7 @@ func TestPanelDetailScrollKeepsHeaderVisibleAndReturnsToMainPosition(t *testing.
 	a.panelClosed()
 	reopened := ui.NewTester(a.panelView, 400, 504)
 	account, ok := reopened.Find("Ada Lovelace")
-	if !ok || account.W <= 0 || account.H <= 0 || account.Y < 50 || account.Y+account.H > 300 || a.panelState.mainScroll.Y != 0 || a.panelState.detailScroll.Y != 0 {
+	if !ok || account.W <= 0 || account.H <= 0 || account.Y != initialAccount.Y || account.Y+account.H > 300 || a.panelState.mainScroll.Y != 0 || a.panelState.detailScroll.Y != 0 {
 		t.Fatalf("reopened overview retained old scrolling: %+v", account)
 	}
 	a.settings.Flush()

@@ -154,7 +154,11 @@ func TestTimeZoneChangeRebuildsIndex(t *testing.T) {
 	f := newFixture(t)
 	f.write(tokenLine("2026-06-29T18:00:00Z", 100)+"\n", "rollout-time-zone-change.jsonl")
 	q := mkQuery("time-zone", "2026-06-29T17:00:00Z", "2026-06-29T19:00:00Z")
-	eqDeep(t, "utc", dates(sum(t, f.repo(withLoc(time.UTC)), q)), []string{"2026-06-29"})
+	utc := f.repo(withLoc(time.UTC))
+	eqDeep(t, "utc", dates(sum(t, utc, q)), []string{"2026-06-29"})
+	if err := utc.Close(); err != nil {
+		t.Fatal(err)
+	}
 
 	local := f.repo(withLoc(mustLoc("Asia/Singapore")))
 	s := sum(t, local, q)
@@ -495,7 +499,11 @@ func TestParserVersionMismatchRebuilds(t *testing.T) {
 	contents := tokenLine("2026-06-29T01:00:00Z", 100) + "\n"
 	f.write(contents, "rollout-parser-version.jsonl")
 	q := fullQuery()
-	sum(t, f.repo(withParser(1)), q)
+	old := f.repo(withParser(1))
+	sum(t, old, q)
+	if err := old.Close(); err != nil {
+		t.Fatal(err)
+	}
 	r := f.repo(withParser(2))
 	s := sum(t, r, q)
 	d := r.Diagnostics()
