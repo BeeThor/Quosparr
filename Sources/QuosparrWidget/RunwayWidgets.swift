@@ -1,5 +1,4 @@
 import AppIntents
-import QuosparrCore
 import SwiftUI
 import WidgetKit
 

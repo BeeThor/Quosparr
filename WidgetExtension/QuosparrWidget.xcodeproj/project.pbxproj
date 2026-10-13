@@ -7,112 +7,112 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0C5E02FAC674D30EA561F3E7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 91E4166797E8012DDC8D3340 /* InfoPlist.strings */; };
-		424E95D7D05922D2FB487894 /* RunwayWidgetIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 584361D34A68FF7B3AA95795 /* RunwayWidgetIntent.swift */; };
-		43354419B6594C517D476421 /* QuosparrCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9E942C55E98A684290A9D5EB /* QuosparrCore */; };
-		4B985645D5E857B94BC8FDA3 /* RunwayWidgetTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75436C8BC8F525CBBD6D1128 /* RunwayWidgetTimeline.swift */; };
-		58ECBB735DF87168F9841432 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FAC2D79BF2F92E5714B9424B /* SwiftUI.framework */; };
-		5AE9B1C78DBF92FEA1005623 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 77414181F54186AE1D348E02 /* Localizable.strings */; };
-		5AEC35014557B2FB7852DA1E /* RunwayWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7063B6106FDE3DD673188EB6 /* RunwayWidgets.swift */; };
-		634AAFBABD2A5EA77853A2DE /* RunwayWidgetComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 170C98E16E75DF1BEF33FAFD /* RunwayWidgetComponents.swift */; };
-		7553CDA587D5AEA50CC407AE /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C3011052B0C2A6F8DA3C644 /* WidgetKit.framework */; };
-		FD6211635B6AFA822261530E /* RunwayWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F3EB404AEA91840F669462 /* RunwayWidgetViews.swift */; };
+		0306129A6ADDF3D523F65966 /* RunwayWidgetIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 974E3F2171084C66FB61745D /* RunwayWidgetIntent.swift */; };
+		0C9FB395D36611BEAAD95FE9 /* RunwayWidgetL10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = C761BFD6A1BFC724A2B663F3 /* RunwayWidgetL10n.swift */; };
+		0CBB02AAB4437F381235A182 /* RunwayWidgetContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0926D9607A83D70CC9229B1A /* RunwayWidgetContract.swift */; };
+		537BC17E80EECC459959D91C /* RunwayWidgetComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A491033547890B754FF8624 /* RunwayWidgetComponents.swift */; };
+		6522C4A3785DF4549C449CFA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 91ABA4B90F453658F6A60D87 /* InfoPlist.strings */; };
+		67ECE6544D98B25D407FDF36 /* RunwayWidgetTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A601D3CD4D23C950B9DAF7D4 /* RunwayWidgetTypes.swift */; };
+		784C7233ADA4A90025028E39 /* RunwayWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E41E3A675E777A06E09ADF7F /* RunwayWidgetViews.swift */; };
+		78A9A0ED8CAF8E133BAF4737 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B383F129E933FA1580E477E7 /* WidgetKit.framework */; };
+		B9F94E74B14D9AD02DEEB37A /* RunwayWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3671510AF2E64E921043C02B /* RunwayWidgets.swift */; };
+		C64E69548E1A2CEE81EE2157 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E17C0CB3920F4729838238FB /* SwiftUI.framework */; };
+		D97BB2C941406D2B7C49168E /* RunwayWidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AAB042760C6010D37ADCF0D /* RunwayWidgetSnapshot.swift */; };
+		EDF20E6AD9E44071D3ECBCD3 /* RunwayWidgetTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C956014F585E6175BD8BD90 /* RunwayWidgetTimeline.swift */; };
+		F3D00F1C9AA361594C6BFA1A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = FE990FEA1776B1433C4BF266 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0A2809594C726FEF7BDF4646 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		170C98E16E75DF1BEF33FAFD /* RunwayWidgetComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetComponents.swift; sourceTree = "<group>"; };
-		1E93666B9BF0243EB31734B8 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		2CCA40575DB37014EBCB4AD5 /* QuosparrWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuosparrWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		40F3EB404AEA91840F669462 /* RunwayWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetViews.swift; sourceTree = "<group>"; };
-		584361D34A68FF7B3AA95795 /* RunwayWidgetIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetIntent.swift; sourceTree = "<group>"; };
-		5C3011052B0C2A6F8DA3C644 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
-		5EBA3519E21392348B249C18 /* quosparr */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "quosparr"; path = ..; sourceTree = SOURCE_ROOT; };
-		7063B6106FDE3DD673188EB6 /* RunwayWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgets.swift; sourceTree = "<group>"; };
-		71AC8E26F9A6ABEE4FB2B87E /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
-		75436C8BC8F525CBBD6D1128 /* RunwayWidgetTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetTimeline.swift; sourceTree = "<group>"; };
-		FAC2D79BF2F92E5714B9424B /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
-		FC027BE6FC4EDA134480B5A8 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A11C0DE1A1A1A1A1A1A1A101 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
-		A11C0DE1A1A1A1A1A1A1A102 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
-		A11C0DE1A1A1A1A1A1A1A103 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
-		A11C0DE1A1A1A1A1A1A1A104 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
-		A11C0DE1A1A1A1A1A1A1A105 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
-		A11C0DE1A1A1A1A1A1A1A111 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
-		A11C0DE1A1A1A1A1A1A1A112 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		A11C0DE1A1A1A1A1A1A1A113 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		A11C0DE1A1A1A1A1A1A1A114 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		A11C0DE1A1A1A1A1A1A1A115 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		088394D1EB105D9574C28F12 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		0926D9607A83D70CC9229B1A /* RunwayWidgetContract.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetContract.swift; sourceTree = "<group>"; };
+		18D0CB1C4F01C3FEB53A7276 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		1C956014F585E6175BD8BD90 /* RunwayWidgetTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetTimeline.swift; sourceTree = "<group>"; };
+		3671510AF2E64E921043C02B /* RunwayWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgets.swift; sourceTree = "<group>"; };
+		466C91CE0BA20C04CD64DC2F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		507CDCDFAD951783B2F9BC3C /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		5A491033547890B754FF8624 /* RunwayWidgetComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetComponents.swift; sourceTree = "<group>"; };
+		64FCA9F8AC08B3CEB174F9A2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		695D49C051EB63F38EFA10D2 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
+		6A33BDEB1458AF9208ABC231 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		745894B5EBDE5D2718882976 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		974E3F2171084C66FB61745D /* RunwayWidgetIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetIntent.swift; sourceTree = "<group>"; };
+		9AAB042760C6010D37ADCF0D /* RunwayWidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetSnapshot.swift; sourceTree = "<group>"; };
+		9F06610ED65B75F6504DEA6F /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		A601D3CD4D23C950B9DAF7D4 /* RunwayWidgetTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetTypes.swift; sourceTree = "<group>"; };
+		A831978D051BF1324495D6D5 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		B383F129E933FA1580E477E7 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		B4C3FB191AC54851C6B5BCF1 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C2BF8D1EBC85E52215237086 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/Localizable.strings; sourceTree = "<group>"; };
+		C761BFD6A1BFC724A2B663F3 /* RunwayWidgetL10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetL10n.swift; sourceTree = "<group>"; };
+		C8ADAB7A668232B782A3C8D7 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hant"; path = "zh-Hant.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		E17C0CB3920F4729838238FB /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		E41E3A675E777A06E09ADF7F /* RunwayWidgetViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunwayWidgetViews.swift; sourceTree = "<group>"; };
+		E79635424BA771503A6AF30F /* QuosparrWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = QuosparrWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		FED36718E6A78AABE3428B96 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		DBB25C3592726FD0A3859111 /* Frameworks */ = {
+		A74FD0036E964FFDADE658C2 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				43354419B6594C517D476421 /* QuosparrCore in Frameworks */,
-				58ECBB735DF87168F9841432 /* SwiftUI.framework in Frameworks */,
-				7553CDA587D5AEA50CC407AE /* WidgetKit.framework in Frameworks */,
+				C64E69548E1A2CEE81EE2157 /* SwiftUI.framework in Frameworks */,
+				78A9A0ED8CAF8E133BAF4737 /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		064019DBEA6F90AFB5771500 /* Frameworks */ = {
+		14B8EA5422CB5547B37910A1 = {
 			isa = PBXGroup;
 			children = (
-				FAC2D79BF2F92E5714B9424B /* SwiftUI.framework */,
-				5C3011052B0C2A6F8DA3C644 /* WidgetKit.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		48ACFBB93DB6E791D3DCB4BE = {
-			isa = PBXGroup;
-			children = (
-				9090A6D0F726C0720F30096D /* QuosparrWidget */,
-				C9AA5E5EBE4B41720777943B /* Packages */,
-				064019DBEA6F90AFB5771500 /* Frameworks */,
-				FBC6447C0315F3CA5C645544 /* Products */,
+				75783D72316BFCE268AF0C75 /* QuosparrWidget */,
+				8A58162A5FAA08EE9CFF8B0F /* Frameworks */,
+				E5467DE27C22DB8AD4132A09 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		5F4D5637D24F039A5AE38CA1 /* Resources */ = {
+		75783D72316BFCE268AF0C75 /* QuosparrWidget */ = {
 			isa = PBXGroup;
 			children = (
-				91E4166797E8012DDC8D3340 /* InfoPlist.strings */,
-				77414181F54186AE1D348E02 /* Localizable.strings */,
-			);
-			path = Resources;
-			sourceTree = "<group>";
-		};
-		9090A6D0F726C0720F30096D /* QuosparrWidget */ = {
-			isa = PBXGroup;
-			children = (
-				170C98E16E75DF1BEF33FAFD /* RunwayWidgetComponents.swift */,
-				584361D34A68FF7B3AA95795 /* RunwayWidgetIntent.swift */,
-				7063B6106FDE3DD673188EB6 /* RunwayWidgets.swift */,
-				75436C8BC8F525CBBD6D1128 /* RunwayWidgetTimeline.swift */,
-				40F3EB404AEA91840F669462 /* RunwayWidgetViews.swift */,
-				5F4D5637D24F039A5AE38CA1 /* Resources */,
+				5A491033547890B754FF8624 /* RunwayWidgetComponents.swift */,
+				0926D9607A83D70CC9229B1A /* RunwayWidgetContract.swift */,
+				974E3F2171084C66FB61745D /* RunwayWidgetIntent.swift */,
+				C761BFD6A1BFC724A2B663F3 /* RunwayWidgetL10n.swift */,
+				3671510AF2E64E921043C02B /* RunwayWidgets.swift */,
+				9AAB042760C6010D37ADCF0D /* RunwayWidgetSnapshot.swift */,
+				1C956014F585E6175BD8BD90 /* RunwayWidgetTimeline.swift */,
+				A601D3CD4D23C950B9DAF7D4 /* RunwayWidgetTypes.swift */,
+				E41E3A675E777A06E09ADF7F /* RunwayWidgetViews.swift */,
+				78FF0B1EAB9A5519CC8E6DD1 /* Resources */,
 			);
 			name = QuosparrWidget;
 			path = ../Sources/QuosparrWidget;
 			sourceTree = "<group>";
 		};
-		C9AA5E5EBE4B41720777943B /* Packages */ = {
+		78FF0B1EAB9A5519CC8E6DD1 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				5EBA3519E21392348B249C18 /* quosparr */,
+				91ABA4B90F453658F6A60D87 /* InfoPlist.strings */,
+				FE990FEA1776B1433C4BF266 /* Localizable.strings */,
 			);
-			name = Packages;
+			path = Resources;
 			sourceTree = "<group>";
 		};
-		FBC6447C0315F3CA5C645544 /* Products */ = {
+		8A58162A5FAA08EE9CFF8B0F /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				2CCA40575DB37014EBCB4AD5 /* QuosparrWidget.appex */,
+				E17C0CB3920F4729838238FB /* SwiftUI.framework */,
+				B383F129E933FA1580E477E7 /* WidgetKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E5467DE27C22DB8AD4132A09 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E79635424BA771503A6AF30F /* QuosparrWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -120,13 +120,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A91ABC467C06256F00614734 /* QuosparrWidget */ = {
+		B63B3EAD79815CDE3D9FAF96 /* QuosparrWidget */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = ED9CD13039A5C3287870691B /* Build configuration list for PBXNativeTarget "QuosparrWidget" */;
+			buildConfigurationList = 02398FA816A2A898E62FD12E /* Build configuration list for PBXNativeTarget "QuosparrWidget" */;
 			buildPhases = (
-				132093B25484EF6152634AC8 /* Sources */,
-				4B6503EC06D1196EB864A56F /* Resources */,
-				DBB25C3592726FD0A3859111 /* Frameworks */,
+				D7C2D6CCA1DE6D644FD9321A /* Sources */,
+				9DB27DC6FCAADCCCE0C19C13 /* Resources */,
+				A74FD0036E964FFDADE658C2 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -134,114 +134,114 @@
 			);
 			name = QuosparrWidget;
 			packageProductDependencies = (
-				9E942C55E98A684290A9D5EB /* QuosparrCore */,
 			);
 			productName = QuosparrWidget;
-			productReference = 2CCA40575DB37014EBCB4AD5 /* QuosparrWidget.appex */;
+			productReference = E79635424BA771503A6AF30F /* QuosparrWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		A235CE99E0FC22F21863374D /* Project object */ = {
+		001343FF2BBAFCE20F245542 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
-					A91ABC467C06256F00614734 = {
+					B63B3EAD79815CDE3D9FAF96 = {
 						ProvisioningStyle = Manual;
 					};
 				};
 			};
-			buildConfigurationList = 763DF4B12DA2C2867F83FF3C /* Build configuration list for PBXProject "QuosparrWidget" */;
+			buildConfigurationList = C6E54CED13F6ABA9DA2D7976 /* Build configuration list for PBXProject "QuosparrWidget" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
 				en,
+				fr,
+				ja,
+				ko,
+				ru,
 				"zh-Hans",
 				"zh-Hant",
-				ko,
-				ja,
-				ru,
-				fr,
 			);
-			mainGroup = 48ACFBB93DB6E791D3DCB4BE;
+			mainGroup = 14B8EA5422CB5547B37910A1;
 			minimizedProjectReferenceProxies = 1;
-			packageReferences = (
-				68611524D5A3546A0127E2B2 /* XCLocalSwiftPackageReference ".." */,
-			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = FBC6447C0315F3CA5C645544 /* Products */;
+			productRefGroup = E5467DE27C22DB8AD4132A09 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A91ABC467C06256F00614734 /* QuosparrWidget */,
+				B63B3EAD79815CDE3D9FAF96 /* QuosparrWidget */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		4B6503EC06D1196EB864A56F /* Resources */ = {
+		9DB27DC6FCAADCCCE0C19C13 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C5E02FAC674D30EA561F3E7 /* InfoPlist.strings in Resources */,
-				5AE9B1C78DBF92FEA1005623 /* Localizable.strings in Resources */,
+				6522C4A3785DF4549C449CFA /* InfoPlist.strings in Resources */,
+				F3D00F1C9AA361594C6BFA1A /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		132093B25484EF6152634AC8 /* Sources */ = {
+		D7C2D6CCA1DE6D644FD9321A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				634AAFBABD2A5EA77853A2DE /* RunwayWidgetComponents.swift in Sources */,
-				424E95D7D05922D2FB487894 /* RunwayWidgetIntent.swift in Sources */,
-				4B985645D5E857B94BC8FDA3 /* RunwayWidgetTimeline.swift in Sources */,
-				FD6211635B6AFA822261530E /* RunwayWidgetViews.swift in Sources */,
-				5AEC35014557B2FB7852DA1E /* RunwayWidgets.swift in Sources */,
+				537BC17E80EECC459959D91C /* RunwayWidgetComponents.swift in Sources */,
+				0CBB02AAB4437F381235A182 /* RunwayWidgetContract.swift in Sources */,
+				0306129A6ADDF3D523F65966 /* RunwayWidgetIntent.swift in Sources */,
+				0C9FB395D36611BEAAD95FE9 /* RunwayWidgetL10n.swift in Sources */,
+				D97BB2C941406D2B7C49168E /* RunwayWidgetSnapshot.swift in Sources */,
+				EDF20E6AD9E44071D3ECBCD3 /* RunwayWidgetTimeline.swift in Sources */,
+				67ECE6544D98B25D407FDF36 /* RunwayWidgetTypes.swift in Sources */,
+				784C7233ADA4A90025028E39 /* RunwayWidgetViews.swift in Sources */,
+				B9F94E74B14D9AD02DEEB37A /* RunwayWidgets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		77414181F54186AE1D348E02 /* Localizable.strings */ = {
+		91ABA4B90F453658F6A60D87 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
-				1E93666B9BF0243EB31734B8 /* en */,
-				71AC8E26F9A6ABEE4FB2B87E /* zh-Hans */,
-				A11C0DE1A1A1A1A1A1A1A101 /* zh-Hant */,
-				A11C0DE1A1A1A1A1A1A1A102 /* ko */,
-				A11C0DE1A1A1A1A1A1A1A103 /* ja */,
-				A11C0DE1A1A1A1A1A1A1A104 /* ru */,
-				A11C0DE1A1A1A1A1A1A1A105 /* fr */,
-			);
-			name = Localizable.strings;
-			sourceTree = "<group>";
-		};
-		91E4166797E8012DDC8D3340 /* InfoPlist.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				0A2809594C726FEF7BDF4646 /* en */,
-				FC027BE6FC4EDA134480B5A8 /* zh-Hans */,
-				A11C0DE1A1A1A1A1A1A1A111 /* zh-Hant */,
-				A11C0DE1A1A1A1A1A1A1A112 /* ko */,
-				A11C0DE1A1A1A1A1A1A1A113 /* ja */,
-				A11C0DE1A1A1A1A1A1A1A114 /* ru */,
-				A11C0DE1A1A1A1A1A1A1A115 /* fr */,
+				745894B5EBDE5D2718882976 /* en */,
+				B4C3FB191AC54851C6B5BCF1 /* fr */,
+				6A33BDEB1458AF9208ABC231 /* ja */,
+				A831978D051BF1324495D6D5 /* ko */,
+				9F06610ED65B75F6504DEA6F /* ru */,
+				088394D1EB105D9574C28F12 /* zh-Hans */,
+				695D49C051EB63F38EFA10D2 /* zh-Hant */,
 			);
 			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		FE990FEA1776B1433C4BF266 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				64FCA9F8AC08B3CEB174F9A2 /* en */,
+				18D0CB1C4F01C3FEB53A7276 /* fr */,
+				C2BF8D1EBC85E52215237086 /* ja */,
+				FED36718E6A78AABE3428B96 /* ko */,
+				507CDCDFAD951783B2F9BC3C /* ru */,
+				466C91CE0BA20C04CD64DC2F /* zh-Hans */,
+				C8ADAB7A668232B782A3C8D7 /* zh-Hant */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		118A1074A2CD389E1C0283EB /* Debug */ = {
+		6FB8E78DC71EB931E0461865 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
@@ -263,9 +263,9 @@
 				MARKETING_VERSION = 0.0.40;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(RUNWAY_WIDGET_BUNDLE_ID)";
 				PRODUCT_NAME = QuosparrWidget;
-				RUNWAY_APP_GROUP_ID = "group.com.quosparr.app";
-				RUNWAY_WIDGET_BUNDLE_ID = "com.quosparr.app.widget";
-				RUNWAY_WIDGET_DISPLAY_NAME = "Quosparr";
+				RUNWAY_APP_GROUP_ID = group.com.quosparr.app;
+				RUNWAY_WIDGET_BUNDLE_ID = com.quosparr.app.widget;
+				RUNWAY_WIDGET_DISPLAY_NAME = Quosparr;
 				RUNWAY_WIDGET_STORAGE_MODE = "app-group";
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
@@ -273,7 +273,7 @@
 			};
 			name = Debug;
 		};
-		BC8C1B0DC412E34F84D90E21 /* Release */ = {
+		D89FA57C9D6AFB930D5E23F2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -329,7 +329,7 @@
 			};
 			name = Release;
 		};
-		C98FC194AE270FB91C3BDC2A /* Release */ = {
+		DCB6F16E2C10E99F40696112 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
@@ -351,9 +351,9 @@
 				MARKETING_VERSION = 0.0.40;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(RUNWAY_WIDGET_BUNDLE_ID)";
 				PRODUCT_NAME = QuosparrWidget;
-				RUNWAY_APP_GROUP_ID = "group.com.quosparr.app";
-				RUNWAY_WIDGET_BUNDLE_ID = "com.quosparr.app.widget";
-				RUNWAY_WIDGET_DISPLAY_NAME = "Quosparr";
+				RUNWAY_APP_GROUP_ID = group.com.quosparr.app;
+				RUNWAY_WIDGET_BUNDLE_ID = com.quosparr.app.widget;
+				RUNWAY_WIDGET_DISPLAY_NAME = Quosparr;
 				RUNWAY_WIDGET_STORAGE_MODE = "app-group";
 				SDKROOT = macosx;
 				SKIP_INSTALL = NO;
@@ -361,7 +361,7 @@
 			};
 			name = Release;
 		};
-		D10D98183B890FF6FDC402AA /* Debug */ = {
+		EB9B6704B92C33E6C8D04F42 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -427,39 +427,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		763DF4B12DA2C2867F83FF3C /* Build configuration list for PBXProject "QuosparrWidget" */ = {
+		02398FA816A2A898E62FD12E /* Build configuration list for PBXNativeTarget "QuosparrWidget" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D10D98183B890FF6FDC402AA /* Debug */,
-				BC8C1B0DC412E34F84D90E21 /* Release */,
+				6FB8E78DC71EB931E0461865 /* Debug */,
+				DCB6F16E2C10E99F40696112 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		ED9CD13039A5C3287870691B /* Build configuration list for PBXNativeTarget "QuosparrWidget" */ = {
+		C6E54CED13F6ABA9DA2D7976 /* Build configuration list for PBXProject "QuosparrWidget" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				118A1074A2CD389E1C0283EB /* Debug */,
-				C98FC194AE270FB91C3BDC2A /* Release */,
+				EB9B6704B92C33E6C8D04F42 /* Debug */,
+				D89FA57C9D6AFB930D5E23F2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		68611524D5A3546A0127E2B2 /* XCLocalSwiftPackageReference ".." */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ..;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		9E942C55E98A684290A9D5EB /* QuosparrCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = QuosparrCore;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = A235CE99E0FC22F21863374D /* Project object */;
+	rootObject = 001343FF2BBAFCE20F245542 /* Project object */;
 }

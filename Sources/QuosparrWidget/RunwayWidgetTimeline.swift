@@ -1,4 +1,3 @@
-import QuosparrCore
 import Foundation
 import WidgetKit
 

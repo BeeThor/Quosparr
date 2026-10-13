@@ -1,4 +1,3 @@
-import QuosparrCore
 import SwiftUI
 import WidgetKit
 
@@ -165,7 +164,7 @@ func runwayAvailabilityText(_ state: RunwayWidgetAvailability, l10n: L10n) -> St
 struct RunwayWidgetUnavailableView: View {
     var state: RunwayWidgetLoadState
 
-    private var l10n: L10n { L10n(preference: .system) }
+    private var l10n: L10n { .system }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 9) {

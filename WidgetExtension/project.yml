@@ -3,9 +3,6 @@ options:
   bundleIdPrefix: com.quosparr.app
   deploymentTarget:
     macOS: "14.0"
-packages:
-  QuosparrPackage:
-    path: ..
 targets:
   QuosparrWidget:
     type: app-extension
@@ -13,8 +10,6 @@ targets:
     sources:
       - path: ../Sources/QuosparrWidget
     dependencies:
-      - package: QuosparrPackage
-        product: QuosparrCore
       - sdk: SwiftUI.framework
       - sdk: WidgetKit.framework
     settings:

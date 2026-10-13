@@ -1,5 +1,4 @@
 import AppKit
-import QuosparrCore
 import SwiftUI
 import WidgetKit
 
