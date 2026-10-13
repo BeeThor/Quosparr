@@ -1,187 +1,159 @@
 English · [简体中文](./README_ZH.md) · [繁體中文](./README_ZH_HANT.md) · [한국어](./README_KO.md) · [日本語](./README_JA.md) · [Русский](./README_RU.md) · [Français](./README_FR.md)
 
-<p align="center">
-  <img src="Resources/AppIcon.png" alt="CodexRunway logo" width="128" height="128">
-</p>
+<div align="center">
 
-# CodexRunway
+<img src="Resources/AppIcon.png" alt="Quosparr logo" width="128" height="128">
 
-How much longer can your Codex keep running?
+# Quosparr
 
-CodexRunway is a native macOS menu bar app for checking Codex and Grok quota. It also provides Codex Reset Updates, reset credits, API-equivalent cost, and local sessions, with separate multi-account management for each provider.
+<sub><i>Named from <b>Quo</b>ta + <b>Sparr</b>ow</i></sub>
 
-https://github.com/user-attachments/assets/76cbc417-b237-42a7-a2a7-a68b18ae21a8
+A small sparrow perched in your menu bar, keeping watch over your Codex and Grok quota.
+
+Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. It shows Codex and Grok quota, reset credits, API-equivalent cost, and local sessions, with separate multi-account management for each provider.
+
+</div>
 
 ## Highlights
 
-- Check remaining Codex quota from the menu bar.
-- Switch from the always-visible `Codex | Grok` tabs; the menu bar and context menu follow the selected provider.
-- View included Grok quota, product breakdown (Build / Imagine / Chat), weekly/monthly periods, prepaid balance, and on-demand usage via the official CLI chat-proxy billing API.
-- On the Grok panel, reuse the same Token Usage multi-chart (heatmap / line / bar) and API Equivalent Cost modules as Codex, plus recent local sessions from Grok CLI logs.
-- Manage multiple Grok OAuth / SuperGrok accounts with isolated sign-in, current-login import, paste token/JSON, refresh, aliases, ordering, removal, and explicit switching.
-- View 5-hour, weekly, and additional quota windows.
-- See whether Codex rate limits have reset today (data from [Did Codex Reset](https://didcodexreset.com)), with a link to the related public post.
-- Toggle the “Codex Reset Updates” section in settings and configure its own refresh interval (on by default, every 5 minutes).
-- Manage multiple Codex accounts: browser sign-in, import local `auth.json`, paste token/JSON (including `/auth/session`), import files, or add an API key.
-- Switch accounts safely after confirmation by atomically writing `~/.codex/auth.json`, with an optional Codex restart so CLI / IDE stay in sync.
-- Show the current account, subscription tier, and expiration.
-- Estimate this week’s Codex allowance from official weekly usage percent and daily Credits, compare it with previous weeks to spot quota cuts, and toggle the module in settings (on by default).
-- View reset credit count, status, and expiration time.
-- View API-equivalent cost and token usage for today, the current cycle, the previous cycle, this month, or a custom range; the default range is configurable in settings.
-- Show a year-to-date token usage chart under quota on the main panel (heatmap / line / bar; daily / weekly / cumulative); style is switchable in the panel and settings, heatmap by default; can be turned off.
-- Use a local incremental session index for faster cost scans.
-- View recent Codex sessions, projects, status, and usage summaries.
-- Repair the local session index.
-- Support light, dark, system appearance, and English, 简体中文, 繁體中文, 한국어, 日本語, Русский, Français.
-- Support built-in update checks.
-- Offer macOS 14+ desktop widgets for quota overview, token trend, a key metric, and Codex Reset Updates.
+**Codex**
+
+- Remaining quota for the 5-hour, weekly, and additional windows, plus the current account, subscription tier, and expiration.
+- Reset credit count, status, and expiration time.
+- Weekly allowance estimate from the official weekly percent and daily Credits, compared with previous weeks to spot quota cuts.
+- Codex Reset Updates: whether Codex rate limits have reset today, with its own refresh interval (data from [Did Codex Reset](https://didcodexreset.com)).
+- Multiple accounts: browser sign-in, import local `auth.json`, paste token / JSON (including `/auth/session`), import files, or add an API key. Switching after confirmation atomically writes `~/.codex/auth.json`.
+- Recent sessions, projects, and status, plus repair of the local session index.
+
+**Grok**
+
+- Included quota, Build / Imagine / Chat breakdown, weekly / monthly periods, prepaid balance, and on-demand usage via the official CLI chat-proxy billing API.
+- Multiple OAuth / SuperGrok accounts with isolated sign-in, current-login import, credential paste, refresh, aliases, ordering, and explicit switching.
+- Recent sessions from local Grok CLI logs.
+
+**Both providers**
+
+- Always-visible `Codex | Grok` tabs; the menu bar and context menu follow the selected provider.
+- API-equivalent cost and token usage for today, the current cycle, the previous cycle, this month, or a custom range.
+- Year-to-date token usage chart as a heatmap, line, or bar chart (daily / weekly / cumulative).
+- Light, dark, and system appearance; English, 简体中文, 繁體中文, 한국어, 日本語, Русский, Français.
+- Built-in updates, and desktop widgets on macOS 14+.
 
 ## Screenshots
 
 <p align="center">
-  <img src="docs/images/1.webp" alt="CodexRunway quota overview" width="260">
-  <img src="docs/images/2.webp" alt="CodexRunway reset credits details" width="260">
-  <img src="docs/images/3.webp" alt="CodexRunway API-equivalent cost" width="260">
-  <img src="docs/images/4.webp" alt="CodexRunway setting page" width="260">
-  <img src="docs/images/5.webp" alt="CodexRunway multi-account" width="260">
-  <img src="docs/images/6.webp" alt="CodexRunway Grok quota" width="260">
+  <img src="docs/images/1.webp" alt="Quosparr quota overview" width="260">
+  <img src="docs/images/2.webp" alt="Quosparr reset credits details" width="260">
+  <img src="docs/images/3.webp" alt="Quosparr API-equivalent cost" width="260">
+  <img src="docs/images/4.webp" alt="Quosparr settings" width="260">
+  <img src="docs/images/5.webp" alt="Quosparr multi-account" width="260">
+  <img src="docs/images/6.webp" alt="Quosparr Grok quota" width="260">
 </p>
+
+The screenshots show the macOS Swift baseline; the v1 interface may differ in details.
 
 ## Installation
 
-### Homebrew (recommended)
+v1 is still a release candidate. Download only from a Release that has been made public on [GitHub Releases](https://github.com/Licoy/Quosparr/releases), and pick the package for your system and CPU:
 
-Install from the [project-maintained Licoy Homebrew Tap](https://github.com/Licoy/homebrew-tap):
+| System | Package | How to install |
+| --- | --- | --- |
+| macOS 12+ (Apple Silicon / Intel) | `Quosparr-macos-arm64.dmg` / `Quosparr-macos-x86_64.dmg`, or the `.zip` with the same name | Drag `Quosparr.app` into `Applications` |
+| Windows 10 / 11 (amd64 / arm64) | `Quosparr.Setup.<version>.<arch>.exe` | Per-user install into `%LOCALAPPDATA%\Programs\Quosparr`; no administrator rights needed |
+| Linux (amd64 / arm64) | `quosparr-<version>-linux-<arch>.tar.gz` with `install.sh`, or `quosparr_<version>_<arch>.deb` | Run `sh install.sh` next to the tarball to install into `~/.local`, or install the deb with your package manager |
 
-```bash
-brew install --cask licoy/tap/codex-runway
-```
+Every package ships the SQLite runtime for its architecture, so the first launch never downloads anything. On first launch, Quosparr enables launch at login by default; change it in **Control Panel → General → Launch at login**.
 
-CodexRunway also supports in-app updates. To force Homebrew to check and install an upgrade, use:
+Homebrew installation is not available yet; use the DMG or ZIP for now.
 
-```bash
-brew upgrade --cask --greedy codex-runway
-```
+If you used CodexRunway before, see the [upgrade guide](docs/upgrade-from-codexrunway.md).
 
-Uninstalling keeps settings and managed account copies by default. Adding `--zap` also removes data under `~/.codex-runway`, but does not delete the official `~/.codex` or `~/.grok` directories or sessions:
+### macOS security prompts
 
-```bash
-brew uninstall --cask codex-runway
-brew uninstall --cask --zap codex-runway
-```
+macOS builds are currently ad-hoc signed and not notarized. If macOS says the developer cannot be verified, right-click `Quosparr.app` and choose Open, or go to System Settings → Privacy & Security and click Open Anyway.
 
-### Manual installation
-
-Download the matching DMG from [GitHub Releases](https://github.com/Licoy/codex-runway/releases):
-
-- Apple Silicon: `CodexRunway-macos-arm64.dmg`
-- Intel: `CodexRunway-macos-x86_64.dmg`
-
-Open the DMG and drag `CodexRunway.app` into `Applications`, or download and unpack the ZIP for the same architecture.
-
-On its first launch, the installed app requests launch at login by default; you can turn it off or on in **Control Panel → General → Launch at login**. If macOS requires approval, use **Open Login Items Settings** to allow it. Later launches respect changes made in System Settings; command-line and development runs do not register login items.
-
-### macOS Security Blocks
-
-Current releases are ad-hoc signed and not notarized. If macOS says the developer cannot be verified or the app was not checked for malicious software, right-click `CodexRunway.app` and choose Open, or go to System Settings > Privacy & Security and click Open Anyway.
-
-If macOS says `CodexRunway.app` is damaged and should be moved to the Trash, it is usually the download quarantine attribute. After placing the app in `Applications`, run:
+If macOS says the app is damaged, it is usually the download quarantine attribute. After moving the app into `Applications`, run:
 
 ```bash
-xattr -dr com.apple.quarantine /Applications/CodexRunway.app
+xattr -dr com.apple.quarantine /Applications/Quosparr.app
 ```
 
-Then open the app again.
+### Linux requirements
+
+Linux needs GTK3, AppIndicator, a desktop with tray support, and a working Secret Service session (for example GNOME Keyring or KWallet) to store proxy credentials. The deb declares these dependencies and is updated through the package manager.
 
 ## Requirements
 
-- macOS 12+
-- Codex installed and used on this Mac is recommended
-- Import from local `~/.codex/auth.json`, or add accounts in the app (browser sign-in, paste credentials, import files, and more)
-- Before using the Grok panel, install the [official Grok CLI](https://docs.x.ai/build/overview):
+- Codex installed and used on this machine is recommended. Codex data comes from `CODEX_HOME` (default `~/.codex`, or `%USERPROFILE%\.codex` on Windows).
+- Only the `file` credential store is supported (the default when `cli_auth_credentials_store` is unset in Codex `config.toml`). `keyring`, `auto`, and `ephemeral` are reported as unsupported and block importing and switching accounts.
+- The Grok panel requires the [official Grok CLI](https://docs.x.ai/build/overview):
 
   ```bash
   curl -fsSL https://x.ai/cli/install.sh | bash
   ```
 
-- Grok account management and billing support OAuth / SuperGrok and compatible legacy sessions only. Run `grok login --oauth`, sign in from the app, import the current login, or paste `~/.grok/auth.json` / credential JSON. API-key-only credentials are not added as managed accounts.
-- When `GROK_HOME` is set, the app uses that directory; otherwise it uses `~/.grok`. See [xAI Settings](https://docs.x.ai/build/settings).
-
-## Run Locally
-
-```bash
-swift run CodexRunway
-```
-
-On macOS 14+, this command automatically builds and registers a separate `CodexRunway Dev` app and Widget extension, then launches it. The development app lives at `.build/codex-runway-widget-dev/CodexRunway-dev.app` and can be added directly from the system widget gallery. Quit any other running CodexRunway instance first. Set `CODEX_RUNWAY_DISABLE_DEV_APP=1` only when you want the raw unpackaged command-line process without widgets.
-
-Self-check:
-
-```bash
-swift run CodexRunway --self-check
-```
-
-The self-check reads local state only and makes no network request. It prints redacted Codex diagnostics plus the Grok CLI version, credential status, and account identity. Tokens and API keys are never printed.
+- Grok accounts and quota support OAuth / SuperGrok and compatible legacy sessions only. Run `grok login --oauth`, sign in from the app, import the current login, or paste credential JSON. API-key-only logins are not added as managed accounts. `GROK_HOME` is used when set, otherwise `~/.grok`.
 
 ## Desktop Widgets
 
-Desktop widgets require macOS 14 or later. Starting with a release that contains this fix, public releases and local development builds both include the Widget extension. Each widget can independently select Codex, Grok, or both in Edit Widget; Codex Reset Updates is Codex-only. After upgrading, macOS registers the production widget from the app's `Contents/PlugIns` directory.
+Widgets require macOS 14 or later; Windows and Linux do not have them. Four widget types are available: quota overview, token trend, a key metric, and Codex Reset Updates. Each widget can select Codex, Grok, or both in Edit Widget, and tapping it opens the matching page.
 
-`swift run CodexRunway` uses separate `swift-dev` identifiers and does not replace an existing installation. You can also package a widget-enabled app manually with `.dev` identifiers:
+The snapshot lives at `~/.quosparr/widget-snapshot.json` with `0600` permissions and contains only non-secret derived data: no email, account ID, token, auth JSON, or raw event text. The main app is the only writer; widgets only read it.
 
-```bash
-INCLUDE_WIDGET=1 \
-RUNWAY_BUNDLE_ID=com.github.codex-runway.dev \
-RUNWAY_APP_GROUP_ID=group.com.github.codex-runway.dev \
-RUNWAY_WIDGET_STORAGE_MODE=local \
-bash Scripts/package-app.sh
-```
+## Network Proxy
 
-The app is written to `dist/CodexRunway.app`. Public releases containing this fix and local ad-hoc builds use the read-only versioned derived snapshot at `~/.codex-runway/widget-snapshot.json` with `0600` permissions. A Developer ID build with a registered App Group can instead set `RUNWAY_WIDGET_STORAGE_MODE=app-group`. The snapshot contains no email, account ID, token, auth JSON, or raw external event text. Developer ID signing, App Group registration, and notarization remain available as future distribution work.
+In **Control Panel → General → Network**, choose **Follow System**, HTTP, or SOCKS5; custom proxies support username and password. The setting covers app-initiated Codex and Grok requests, CLI operations, public status and pricing feeds, and software updates. The system proxy is not changed, and browser sign-in pages and already-running external CLIs keep their own settings.
 
-## Network proxy
-
-In **Control Panel → General → Network**, choose **Follow System**, **HTTP Proxy**, or **SOCKS5 Proxy**; custom proxies support username and password authentication. The setting covers Codex requests, app-initiated Grok requests and CLI operations, public status and pricing feeds, and software update checks, release notes, and package downloads. Browser sign-in pages and already-running external CLI processes keep their own network settings; the system proxy is not changed.
-
-Changes apply only after **Save Proxy Settings**; a running update keeps the configuration it started with. **Test Connection** uses the current draft to fetch the public update feed without sending account credentials or saving the draft. Proxy credentials are stored in the macOS Keychain, separately from non-secret preferences. Invalid configuration, unavailable credentials, or a failed custom proxy do not trigger a direct connection; fix the settings or explicitly switch back to **Follow System**.
+Changes apply only after **Save Proxy Settings**. **Test Connection** fetches the public update feed with the current draft, without sending account credentials or saving the draft. Proxy passwords are stored in the macOS Keychain, Windows Credential Manager, or Linux Secret Service. Invalid settings, unavailable credentials, or a failed custom proxy never fall back to a direct connection.
 
 ## Privacy
 
-- Tokens are read from local `~/.codex/auth.json`; multi-account credentials are stored only under `~/.codex-runway/accounts/<id>/auth.json` (directory mode `0700`, file mode `0600`). The account index `index.json` never contains tokens.
-- Official Grok credentials are read from `$GROK_HOME/auth.json` (or `~/.grok/auth.json` when unset). Managed copies live at `~/.codex-runway/accounts/grok-<stable-id>/auth.json` with directory mode `0700` and file mode `0600`; the separate `~/.codex-runway/accounts/grok-index.json` contains no tokens.
-- Grok quota is fetched with the local OAuth credential against the official CLI chat-proxy `/v1/billing?format=credits` endpoint (the same official API the Grok CLI uses). The app does not read browser cookies or infer fake quota from local sessions.
-- While refreshing the current Grok account, the official CLI may rotate tokens; the app mirrors the resulting official credentials only to that managed account. Non-current accounts use an isolated `GROK_HOME` and never write the official credentials.
-- A Grok account switch replaces only OAuth / compatible legacy login scopes in the official credentials while preserving API-key and unknown scopes. A switch is guaranteed only for new sessions. Running Grok processes are not terminated and may write the previous account back, so the app shows a strong warning before continuing.
-- Official `~/.codex/auth.json` is overwritten only when you confirm an account switch (atomic write), so Codex CLI / IDE stay in sync.
-- Refreshing a non-active managed account updates only its library copy, not official `auth.json`. Refreshing the active account keeps the official auth file and the library copy in sync.
-- Invalid or mock credentials are never written back to official `~/.codex/auth.json`.
-- Access tokens, refresh tokens, ID tokens, and API keys must not be written to logs, README files, issue templates, or self-check output.
-- API-equivalent cost is computed from local session JSONL logs by default, with derived data such as a local incremental index under `~/.codex-runway/`. Session contents are not uploaded.
-- Weekly quota estimates store only derived Credits totals and percents in `~/.codex-runway/quota-estimate-history.json`. No tokens or keys.
-- Online usage supplements API-equivalent cost only when local token data is unavailable. The chart’s “Official stats (all devices)” series comes from current-account profile statistics and may lag or be revised; “Local logs (all sessions)” scans the sessions present on this Mac and historical entries may span accounts. Daily values in this comparison use UTC dates so both sources share the same day boundary. The two series are not a subset relationship and should not be subtracted.
-- Session repair only touches `~/.codex/session_index.jsonl`, creates a backup before writing, and never deletes session files.
-- “Codex Reset Updates” only downloads the public status feed from [Did Codex Reset](https://didcodexreset.com). It sends no Codex account, token, or local session content.
-- Update checks request only version information. Codex account and session data are not uploaded.
-- Widget snapshot storage contains only non-secret derived quota, balance, cost, daily-token, and reset-status data. The main app is the sole writer; widgets are read-only.
+- Quosparr keeps its own data in `~/.quosparr` and writes no app cache into `~/.codex`. Only non-secret derived data is stored by default.
+- Multi-account credentials are the only exception: they are stored under `~/.quosparr/accounts/<id>/auth.json` (directory `0700`, file `0600`, written atomically; Windows uses an ACL that only the current user can access). The account index contains no tokens.
+- Official `~/.codex/auth.json` is written only for an OAuth refresh or when you confirm an account switch. Refreshing a non-current account updates only its library copy.
+- Grok credentials are read from `$GROK_HOME/auth.json`; managed copies live at `~/.quosparr/accounts/grok-<stable-id>/auth.json`. A Grok switch replaces only OAuth / compatible legacy scopes and keeps API-key and unknown scopes. It is guaranteed only for new sessions; running Grok processes are not terminated and may write the previous account back, so the app warns before switching.
+- Session repair only touches `session_index.jsonl` and backs it up first. Files under `~/.codex/sessions` and `~/.codex/archived_sessions` are never deleted.
+- API-equivalent cost is computed from local session logs. Session contents are not uploaded.
+- Tokens and API keys are never written to logs, self-check output, or issue templates.
+- Codex Reset Updates and update checks fetch only public data; no account, token, or session content is sent.
 
-## Data sources
+## Data Sources
 
-- **Codex Reset Updates**: Data comes from [Did Codex Reset](https://didcodexreset.com) at [https://didcodexreset.com/api/status.json](https://didcodexreset.com/api/status.json). Unofficial and advisory only; may be delayed or temporarily unavailable.
-- Once a schedule enters its awaiting-confirmation phase, the app uses that schedule's grace duration from the public feed, falling back to 3 hours for older feeds. Longer values such as 24 or 72 hours may cross local calendar days; they remain awaiting confirmation rather than reporting a completed reset, and end only at the actual deadline. A network refresh failure keeps the latest valid status and shows the error in reset details; public status data still becomes unavailable after 30 hours without a producer update.
-- **Quota / reset credits / quota estimate / official token usage / some online usage**: When signed in, requests use your local credentials against official ChatGPT / Codex backend APIs. Official token usage belongs to the current account and shows the backend statistics date. Quota estimate is unofficial: weekly allowance is extrapolated from weekly used percent and daily Credits (1000 Credits ≈ $40, version `credits-usd-2026-08-26`).
-- **Grok quota**: Returned only by the official CLI chat-proxy `/v1/billing?format=credits` endpoint using a local OAuth / SuperGrok login. There is no secondary data source, and API billing or local-session statistics are not mixed into this quota.
-- **Grok API-equivalent cost / local sessions**: Computed from local `~/.grok/sessions` `turn_completed` usage using official xAI Text API prices (input / cached / output; prompts ≥ 200k use long-context rates; price book `xai-builtin-2026-09-27`). Unknown models are not invented as exact costs. CLI `costUsdTicks` is subscription-credit accounting and is not used as API-equivalent cost.
-- **Local-log token usage / API-equivalent cost / recent sessions**: Computed by default from local `~/.codex` session logs and the local index. Historical local logs have no reliable account attribution, so they may include multiple accounts.
+- **Codex quota / reset credits / official usage**: official ChatGPT / Codex backend APIs, using your local credentials. Official usage belongs to the current account and may lag or be revised.
+- **Weekly quota estimate**: unofficial, extrapolated from the weekly percent and daily Credits (1000 Credits ≈ $40, version `credits-usd-2026-08-26`). Only derived Credits and percents are saved in `quota-estimate-history.json`.
+- **Codex API-equivalent cost**: local session logs priced with the built-in table `openai-builtin-2026-09-27`; the online official table uses `openai-docs-` versions. Unknown models are not reported as exact costs.
+- **Grok quota**: only the official CLI chat-proxy `/v1/billing?format=credits` endpoint. No browser cookies, no quota inferred from local logs, and no API billing mixed in.
+- **Grok API-equivalent cost**: local `turn_completed` usage priced with `xai-builtin-2026-09-27`, covering input, cached, output, and long-context rates. `costUsdTicks` is subscription accounting and is not used as API-equivalent cost.
+- **Codex Reset Updates**: the public feed at [didcodexreset.com/api/status.json](https://didcodexreset.com/api/status.json). Unofficial, advisory only, and may be delayed.
+- In the chart, “Official stats (all devices)” belongs to the current account, while “Local logs (all sessions)” scans this machine and may span accounts. They are not a subset of each other and should not be subtracted; Codex daily values for both use UTC days.
 
-## Development and Contribution
+## Development
+
+The main app is written in Go with [mygo](https://github.com/egoist/mygo) native UI; the Go and mygo versions are pinned in `go.mod`. The macOS widget extension remains in Swift.
 
 ```bash
-swift test
-swift build
-swift build -c release
+go test ./...
+go vet ./...
+go build ./...
 ```
 
-See [CONTRIBUTORS.md](CONTRIBUTORS.md) for contribution notes.
+Run against a temporary HOME and a separate preferences domain so your real accounts and settings are untouched:
+
+```bash
+QUOSPARR_TEST_HOME="$(mktemp -d)"
+HOME="$QUOSPARR_TEST_HOME" QUOSPARR_PREFS_DOMAIN=com.quosparr.app.v1-test go run .
+HOME="$QUOSPARR_TEST_HOME" QUOSPARR_PREFS_DOMAIN=com.quosparr.app.v1-test go run . --self-check
+```
+
+The self-check makes no network request and reads no credentials. It currently covers the version, platform, own-directory permissions, locks, and whether Codex auth and the session index exist; other diagnostics are listed as `not ported yet`.
+
+Build a macOS development package (updater disabled; optionally `ARCH=arm64` or `ARCH=x86_64`):
+
+```bash
+V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
+```
+
+The Swift app (`Package.swift`, `Sources/Quosparr*`, `Tests/`) is kept as a compatibility baseline and emergency rollback; `swift run Quosparr` launches it. See [docs/v1-release.md](docs/v1-release.md) for Windows / Linux packaging and release checks, and [CONTRIBUTORS.md](CONTRIBUTORS.md) for contribution notes.
 
 ## Community
 

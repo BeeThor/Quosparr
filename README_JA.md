@@ -1,184 +1,159 @@
 [English](./README.md) · [简体中文](./README_ZH.md) · [繁體中文](./README_ZH_HANT.md) · [한국어](./README_KO.md) · 日本語 · [Русский](./README_RU.md) · [Français](./README_FR.md)
 
-<p align="center">
-  <img src="Resources/AppIcon.png" alt="CodexRunway logo" width="128" height="128">
-</p>
+<div align="center">
 
-# CodexRunway
+<img src="Resources/AppIcon.png" alt="Quosparr logo" width="128" height="128">
 
-Codex はあとどれだけ走り続けられるでしょうか？
+# Quosparr
 
-CodexRunway は、Codex と Grok のクォータを確認するネイティブ macOS メニューバーアプリです。Codex リセット更新、reset credits、API 換算コスト、ローカルセッションに加え、プロバイダーごとの複数アカウント管理を提供します。
+<sub><i>名前は <b>Quo</b>ta（クォータ）+ <b>Sparr</b>ow（スズメ）から</i></sub>
 
-https://github.com/user-attachments/assets/76cbc417-b237-42a7-a2a7-a68b18ae21a8
+メニューバーにとまる小さなスズメが、Codex と Grok のクォータを見守ります。
+
+Quosparr は macOS、Windows、Linux 向けのネイティブなメニューバー / システムトレイアプリです。Codex と Grok のクォータ、reset credits、API 換算コスト、ローカルセッションを表示し、プロバイダーごとに独立した複数アカウント管理を備えています。
+
+</div>
 
 ## ハイライト
 
-- メニューバーから Codex の残りクォータを確認します。
-- 常時表示の `Codex | Grok` タブで切り替え、メニューバーとコンテキストメニューは選択中のプロバイダーに従います。
-- 公式 CLI chat-proxy 課金 API で、含まれる Grok クォータ、製品内訳（Build / Imagine / Chat）、週/月周期、プリペイド残高、オンデマンド使用量を表示します。
-- Grok パネルでも Codex と同じ Token 使用量マルチチャート（ヒートマップ / 折れ線 / 棒）と API 換算コスト、Grok CLI ログの最近のローカルセッションを使います。
-- 複数の Grok OAuth / SuperGrok アカウントを、隔離サインイン、現在のログイン読み込み、トークン/JSON 貼り付け、更新、エイリアス、並べ替え、削除、明示的な切り替えで管理します。
-- 5 時間、週間、追加のクォータウィンドウを表示します。
-- 本日 Codex のレート制限がリセットされたかを確認します（データは [Did Codex Reset](https://didcodexreset.com)、関連する公開投稿へのリンク付き）。
-- 設定で「Codex リセット更新」セクションの表示と、専用の更新間隔を切り替えます（既定はオン、5 分ごと）。
-- 複数の Codex アカウントを管理します：ブラウザサインイン、ローカル `auth.json` の読み込み、トークン/JSON の貼り付け（`/auth/session` 含む）、ファイル読み込み、API キー追加。
-- 確認後に `~/.codex/auth.json` を原子的に書き換えて安全に切り替え、CLI / IDE を揃えるために Codex をすぐ再起動できます。
-- 現在のアカウント、サブスクリプション階層、有効期限を表示します。
-- 公式の週次使用率と日次 Credits から今週の枠を推定し、過去の推定と比較して引き下げを確認します。設定で切り替えられ、既定はオンです。
-- リセットクレジットの数、状態、期限を表示します。
-- 今日、現在のサイクル、前のサイクル、今月、またはカスタム範囲の API 換算コストとトークン使用量を表示します。既定の範囲は設定で変更できます。
-- メインパネルのクォータ下に年初来のトークン使用量チャート（ヒートマップ / 折れ線 / 棒、日次 / 週次 / 累計）を表示します。スタイルはパネルと設定で切り替えられ、既定はヒートマップです。オフにもできます。
-- ローカルの増分セッションインデックスでコストスキャンを速くします。
-- 最近の Codex セッション、プロジェクト、状態、使用量の概要を表示します。
-- ローカルセッションインデックスを修復します。
-- ライト、ダーク、システムの外観と English、简体中文、繁體中文、한국어、日本語、Русский、Français をサポートします。
-- 組み込みのアップデート確認をサポートします。
-- macOS 14+ のデスクトップウィジェットで、クォータ概要、トークン推移、主要指標、Codex リセット更新を提供します。
+**Codex**
+
+- 5 時間、週間、追加のクォータウィンドウの残りに加え、現在のアカウント、サブスクリプション階層、有効期限を表示します。
+- reset credits の数、状態、有効期限を表示します。
+- 公式の週次使用率と日次 Credits から今週の枠を推定し、過去の週と比較して枠の引き下げを見つけやすくします。
+- Codex リセット更新: 今日 Codex のレート制限がリセットされたかを確認でき、専用の更新間隔を設定できます（データは [Did Codex Reset](https://didcodexreset.com) から取得）。
+- 複数アカウント: ブラウザでのサインイン、ローカル `auth.json` の取り込み、token / JSON の貼り付け（`/auth/session` を含む）、ファイルの取り込み、API キーの追加に対応します。確認後に `~/.codex/auth.json` を原子的に書き込んで切り替えます。
+- 最近のセッション、プロジェクト、状態を表示し、ローカルのセッションインデックスを修復できます。
+
+**Grok**
+
+- 公式 CLI の chat-proxy 課金 API から、含まれるクォータ、Build / Imagine / Chat の内訳、週 / 月の周期、プリペイド残高、オンデマンド使用量を表示します。
+- 複数の OAuth / SuperGrok アカウントに対応し、隔離されたサインイン、現在のログインの取り込み、資格情報の貼り付け、更新、エイリアス、並べ替え、明示的な切り替えができます。
+- ローカルの Grok CLI ログから最近のセッションを表示します。
+
+**両プロバイダー共通**
+
+- 常時表示の `Codex | Grok` タブがあり、メニューバーとコンテキストメニューは選択中のプロバイダーに従います。
+- 今日、現在のサイクル、前のサイクル、今月、またはカスタム範囲の API 換算コストと token 使用量を表示します。
+- 年初来の token 使用量チャートを、ヒートマップ、折れ線、棒グラフ（日次 / 週次 / 累計）で表示します。
+- ライト、ダーク、システムの外観に対応し、言語は English、简体中文、繁體中文、한국어、日本語、Русский、Français から選べます。
+- アップデート機能を内蔵し、macOS 14+ ではデスクトップウィジェットも利用できます。
 
 ## スクリーンショット
 
 <p align="center">
-  <img src="docs/images/1.webp" alt="CodexRunway クォータ概要" width="260">
-  <img src="docs/images/2.webp" alt="CodexRunway リセットクレジット詳細" width="260">
-  <img src="docs/images/3.webp" alt="CodexRunway API 換算コスト" width="260">
-  <img src="docs/images/4.webp" alt="CodexRunway 設定ページ" width="260">
-  <img src="docs/images/5.webp" alt="CodexRunway 複数アカウント" width="260">
-  <img src="docs/images/6.webp" alt="CodexRunway Grok クォータ" width="260">
+  <img src="docs/images/1.webp" alt="Quosparr クォータ概要" width="260">
+  <img src="docs/images/2.webp" alt="Quosparr reset credits の詳細" width="260">
+  <img src="docs/images/3.webp" alt="Quosparr API 換算コスト" width="260">
+  <img src="docs/images/4.webp" alt="Quosparr 設定" width="260">
+  <img src="docs/images/5.webp" alt="Quosparr 複数アカウント" width="260">
+  <img src="docs/images/6.webp" alt="Quosparr Grok クォータ" width="260">
 </p>
+
+スクリーンショットは macOS の Swift ベースラインのものです。v1 の画面は細部が異なる場合があります。
 
 ## インストール
 
-### Homebrew（推奨）
+v1 はまだリリース候補です。[GitHub Releases](https://github.com/Licoy/Quosparr/releases) で公開済みの Release からのみダウンロードし、お使いの OS と CPU に合うパッケージを選んでください。
 
-プロジェクトが保守する [Licoy Homebrew Tap](https://github.com/Licoy/homebrew-tap) からインストールします：
+| システム | パッケージ | インストール方法 |
+| --- | --- | --- |
+| macOS 12+（Apple Silicon / Intel） | `Quosparr-macos-arm64.dmg` / `Quosparr-macos-x86_64.dmg`、または同名の `.zip` | `Quosparr.app` を `Applications` にドラッグします |
+| Windows 10 / 11（amd64 / arm64） | `Quosparr.Setup.<version>.<arch>.exe` | `%LOCALAPPDATA%\Programs\Quosparr` にユーザー単位でインストールします。管理者権限は不要です |
+| Linux（amd64 / arm64） | `quosparr-<version>-linux-<arch>.tar.gz` と `install.sh`、または `quosparr_<version>_<arch>.deb` | tar.gz と同じ場所で `sh install.sh` を実行して `~/.local` にインストールするか、パッケージマネージャーで deb をインストールします |
 
-```bash
-brew install --cask licoy/tap/codex-runway
-```
+各パッケージには対応するアーキテクチャ向けの SQLite ランタイムが同梱されているため、初回起動時に何かをダウンロードすることはありません。初回起動時、Quosparr はログイン時の起動を既定で有効にします。変更するには **コントロールパネル → 一般 → ログイン時に起動** を使います。
 
-CodexRunway はアプリ内アップデートにも対応します。Homebrew にアップグレードの確認とインストールを強制するには：
+Homebrew でのインストールはまだ提供されていません。当面は DMG または ZIP を使用してください。
 
-```bash
-brew upgrade --cask --greedy codex-runway
-```
+以前 CodexRunway を使っていた場合は、[アップグレードガイド](docs/upgrade-from-codexrunway_JA.md)を参照してください。
 
-アンインストール時は既定で設定と管理アカウントのコピーを残します。`--zap` を付けると `~/.codex-runway` のデータも消しますが、公式の `~/.codex` や `~/.grok` ディレクトリやセッションは削除しません：
+### macOS のセキュリティ警告
 
-```bash
-brew uninstall --cask codex-runway
-brew uninstall --cask --zap codex-runway
-```
+macOS 版は現在 ad-hoc signed で、公証されていません。開発元を確認できないと表示された場合は、`Quosparr.app` を右クリックして「開く」を選ぶか、システム設定 → プライバシーとセキュリティで「このまま開く」をクリックしてください。
 
-### 手動インストール
-
-[GitHub Releases](https://github.com/Licoy/codex-runway/releases) から Mac に合う DMG を入手します：
-
-- Apple Silicon: `CodexRunway-macos-arm64.dmg`
-- Intel: `CodexRunway-macos-x86_64.dmg`
-
-DMG を開き、`CodexRunway.app` を `Applications` にドラッグするか、同じアーキテクチャの ZIP を展開します。
-
-### macOS のセキュリティブロック
-
-現在のリリースは ad-hoc signed で、notarized されていません。開発者を確認できない、または悪意のあるソフトウェアの検査がされていないと出る場合は、`CodexRunway.app` を Control クリックして「開く」を選ぶか、システム設定 > プライバシーとセキュリティで「このまま開く」をクリックします。
-
-`CodexRunway.app` が壊れているのでゴミ箱へ、と出る場合は、たいていダウンロード隔離属性です。アプリを `Applications` に置いたあと、次を実行します：
+アプリが壊れていると表示された場合は、多くの場合ダウンロード時の隔離属性が原因です。アプリを `Applications` に移動したあと、次を実行します。
 
 ```bash
-xattr -dr com.apple.quarantine /Applications/CodexRunway.app
+xattr -dr com.apple.quarantine /Applications/Quosparr.app
 ```
 
-その後、アプリを再度開きます。
+### Linux の要件
 
-## 要件
+Linux には GTK3、AppIndicator、トレイに対応したデスクトップ、およびプロキシ資格情報を保存するための動作する Secret Service セッション（GNOME Keyring や KWallet など）が必要です。deb はこれらの依存関係を宣言しており、パッケージマネージャー経由で更新されます。
 
-- macOS 12+
-- この Mac に Codex がインストールされ、使われていることを推奨します
-- ローカルの `~/.codex/auth.json` から読み込むか、アプリ内でアカウントを追加します（ブラウザサインイン、資格情報の貼り付け、ファイル読み込みなど）
-- Grok パネルを使う前に、[公式 Grok CLI](https://docs.x.ai/build/overview) をインストールしてください：
+## 動作要件
+
+- この端末に Codex がインストールされ、使用されていることを推奨します。Codex のデータは `CODEX_HOME`（既定は `~/.codex`、Windows では `%USERPROFILE%\.codex`）から読み込まれます。
+- サポートされるのは `file` 資格情報ストアのみです（Codex の `config.toml` で `cli_auth_credentials_store` が未設定の場合の既定）。`keyring`、`auto`、`ephemeral` は非対応として報告され、アカウントの取り込みと切り替えができなくなります。
+- Grok パネルには[公式 Grok CLI](https://docs.x.ai/build/overview) が必要です。
 
   ```bash
   curl -fsSL https://x.ai/cli/install.sh | bash
   ```
 
-- Grok のアカウント管理と課金は OAuth / SuperGrok および互換レガシーセッションのみ対応です。`grok login --oauth` を実行するか、アプリからサインイン、現在のログイン読み込み、`~/.grok/auth.json` / 資格情報 JSON の貼り付けを使います。API キーのみの資格情報は管理アカウントに追加しません。
-- `GROK_HOME` が設定されていればそのディレクトリを使い、なければ `~/.grok` を使います。[xAI Settings](https://docs.x.ai/build/settings) を参照してください。
-
-## ローカル実行
-
-```bash
-swift run CodexRunway
-```
-
-macOS 14+ では、このコマンドが独立した `CodexRunway Dev` アプリと Widget 拡張をビルドして登録し、起動します。開発アプリは `.build/codex-runway-widget-dev/CodexRunway-dev.app` にあり、システムのウィジェットギャラリーから直接追加できます。先に他の CodexRunway インスタンスを終了してください。ウィジェットなしの未パッケージのコマンドラインプロセスだけが必要なときは `CODEX_RUNWAY_DISABLE_DEV_APP=1` を設定します。
-
-セルフチェック：
-
-```bash
-swift run CodexRunway --self-check
-```
-
-セルフチェックはローカル状態だけを読み、ネットワーク要求はしません。伏せ字にした Codex 診断と、Grok CLI のバージョン、資格情報の状態、アカウント識別を出力します。トークンと API キーは決して表示しません。
+- Grok のアカウントとクォータは、OAuth / SuperGrok と互換のレガシーセッションのみに対応します。`grok login --oauth` を実行するか、アプリ内でサインインするか、現在のログインを取り込むか、資格情報 JSON を貼り付けてください。API キーのみのログインは管理アカウントとして追加されません。`GROK_HOME` が設定されていればそれを使い、設定されていなければ `~/.grok` を使います。
 
 ## デスクトップウィジェット
 
-デスクトップウィジェットは macOS 14 以降が必要です。この修正を含むバージョンから、公開リリースとローカル開発ビルドの両方に Widget 拡張が含まれます。各ウィジェットは「ウィジェットを編集」で Codex、Grok、または両方を独立して選べます。Codex リセット更新は Codex 専用です。アップグレード後、macOS はアプリの `Contents/PlugIns` から本番ウィジェットを登録します。
+ウィジェットには macOS 14 以降が必要で、Windows と Linux には用意されていません。クォータ概要、token 推移、主要指標、Codex リセット更新の 4 種類があります。各ウィジェットは「ウィジェットを編集」で Codex、Grok、または両方を選べ、タップすると対応するページが開きます。
 
-`swift run CodexRunway` は独立した `swift-dev` 識別子を使い、既存インストールを置き換えません。`.dev` 識別子でウィジェット付きアプリを手動パッケージすることもできます：
-
-```bash
-INCLUDE_WIDGET=1 \
-RUNWAY_BUNDLE_ID=com.github.codex-runway.dev \
-RUNWAY_APP_GROUP_ID=group.com.github.codex-runway.dev \
-RUNWAY_WIDGET_STORAGE_MODE=local \
-bash Scripts/package-app.sh
-```
-
-アプリは `dist/CodexRunway.app` に書き出されます。この修正を含む公開リリースとローカル ad-hoc ビルドは、権限 `0600` の読み取り専用バージョン付きスナップショット `~/.codex-runway/widget-snapshot.json` を使います。登録済み App Group のある Developer ID ビルドは `RUNWAY_WIDGET_STORAGE_MODE=app-group` にできます。スナップショットにメール、アカウント ID、トークン、認証 JSON、外部イベント原文は含まれません。Developer ID 署名、App Group 登録、公証は今後の配布作業として残っています。
+スナップショットは `~/.quosparr/widget-snapshot.json` にあり、権限は `0600` で、秘密情報を含まない派生データのみを保持します。メールアドレス、アカウント ID、token、認証 JSON、イベントの原文は含まれません。書き込むのはメインアプリだけで、ウィジェットは読み取りのみです。
 
 ## ネットワークプロキシ
 
-**コントロールパネル → 一般 → ネットワーク**で、**システム設定に従う**、**HTTP プロキシ**、**SOCKS5 プロキシ**を選択できます。カスタムプロキシはユーザー名とパスワードによる認証に対応します。Codex の通信、アプリが開始する Grok の通信と CLI 操作、公開ステータスと価格情報、更新の確認・リリースノート・更新ファイルの取得に適用されます。ブラウザのログインページと既に動作中の外部 CLI は、それぞれのネットワーク設定を使い続けます。システムのプロキシは変更しません。
+**コントロールパネル → 一般 → ネットワーク** で、**システム設定に従う**、HTTP、SOCKS5 のいずれかを選択します。カスタムプロキシではユーザー名とパスワードを指定できます。この設定は、アプリが発行する Codex と Grok のリクエスト、CLI 操作、公開ステータスと価格のフィード、ソフトウェアアップデートに適用されます。システムのプロキシは変更されず、ブラウザのサインインページや実行中の外部 CLI はそれぞれの設定をそのまま使います。
 
-**プロキシ設定を保存**すると適用され、進行中の更新は開始時の設定を使い続けます。**接続をテスト**は下書き設定で公開更新フィードだけを取得し、アカウント情報の送信や設定の保存は行いません。認証情報は通常の設定と分離して macOS キーチェーンに保存します。設定の破損、認証情報の取得失敗、カスタムプロキシの接続失敗時に直接接続へ切り替えることはありません。設定を修正するか、明示的に**システム設定に従う**へ戻してください。
+変更は **プロキシ設定を保存** したあとにのみ反映されます。**接続をテスト** は、現在の下書きを使って公開アップデートフィードを取得するだけで、アカウント資格情報は送信せず、下書きも保存しません。プロキシのパスワードは macOS キーチェーン、Windows 資格情報マネージャー、Linux Secret Service に保存されます。設定が無効な場合、資格情報が利用できない場合、カスタムプロキシが失敗した場合でも、直接接続にフォールバックすることはありません。
 
 ## プライバシー
 
-- トークンはローカルの `~/.codex/auth.json` から読みます。複数アカウントの資格情報は `~/.codex-runway/accounts/<id>/auth.json` にだけ保存します（ディレクトリ `0700`、ファイル `0600`）。アカウント索引 `index.json` にトークンは含まれません。
-- 公式 Grok 資格情報は `$GROK_HOME/auth.json`（未設定時は `~/.grok/auth.json`）から読みます。管理コピーは `~/.codex-runway/accounts/grok-<stable-id>/auth.json`（ディレクトリ `0700`、ファイル `0600`）に置き、別の `~/.codex-runway/accounts/grok-index.json` にトークンは含まれません。
-- Grok クォータはローカル OAuth 資格情報で公式 CLI chat-proxy の `/v1/billing?format=credits`（Grok CLI と同じ公式 API）に要求します。アプリはブラウザ Cookie を読まず、ローカルセッションから偽のクォータを推定しません。
-- 現在の Grok アカウントを更新している間、公式 CLI がトークンをローテーションすることがあります。アプリはその結果の公式資格情報を、その管理アカウントにだけ反映します。現在でないアカウントは隔離された `GROK_HOME` を使い、公式資格情報は書きません。
-- Grok アカウント切り替えは、公式資格情報の OAuth / 互換レガシーログインスコープだけを置き換え、API キーと未知スコープは残します。切り替えが保証されるのは新しいセッションだけです。実行中の Grok プロセスは終了されず、前のアカウントを書き戻すことがあるため、続行前に強い警告を出します。
-- 公式の `~/.codex/auth.json` は、アカウント切り替えを確認したときだけ原子的に上書きし、Codex CLI / IDE を同期します。
-- 非アクティブな管理アカウントの更新はライブラリコピーだけを更新し、公式 `auth.json` は書きません。アクティブアカウントの更新は公式 auth とライブラリコピーを揃えます。
-- 無効または mock の資格情報は公式の `~/.codex/auth.json` に書き戻しません。
-- アクセストークン、リフレッシュトークン、ID トークン、API キーはログ、README、issue テンプレート、セルフチェック出力に書きません。
-- API 換算コストは既定でローカルセッション JSONL ログから計算し、`~/.codex-runway/` にローカル増分インデックスなどの派生データを置きます。セッション内容はアップロードしません。
-- 週次クォータ推定は派生した Credits 合計と使用率だけを `~/.codex-runway/quota-estimate-history.json` に保存します。トークンや鍵は含みません。
-- オンライン使用量は、ローカルトークンデータがないときだけ API 換算コストを補います。チャートの「公式統計（全デバイス）」は現在アカウントのプロフィール統計で、遅延や改訂があり得ます。「ローカルログ（全セッション）」はこの Mac 上のセッションをスキャンし、履歴は複数アカウントにまたがることがあります。日別データには UTC 日付を使い、両方の出典が同じ日界を共有します。両者は部分集合関係ではなく、引き算してはいけません。
-- セッション修復は `~/.codex/session_index.jsonl` だけを扱い、書き込み前にバックアップを作り、セッションファイルは削除しません。
-- 「Codex リセット更新」は [Did Codex Reset](https://didcodexreset.com) の公開ステータスフィードだけをダウンロードします。Codex アカウント、トークン、ローカルセッション内容は送りません。
-- アップデート確認はバージョン情報だけを要求します。Codex アカウントとセッションデータはアップロードしません。
-- ウィジェットスナップショットには、秘密でない派生クォータ、残高、コスト、日次トークン、リセット状態だけが含まれます。書き込みはメインアプリのみで、ウィジェットは読み取り専用です。
+- Quosparr は独自のデータを `~/.quosparr` に保存し、アプリのキャッシュを `~/.codex` に書き込みません。既定で保存されるのは、秘密情報を含まない派生データのみです。
+- 複数アカウントの資格情報は唯一の例外で、`~/.quosparr/accounts/<id>/auth.json` に保存されます（ディレクトリは `0700`、ファイルは `0600`、原子的に書き込み。Windows では現在のユーザーのみがアクセスできる ACL を使用）。アカウントインデックスには token は含まれません。
+- 公式の `~/.codex/auth.json` に書き込まれるのは、OAuth のリフレッシュ時か、アカウント切り替えを確認したときだけです。現在のアカウント以外をリフレッシュした場合は、ライブラリ内のコピーだけが更新されます。
+- Grok の資格情報は `$GROK_HOME/auth.json` から読み込まれ、管理コピーは `~/.quosparr/accounts/grok-<stable-id>/auth.json` にあります。Grok の切り替えでは OAuth / 互換レガシーのスコープだけが置き換えられ、API キーと未知のスコープは残ります。保証されるのは新しいセッションのみで、実行中の Grok プロセスは終了されず、以前のアカウントを書き戻す可能性があるため、切り替え前にアプリが警告を表示します。
+- セッションの修復が対象とするのは `session_index.jsonl` だけで、書き込み前にバックアップを作成します。`~/.codex/sessions` と `~/.codex/archived_sessions` 配下のファイルは削除されません。
+- API 換算コストはローカルのセッションログから計算されます。セッションの内容はアップロードされません。
+- token や API キーが、ログ、セルフチェックの出力、issue テンプレートに書き込まれることはありません。
+- Codex リセット更新とアップデートの確認は公開データのみを取得し、アカウント、token、セッションの内容は送信されません。
 
 ## データソース
 
-- **Codex リセット更新**: データは [Did Codex Reset](https://didcodexreset.com) の [https://didcodexreset.com/api/status.json](https://didcodexreset.com/api/status.json) からです。非公式で参考用であり、遅延や一時的な欠落があり得ます。
-- **クォータ / reset credits / 週次クォータ推定 / 公式トークン使用量 / 一部のオンライン使用量**: サインイン済みなら、ローカル資格情報で公式 ChatGPT / Codex バックエンド API に要求します。公式トークン使用量は現在アカウントに属し、バックエンド統計日を表示します。週次クォータ推定は非公式で、週次使用率と日次 Credits から外挿します（1000 Credits ≈ $40、バージョン `credits-usd-2026-08-26`）。
-- **Grok クォータ**: ローカル OAuth / SuperGrok ログインで公式 CLI chat-proxy の `/v1/billing?format=credits` だけが返します。第二のデータ源はなく、API 請求やローカルセッション統計をこのクォータに混ぜません。
-- **Grok API 換算コスト / ローカルセッション**: ローカル `~/.grok/sessions` の `turn_completed` 使用量を、公式 xAI Text API 価格（input / cached / output、prompt ≥ 200k は長文脈料金、価格版 `xai-builtin-2026-09-27`）で turn ごとに見積もります。未知モデルを正確な費用として作りません。CLI の `costUsdTicks` はサブスクリプションクレジット会計であり、API 換算には使いません。
-- **ローカルログのトークン使用量 / API 換算コスト / 最近のセッション**: 既定ではローカル `~/.codex` セッションログとローカルインデックスから計算します。過去のローカルログには信頼できるアカウント帰属がないため、複数アカウントを含むことがあります。
+- **Codex のクォータ / reset credits / 公式使用量**: ローカルの資格情報を使って、公式の ChatGPT / Codex バックエンド API から取得します。公式の使用量は現在のアカウントに属し、遅延や改訂が生じることがあります。
+- **週次クォータの推定**: 非公式で、週次使用率と日次 Credits から外挿します（1000 Credits ≈ $40、バージョン `credits-usd-2026-08-26`）。`quota-estimate-history.json` には、派生した Credits と使用率のみが保存されます。
+- **Codex の API 換算コスト**: ローカルのセッションログを、組み込みの価格表 `openai-builtin-2026-09-27` で計算します。オンラインの公式価格表は `openai-docs-` で始まるバージョンを使います。未知のモデルは正確なコストとして報告されません。
+- **Grok のクォータ**: 公式 CLI の chat-proxy `/v1/billing?format=credits` エンドポイントのみを使います。ブラウザの Cookie は使わず、ローカルログからクォータを推測せず、API 課金も混ぜません。
+- **Grok の API 換算コスト**: ローカルの `turn_completed` 使用量を `xai-builtin-2026-09-27` で計算し、入力、キャッシュ、出力、長いコンテキストの料金を区別します。`costUsdTicks` はサブスクリプションの会計値であり、API 換算コストには使いません。
+- **Codex リセット更新**: 公開フィード [didcodexreset.com/api/status.json](https://didcodexreset.com/api/status.json) から取得します。非公式で参考情報にすぎず、遅れることがあります。
+- チャートの「公式統計（全デバイス）」は現在のアカウントに属し、「ローカルログ（全セッション）」はこの端末をスキャンするため、複数のアカウントにまたがることがあります。両者は一方がもう一方の部分集合というわけではなく、引き算してはいけません。どちらの Codex の日次値も UTC の日で集計されます。
 
-## 開発と貢献
+## 開発
+
+メインアプリは Go と [mygo](https://github.com/egoist/mygo) のネイティブ UI で書かれており、Go と mygo のバージョンは `go.mod` で固定されています。macOS のウィジェット拡張は引き続き Swift です。
 
 ```bash
-swift test
-swift build
-swift build -c release
+go test ./...
+go vet ./...
+go build ./...
 ```
 
-貢献については [CONTRIBUTORS.md](CONTRIBUTORS.md) を参照してください。
+実際のアカウントや設定に影響しないよう、一時的な HOME と別の設定ドメインを使って実行します。
+
+```bash
+QUOSPARR_TEST_HOME="$(mktemp -d)"
+HOME="$QUOSPARR_TEST_HOME" QUOSPARR_PREFS_DOMAIN=com.quosparr.app.v1-test go run .
+HOME="$QUOSPARR_TEST_HOME" QUOSPARR_PREFS_DOMAIN=com.quosparr.app.v1-test go run . --self-check
+```
+
+セルフチェックはネットワークリクエストを行わず、資格情報も読み込みません。現時点では、バージョン、プラットフォーム、独自ディレクトリの権限、ロック、Codex の auth とセッションインデックスの有無を確認します。それ以外の診断は `not ported yet` と表示されます。
+
+macOS の開発用パッケージをビルドします（アップデーターは無効。`ARCH=arm64` または `ARCH=x86_64` を任意で指定可能）。
+
+```bash
+V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
+```
+
+Swift アプリ（`Package.swift`、`Sources/Quosparr*`、`Tests/`）は互換性のベースラインと緊急ロールバック用に残してあり、`swift run Quosparr` で起動できます。Windows / Linux のパッケージ化とリリース確認については [docs/v1-release.md](docs/v1-release.md)、貢献に関する注意は [CONTRIBUTORS.md](CONTRIBUTORS.md) を参照してください。
 
 ## コミュニティ
 

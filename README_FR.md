@@ -1,184 +1,159 @@
 [English](./README.md) · [简体中文](./README_ZH.md) · [繁體中文](./README_ZH_HANT.md) · [한국어](./README_KO.md) · [日本語](./README_JA.md) · [Русский](./README_RU.md) · Français
 
-<p align="center">
-  <img src="Resources/AppIcon.png" alt="CodexRunway logo" width="128" height="128">
-</p>
+<div align="center">
 
-# CodexRunway
+<img src="Resources/AppIcon.png" alt="Logo Quosparr" width="128" height="128">
 
-Combien de temps votre Codex peut-il encore tourner ?
+# Quosparr
 
-CodexRunway est une application native de barre de menus macOS pour consulter les quotas Codex et Grok. Elle fournit aussi les actualités des réinitialisations Codex, les reset credits, le coût équivalent API et les sessions locales, avec une gestion multi-comptes séparée pour chaque fournisseur.
+<sub><i>Nom formé de <b>Quo</b>ta (quota) + <b>Sparr</b>ow (moineau)</i></sub>
 
-https://github.com/user-attachments/assets/76cbc417-b237-42a7-a2a7-a68b18ae21a8
+Un petit moineau perché dans votre barre de menus, qui veille sur vos quotas Codex et Grok.
+
+Quosparr est une application native de barre de menus / zone de notification pour macOS, Windows et Linux. Elle affiche les quotas Codex et Grok, les reset credits, le coût équivalent API et les sessions locales, avec une gestion multi-comptes séparée pour chaque fournisseur.
+
+</div>
 
 ## Points forts
 
-- Consulter le quota Codex restant depuis la barre de menus.
-- Basculer via les onglets toujours visibles `Codex | Grok` ; la barre de menus et le menu contextuel suivent le fournisseur sélectionné.
-- Voir le quota Grok inclus, la répartition produit (Build / Imagine / Chat), les périodes hebdomadaires/mensuelles, le solde prépayé et l’usage à la demande via l’API de facturation officielle CLI chat-proxy.
-- Sur le panneau Grok, réutiliser les mêmes modules Token Usage (carte de chaleur / ligne / barres) et coût équivalent API que Codex, plus les sessions locales récentes des journaux Grok CLI.
-- Gérer plusieurs comptes Grok OAuth / SuperGrok avec connexion isolée, import de la connexion actuelle, collage de jeton/JSON, actualisation, alias, ordre, suppression et basculement explicite.
-- Voir les fenêtres de quota 5 heures, hebdomadaire et supplémentaires.
-- Savoir si les limites Codex ont été réinitialisées aujourd’hui (données de [Did Codex Reset](https://didcodexreset.com), avec un lien vers le message public associé).
-- Activer la section « Actualités des réinitialisations Codex » dans les réglages et configurer son propre intervalle d’actualisation (activé par défaut, toutes les 5 minutes).
-- Gérer plusieurs comptes Codex : connexion navigateur, import du `auth.json` local, collage de jeton/JSON (y compris `/auth/session`), import de fichiers ou ajout d’une clé API.
-- Basculer de compte en toute sécurité après confirmation en écrivant atomiquement `~/.codex/auth.json`, avec un redémarrage Codex optionnel pour que CLI / IDE restent synchronisés.
-- Afficher le compte actuel, le niveau d’abonnement et l’expiration.
-- Estimer le quota Codex de la semaine à partir du pourcentage hebdomadaire officiel et des Credits journaliers, le comparer aux semaines précédentes pour repérer une baisse, et activer le module dans les réglages (activé par défaut).
-- Voir le nombre de crédits de réinitialisation, le statut et l’heure d’expiration.
-- Voir le coût équivalent API et l’usage de jetons pour aujourd’hui, le cycle actuel, le cycle précédent, ce mois-ci ou une plage personnalisée ; la plage par défaut se règle dans les préférences.
-- Afficher un graphique d’usage des jetons depuis le début de l’année sous le quota du panneau principal (carte de chaleur / ligne / barres ; quotidien / hebdomadaire / cumulé) ; le style se change dans le panneau et les réglages, carte de chaleur par défaut ; peut être désactivé.
-- Utiliser un index de session incrémental local pour accélérer les analyses de coût.
-- Voir les sessions Codex récentes, les projets, le statut et les résumés d’usage.
-- Réparer l’index de session local.
-- Prendre en charge les apparences claire, sombre et système, ainsi que English, 简体中文, 繁體中文, 한국어, 日本語, Русский, Français.
-- Prendre en charge la recherche de mises à jour intégrée.
-- Proposer des widgets bureau macOS 14+ pour l’aperçu des quotas, la tendance des jetons, un indicateur clé et les actualités des réinitialisations Codex.
+**Codex**
+
+- Quota restant pour les fenêtres de 5 heures, hebdomadaire et supplémentaires, ainsi que le compte actuel, le niveau d’abonnement et l’expiration.
+- Nombre de crédits de réinitialisation, statut et heure d’expiration.
+- Estimation de l’allocation hebdomadaire à partir du pourcentage hebdomadaire officiel et des Credits journaliers, comparée aux semaines précédentes pour repérer une baisse de quota.
+- Actualités des réinitialisations Codex : savoir si les limites Codex ont été réinitialisées aujourd’hui, avec son propre intervalle d’actualisation (données de [Did Codex Reset](https://didcodexreset.com)).
+- Plusieurs comptes : connexion navigateur, import du `auth.json` local, collage de jeton / JSON (y compris `/auth/session`), import de fichiers ou ajout d’une clé API. Le basculement, après confirmation, écrit atomiquement `~/.codex/auth.json`.
+- Sessions récentes, projets et statut, ainsi que la réparation de l’index de session local.
+
+**Grok**
+
+- Quota inclus, répartition Build / Imagine / Chat, périodes hebdomadaires / mensuelles, solde prépayé et usage à la demande via l’API de facturation officielle CLI chat-proxy.
+- Plusieurs comptes OAuth / SuperGrok avec connexion isolée, import de la connexion actuelle, collage d’identifiants, actualisation, alias, ordre et basculement explicite.
+- Sessions récentes issues des journaux locaux du CLI Grok.
+
+**Les deux fournisseurs**
+
+- Onglets `Codex | Grok` toujours visibles ; la barre de menus et le menu contextuel suivent le fournisseur sélectionné.
+- Coût équivalent API et usage de jetons pour aujourd’hui, le cycle actuel, le cycle précédent, ce mois-ci ou une plage personnalisée.
+- Graphique d’usage des jetons depuis le début de l’année, en carte de chaleur, en ligne ou en barres (quotidien / hebdomadaire / cumulé).
+- Apparences claire, sombre et système ; English, 简体中文, 繁體中文, 한국어, 日本語, Русский, Français.
+- Mises à jour intégrées et widgets bureau sur macOS 14+.
 
 ## Captures d’écran
 
 <p align="center">
-  <img src="docs/images/1.webp" alt="Aperçu des quotas CodexRunway" width="260">
-  <img src="docs/images/2.webp" alt="Détails des crédits de réinitialisation CodexRunway" width="260">
-  <img src="docs/images/3.webp" alt="Coût équivalent API CodexRunway" width="260">
-  <img src="docs/images/4.webp" alt="Page des réglages CodexRunway" width="260">
-  <img src="docs/images/5.webp" alt="Multi-comptes CodexRunway" width="260">
-  <img src="docs/images/6.webp" alt="Quota Grok CodexRunway" width="260">
+  <img src="docs/images/1.webp" alt="Aperçu des quotas Quosparr" width="260">
+  <img src="docs/images/2.webp" alt="Détails des crédits de réinitialisation Quosparr" width="260">
+  <img src="docs/images/3.webp" alt="Coût équivalent API Quosparr" width="260">
+  <img src="docs/images/4.webp" alt="Réglages Quosparr" width="260">
+  <img src="docs/images/5.webp" alt="Multi-comptes Quosparr" width="260">
+  <img src="docs/images/6.webp" alt="Quota Grok Quosparr" width="260">
 </p>
+
+Les captures montrent la version de référence Swift sur macOS ; l’interface v1 peut différer dans les détails.
 
 ## Installation
 
-### Homebrew (recommandé)
+La v1 est encore une version candidate. Téléchargez uniquement depuis une Release rendue publique sur [GitHub Releases](https://github.com/Licoy/Quosparr/releases), et choisissez le paquet correspondant à votre système et à votre processeur :
 
-Installer depuis le [Licoy Homebrew Tap maintenu par le projet](https://github.com/Licoy/homebrew-tap) :
+| Système | Paquet | Comment l’installer |
+| --- | --- | --- |
+| macOS 12+ (Apple Silicon / Intel) | `Quosparr-macos-arm64.dmg` / `Quosparr-macos-x86_64.dmg`, ou le `.zip` du même nom | Glissez `Quosparr.app` dans `Applications` |
+| Windows 10 / 11 (amd64 / arm64) | `Quosparr.Setup.<version>.<arch>.exe` | Installation par utilisateur dans `%LOCALAPPDATA%\Programs\Quosparr` ; aucun droit d’administrateur requis |
+| Linux (amd64 / arm64) | `quosparr-<version>-linux-<arch>.tar.gz` avec `install.sh`, ou `quosparr_<version>_<arch>.deb` | Exécutez `sh install.sh` à côté de l’archive pour installer dans `~/.local`, ou installez le deb avec votre gestionnaire de paquets |
 
-```bash
-brew install --cask licoy/tap/codex-runway
-```
+Chaque paquet embarque l’environnement d’exécution SQLite de son architecture : le premier lancement ne télécharge donc rien. Au premier lancement, Quosparr active par défaut l’ouverture à la connexion ; modifiez-la dans **Panneau de configuration → Général → Ouvrir à la connexion**.
 
-CodexRunway prend aussi en charge les mises à jour dans l’app. Pour forcer Homebrew à vérifier et installer une mise à niveau :
+L’installation via Homebrew n’est pas encore disponible ; utilisez pour l’instant le DMG ou le ZIP.
 
-```bash
-brew upgrade --cask --greedy codex-runway
-```
+Si vous utilisiez CodexRunway, consultez le [guide de migration](docs/upgrade-from-codexrunway_FR.md).
 
-La désinstallation conserve par défaut les réglages et les copies de comptes gérés. Ajouter `--zap` retire aussi les données sous `~/.codex-runway`, sans supprimer les répertoires officiels `~/.codex` ou `~/.grok` ni les sessions :
+### Avertissements de sécurité macOS
 
-```bash
-brew uninstall --cask codex-runway
-brew uninstall --cask --zap codex-runway
-```
+Les builds macOS sont actuellement signés ad hoc et non notariés. Si macOS indique que le développeur ne peut pas être vérifié, faites un clic droit sur `Quosparr.app` et choisissez Ouvrir, ou allez dans Réglages Système → Confidentialité et sécurité et cliquez sur Ouvrir quand même.
 
-### Installation manuelle
-
-Téléchargez le DMG correspondant depuis [GitHub Releases](https://github.com/Licoy/codex-runway/releases) :
-
-- Apple Silicon : `CodexRunway-macos-arm64.dmg`
-- Intel : `CodexRunway-macos-x86_64.dmg`
-
-Ouvrez le DMG et glissez `CodexRunway.app` dans `Applications`, ou téléchargez et décompressez le ZIP de la même architecture.
-
-### Blocages de sécurité macOS
-
-Les versions actuelles sont signées ad hoc et non notariées. Si macOS indique que le développeur ne peut pas être vérifié ou que l’app n’a pas été contrôlée pour les logiciels malveillants, cliquez en maintenant Control sur `CodexRunway.app` puis choisissez Ouvrir, ou allez dans Réglages Système > Confidentialité et sécurité et cliquez sur Ouvrir quand même.
-
-Si macOS indique que `CodexRunway.app` est endommagé et doit être mis à la Corbeille, c’est généralement l’attribut de quarantaine du téléchargement. Après avoir placé l’app dans `Applications`, exécutez :
+Si macOS indique que l’app est endommagée, c’est généralement l’attribut de quarantaine du téléchargement. Après avoir déplacé l’app dans `Applications`, exécutez :
 
 ```bash
-xattr -dr com.apple.quarantine /Applications/CodexRunway.app
+xattr -dr com.apple.quarantine /Applications/Quosparr.app
 ```
 
-Puis rouvrez l’application.
+### Prérequis Linux
+
+Linux nécessite GTK3, AppIndicator, un bureau prenant en charge la zone de notification et une session Secret Service fonctionnelle (par exemple GNOME Keyring ou KWallet) pour stocker les identifiants du proxy. Le deb déclare ces dépendances et se met à jour via le gestionnaire de paquets.
 
 ## Prérequis
 
-- macOS 12+
-- Codex installé et utilisé sur ce Mac est recommandé
-- Importer depuis le `~/.codex/auth.json` local, ou ajouter des comptes dans l’app (connexion navigateur, collage d’identifiants, import de fichiers, etc.)
-- Avant d’utiliser le panneau Grok, installez le [CLI Grok officiel](https://docs.x.ai/build/overview) :
+- Codex installé et utilisé sur cette machine est recommandé. Les données Codex proviennent de `CODEX_HOME` (par défaut `~/.codex`, ou `%USERPROFILE%\.codex` sous Windows).
+- Seul le magasin d’identifiants `file` est pris en charge (valeur par défaut lorsque `cli_auth_credentials_store` n’est pas défini dans le `config.toml` de Codex). `keyring`, `auto` et `ephemeral` sont signalés comme non pris en charge et bloquent l’import et le basculement de comptes.
+- Le panneau Grok nécessite le [CLI Grok officiel](https://docs.x.ai/build/overview) :
 
   ```bash
   curl -fsSL https://x.ai/cli/install.sh | bash
   ```
 
-- La gestion des comptes Grok et la facturation ne prennent en charge que OAuth / SuperGrok et les sessions legacy compatibles. Exécutez `grok login --oauth`, connectez-vous depuis l’app, importez la connexion actuelle, ou collez `~/.grok/auth.json` / un JSON d’identifiants. Les identifiants uniquement par clé API ne sont pas ajoutés comme comptes gérés.
-- Si `GROK_HOME` est défini, l’app utilise ce répertoire ; sinon `~/.grok`. Voir [xAI Settings](https://docs.x.ai/build/settings).
-
-## Exécution locale
-
-```bash
-swift run CodexRunway
-```
-
-Sous macOS 14+, cette commande compile et enregistre automatiquement une app `CodexRunway Dev` séparée et une extension Widget, puis la lance. L’app de développement se trouve dans `.build/codex-runway-widget-dev/CodexRunway-dev.app` et peut être ajoutée depuis la galerie de widgets système. Quittez d’abord toute autre instance CodexRunway. Définissez `CODEX_RUNWAY_DISABLE_DEV_APP=1` seulement si vous voulez le processus en ligne de commande non empaqueté, sans widgets.
-
-Auto-diagnostic :
-
-```bash
-swift run CodexRunway --self-check
-```
-
-L’auto-diagnostic ne lit que l’état local et n’effectue aucune requête réseau. Il affiche un diagnostic Codex expurgé plus la version du CLI Grok, l’état des identifiants et l’identité du compte. Les jetons et clés API ne sont jamais affichés.
+- Les comptes et le quota Grok ne prennent en charge que OAuth / SuperGrok et les sessions legacy compatibles. Exécutez `grok login --oauth`, connectez-vous depuis l’app, importez la connexion actuelle ou collez un JSON d’identifiants. Les connexions par clé API seule ne sont pas ajoutées comme comptes gérés. `GROK_HOME` est utilisé s’il est défini, sinon `~/.grok`.
 
 ## Widgets bureau
 
-Les widgets bureau nécessitent macOS 14 ou plus. À partir d’une version contenant ce correctif, les versions publiques et les builds de développement locaux incluent l’extension Widget. Chaque widget peut choisir indépendamment Codex, Grok ou les deux dans Modifier le widget ; Actualités des réinitialisations Codex est réservé à Codex. Après mise à niveau, macOS enregistre le widget de production depuis `Contents/PlugIns` de l’app.
+Les widgets nécessitent macOS 14 ou plus ; Windows et Linux n’en disposent pas. Quatre types de widgets sont proposés : aperçu des quotas, tendance des jetons, un indicateur clé et Actualités des réinitialisations Codex. Chaque widget peut choisir Codex, Grok ou les deux dans Modifier le widget, et un clic ouvre la page correspondante.
 
-`swift run CodexRunway` utilise des identifiants `swift-dev` séparés et ne remplace pas une installation existante. Vous pouvez aussi empaqueter manuellement une app avec widgets et identifiants `.dev` :
-
-```bash
-INCLUDE_WIDGET=1 \
-RUNWAY_BUNDLE_ID=com.github.codex-runway.dev \
-RUNWAY_APP_GROUP_ID=group.com.github.codex-runway.dev \
-RUNWAY_WIDGET_STORAGE_MODE=local \
-bash Scripts/package-app.sh
-```
-
-L’app est écrite dans `dist/CodexRunway.app`. Les versions publiques contenant ce correctif et les builds ad hoc locaux utilisent l’instantané dérivé versionné en lecture seule `~/.codex-runway/widget-snapshot.json` avec les droits `0600`. Un build Developer ID avec un App Group enregistré peut utiliser `RUNWAY_WIDGET_STORAGE_MODE=app-group`. L’instantané ne contient ni e-mail, ni ID de compte, ni jeton, ni JSON d’auth, ni texte brut d’événement externe. La signature Developer ID, l’enregistrement App Group et la notarisation restent un travail de distribution futur.
+L’instantané se trouve dans `~/.quosparr/widget-snapshot.json` avec les droits `0600` et ne contient que des données dérivées non secrètes : ni e-mail, ni ID de compte, ni jeton, ni JSON d’authentification, ni texte brut d’événement. L’app principale est la seule à écrire ; les widgets ne font que lire.
 
 ## Proxy réseau
 
-Dans **Panneau de contrôle → Général → Réseau**, choisissez **Réglages système**, **Proxy HTTP** ou **Proxy SOCKS5**. Les proxys personnalisés acceptent un nom d’utilisateur et un mot de passe. Le réglage couvre les requêtes Codex, les requêtes et opérations CLI Grok lancées par l’app, les flux publics de statut et de prix, ainsi que la recherche de mises à jour, leurs notes et leurs fichiers. Les pages de connexion du navigateur et les CLI externes déjà lancées gardent leurs propres réglages ; le proxy système reste inchangé.
+Dans **Panneau de configuration → Général → Réseau**, choisissez **Réglages système**, HTTP ou SOCKS5 ; les proxys personnalisés acceptent un nom d’utilisateur et un mot de passe. Le réglage couvre les requêtes Codex et Grok lancées par l’app, les opérations CLI, les flux publics de statut et de prix, ainsi que les mises à jour du logiciel. Le proxy système n’est pas modifié, et les pages de connexion du navigateur ainsi que les CLI externes déjà lancées gardent leurs propres réglages.
 
-Cliquez sur **Enregistrer le proxy** pour appliquer les changements ; une mise à jour en cours conserve sa configuration initiale. **Tester la connexion** récupère uniquement le flux public des mises à jour avec les réglages en cours de saisie, sans envoyer d’identifiants de compte ni enregistrer ces réglages. Les identifiants du proxy sont stockés dans le trousseau macOS, séparément des préférences non sensibles. Une configuration invalide, des identifiants indisponibles ou un échec du proxy personnalisé ne provoquent pas de connexion directe ; corrigez les réglages ou choisissez explicitement **Réglages système**.
+Les changements ne s’appliquent qu’après **Enregistrer le proxy**. **Tester la connexion** récupère le flux public des mises à jour avec les réglages en cours de saisie, sans envoyer d’identifiants de compte ni enregistrer ces réglages. Les mots de passe du proxy sont stockés dans le trousseau macOS, le Gestionnaire d’informations d’identification Windows ou le Secret Service de Linux. Des réglages invalides, des identifiants indisponibles ou l’échec d’un proxy personnalisé ne provoquent jamais de repli sur une connexion directe.
 
 ## Confidentialité
 
-- Les jetons sont lus depuis le `~/.codex/auth.json` local ; les identifiants multi-comptes sont stockés uniquement sous `~/.codex-runway/accounts/<id>/auth.json` (répertoire `0700`, fichier `0600`). L’index des comptes `index.json` ne contient jamais de jetons.
-- Les identifiants Grok officiels sont lus depuis `$GROK_HOME/auth.json` (ou `~/.grok/auth.json` s’il n’est pas défini). Les copies gérées sont dans `~/.codex-runway/accounts/grok-<stable-id>/auth.json` en mode répertoire `0700` et fichier `0600` ; le `~/.codex-runway/accounts/grok-index.json` séparé ne contient pas de jetons.
-- Le quota Grok est demandé avec l’identifiant OAuth local auprès du point d’accès officiel CLI chat-proxy `/v1/billing?format=credits` (la même API officielle que le CLI Grok). L’app ne lit pas les cookies du navigateur et n’infère pas de faux quota à partir des sessions locales.
-- Pendant l’actualisation du compte Grok actuel, le CLI officiel peut faire tourner les jetons ; l’app recopie les identifiants officiels résultants uniquement vers ce compte géré. Les comptes non actuels utilisent un `GROK_HOME` isolé et n’écrivent jamais les identifiants officiels.
-- Un basculement de compte Grok ne remplace que les portées de connexion OAuth / legacy compatibles dans les identifiants officiels, tout en conservant la clé API et les portées inconnues. Un basculement n’est garanti que pour les nouvelles sessions. Les processus Grok en cours ne sont pas arrêtés et peuvent réécrire le compte précédent, donc l’app affiche un avertissement fort avant de continuer.
-- Le `~/.codex/auth.json` officiel n’est écrasé que lorsque vous confirmez un basculement de compte (écriture atomique), pour que Codex CLI / IDE restent synchronisés.
-- Actualiser un compte géré inactif met à jour uniquement sa copie bibliothèque, pas le `auth.json` officiel. Actualiser le compte actif synchronise le fichier auth officiel et la copie bibliothèque.
-- Les identifiants invalides ou mock ne sont jamais réécrits dans le `~/.codex/auth.json` officiel.
-- Les jetons d’accès, de rafraîchissement, d’identité et les clés API ne doivent pas être écrits dans les journaux, les README, les modèles d’issue ou la sortie d’auto-diagnostic.
-- Le coût équivalent API est calculé par défaut à partir des journaux JSONL de session locaux, avec des données dérivées comme un index incrémental local sous `~/.codex-runway/`. Le contenu des sessions n’est pas téléversé.
-- L’estimation de quota n’enregistre que des totaux Credits et pourcentages dérivés dans `~/.codex-runway/quota-estimate-history.json`. Pas de jetons ni de clés.
-- L’usage en ligne complète le coût équivalent API seulement lorsque les données de jetons locales sont indisponibles. La série « Stats officielles (tous les appareils) » du graphique vient des statistiques de profil du compte actuel et peut être en retard ou révisée ; « Journaux locaux (toutes les sessions) » analyse les sessions présentes sur ce Mac et l’historique peut couvrir plusieurs comptes. Les valeurs quotidiennes utilisent les dates UTC afin que les deux sources partagent la même frontière de jour. Les deux séries ne sont pas une relation d’inclusion et ne doivent pas être soustraites.
-- La réparation des sessions ne touche que `~/.codex/session_index.jsonl`, crée une sauvegarde avant d’écrire et ne supprime jamais les fichiers de session.
-- « Actualités des réinitialisations Codex » ne télécharge que le flux de statut public de [Did Codex Reset](https://didcodexreset.com). Il n’envoie aucun compte Codex, jeton ou contenu de session locale.
-- La recherche de mises à jour ne demande que des informations de version. Les données de compte et de session Codex ne sont pas téléversées.
-- Le stockage d’instantané du widget ne contient que des données dérivées non secrètes de quota, solde, coût, jetons quotidiens et statut de réinit. L’app principale est la seule à écrire ; les widgets sont en lecture seule.
+- Quosparr conserve ses propres données dans `~/.quosparr` et n’écrit aucun cache d’application dans `~/.codex`. Par défaut, seules des données dérivées non secrètes sont stockées.
+- Les identifiants multi-comptes sont la seule exception : ils sont stockés sous `~/.quosparr/accounts/<id>/auth.json` (répertoire `0700`, fichier `0600`, écriture atomique ; sous Windows, une ACL accessible uniquement à l’utilisateur actuel). L’index des comptes ne contient aucun jeton.
+- Le `~/.codex/auth.json` officiel n’est écrit que lors d’une actualisation OAuth ou lorsque vous confirmez un basculement de compte. Actualiser un compte non actuel ne met à jour que sa copie dans la bibliothèque.
+- Les identifiants Grok sont lus depuis `$GROK_HOME/auth.json` ; les copies gérées se trouvent dans `~/.quosparr/accounts/grok-<stable-id>/auth.json`. Un basculement Grok ne remplace que les portées OAuth / legacy compatibles et conserve la clé API et les portées inconnues. Il n’est garanti que pour les nouvelles sessions ; les processus Grok en cours ne sont pas arrêtés et peuvent réécrire le compte précédent, c’est pourquoi l’app avertit avant de basculer.
+- La réparation des sessions ne touche que `session_index.jsonl` et en crée d’abord une sauvegarde. Les fichiers sous `~/.codex/sessions` et `~/.codex/archived_sessions` ne sont jamais supprimés.
+- Le coût équivalent API est calculé à partir des journaux de session locaux. Le contenu des sessions n’est pas téléversé.
+- Les jetons et les clés API ne sont jamais écrits dans les journaux, la sortie d’auto-diagnostic ou les modèles d’issue.
+- Les Actualités des réinitialisations Codex et la recherche de mises à jour ne récupèrent que des données publiques ; aucun compte, jeton ni contenu de session n’est envoyé.
 
 ## Sources de données
 
-- **Actualités des réinitialisations Codex** : les données viennent de [Did Codex Reset](https://didcodexreset.com), à l’adresse [https://didcodexreset.com/api/status.json](https://didcodexreset.com/api/status.json). Non officiel et indicatif seulement ; peut être retardé ou temporairement indisponible.
-- **Quota / reset credits / estimation de quota / usage officiel des jetons / une partie de l’usage en ligne** : une fois connecté, les requêtes utilisent vos identifiants locaux contre les API backend officielles ChatGPT / Codex. L’usage officiel des jetons appartient au compte actuel et affiche la date des statistiques backend. L’estimation de quota est non officielle : le quota hebdomadaire est extrapolé du pourcentage utilisé et des Credits journaliers (1000 Credits ≈ $40, version `credits-usd-2026-08-26`).
-- **Quota Grok** : renvoyé uniquement par le point d’accès officiel CLI chat-proxy `/v1/billing?format=credits` avec une connexion OAuth / SuperGrok locale. Il n’y a pas de source secondaire, et la facturation API ou les statistiques de sessions locales ne sont pas mélangées à ce quota.
-- **Coût équivalent API Grok / sessions locales** : calculé à partir de l’usage `turn_completed` de `~/.grok/sessions` local selon les prix officiels xAI Text API (input / cached / output ; prompt ≥ 200k utilise les tarifs long contexte ; barème `xai-builtin-2026-09-27`). Les modèles inconnus ne sont pas inventés comme des coûts exacts. Le `costUsdTicks` du CLI est une comptabilité de crédits d’abonnement et n’est pas utilisé comme coût équivalent API.
-- **Usage de jetons des journaux locaux / coût équivalent API / sessions récentes** : calculé par défaut à partir des journaux de session `~/.codex` locaux et de l’index local. Les journaux historiques locaux n’ont pas d’attribution de compte fiable, ils peuvent donc inclure plusieurs comptes.
+- **Quota Codex / reset credits / usage officiel** : API backend officielles ChatGPT / Codex, avec vos identifiants locaux. L’usage officiel appartient au compte actuel et peut être en retard ou révisé.
+- **Estimation du quota hebdomadaire** : non officielle, extrapolée à partir du pourcentage hebdomadaire et des Credits journaliers (1000 Credits ≈ 40 $, version `credits-usd-2026-08-26`). Seuls les Credits et pourcentages dérivés sont enregistrés dans `quota-estimate-history.json`.
+- **Coût équivalent API Codex** : journaux de session locaux valorisés avec la table intégrée `openai-builtin-2026-09-27` ; la table officielle en ligne utilise des versions `openai-docs-`. Les modèles inconnus ne sont pas présentés comme des coûts exacts.
+- **Quota Grok** : uniquement le point d’accès officiel CLI chat-proxy `/v1/billing?format=credits`. Ni cookies du navigateur, ni quota déduit des journaux locaux, ni facturation API mélangée.
+- **Coût équivalent API Grok** : usage local `turn_completed` valorisé avec `xai-builtin-2026-09-27`, couvrant les tarifs d’entrée, de cache, de sortie et de long contexte. `costUsdTicks` relève de la comptabilité d’abonnement et n’est pas utilisé comme coût équivalent API.
+- **Actualités des réinitialisations Codex** : le flux public [didcodexreset.com/api/status.json](https://didcodexreset.com/api/status.json). Non officiel, indicatif seulement et parfois en retard.
+- Dans le graphique, « Stats officielles (tous les appareils) » appartient au compte actuel, tandis que « Journaux locaux (toutes les sessions) » analyse cette machine et peut couvrir plusieurs comptes. L’une n’est pas un sous-ensemble de l’autre et elles ne doivent pas être soustraites ; les valeurs quotidiennes Codex des deux utilisent des jours UTC.
 
-## Développement et contribution
+## Développement
+
+L’application principale est écrite en Go avec l’interface native [mygo](https://github.com/egoist/mygo) ; les versions de Go et de mygo sont figées dans `go.mod`. L’extension de widget macOS reste en Swift.
 
 ```bash
-swift test
-swift build
-swift build -c release
+go test ./...
+go vet ./...
+go build ./...
 ```
 
-Voir [CONTRIBUTORS.md](CONTRIBUTORS.md) pour les notes de contribution.
+Lancez avec un HOME temporaire et un domaine de préférences distinct afin de ne pas toucher à vos vrais comptes et réglages :
+
+```bash
+QUOSPARR_TEST_HOME="$(mktemp -d)"
+HOME="$QUOSPARR_TEST_HOME" QUOSPARR_PREFS_DOMAIN=com.quosparr.app.v1-test go run .
+HOME="$QUOSPARR_TEST_HOME" QUOSPARR_PREFS_DOMAIN=com.quosparr.app.v1-test go run . --self-check
+```
+
+L’auto-diagnostic n’effectue aucune requête réseau et ne lit aucun identifiant. Il couvre actuellement la version, la plateforme, les droits des répertoires propres, les verrous et la présence de l’auth Codex et de l’index de session ; les autres diagnostics sont indiqués comme `not ported yet`.
+
+Construisez un paquet de développement macOS (mise à jour désactivée ; `ARCH=arm64` ou `ARCH=x86_64` en option) :
+
+```bash
+V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
+```
+
+L’app Swift (`Package.swift`, `Sources/Quosparr*`, `Tests/`) est conservée comme référence de compatibilité et pour un retour arrière d’urgence ; `swift run Quosparr` la lance. Voir [docs/v1-release.md](docs/v1-release.md) pour le paquetage Windows / Linux et les vérifications de publication, et [CONTRIBUTORS.md](CONTRIBUTORS.md) pour les notes de contribution.
 
 ## Communauté
 

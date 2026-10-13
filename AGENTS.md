@@ -67,13 +67,13 @@ bash Scripts/package-app.sh
 - README 和源码不要包含外部参考应用名称、链接或代码片段。
 - 用户可见文档应说明隐私边界、ad-hoc signed app、开发命令和功能状态。
 - 价格表必须带版本日期；未知模型不要估算为精确费用。
-- 首次 v1 推送阶段，根目录全部 `README*.md` 与同步时的 `main` 原文保持一致，本轮基线为 `origin/main` 的 `322de4d`；不改写其中的品牌名称、链接、安装命令或 Swift 说明，v1 独有说明维护在本文件下方；用户明确要求更新公开 v1 文档时再同步七种语言
+- 根目录 `README*.md` 已按 v1 Quosparr 重写：语言切换位于左上角首行，名称、小号斜体的名称由来概述（加粗 **Quo**ta + **Sparr**ow 取字部分）与简介水平居中，不单设名称由来章节，不嵌入视频；安装部分按全新安装说明，旧版升级说明放在 `docs/upgrade-from-codexrunway*.md` 七种语言并由首页链接；七种语言保持相同结构与事实，修改任一语言时同步其余六种；`README_EN.md` 仅作跳转
 - 候选资产和清单准备完成不代表已正式发布或已通过真机验收
 - 隔离验收按 `docs/v1-acceptance-checklist.md` 与 `docs/v1-isolated-update-proxy.md` 执行，未修改且未重签的历史应用须保留真实 Sparkle 归档验签；不得改生产源或关闭 TLS 校验
 
 ## v1 分支说明（从 README 迁入）
 
-以下集中保留原 v1 README 中的平台、安装、更新、迁移、开发与隐私说明；README 当前展示 main 的稳定版内容，不能据此把 v1 代码改回旧品牌或 Swift 主应用架构
+以下集中保留原 v1 README 中的平台、安装、更新、迁移、开发与隐私说明；README 是面向用户的精简版本，细节与验收边界以本节和 `docs/v1-*.md` 为准
 
 ### 产品与功能状态
 
