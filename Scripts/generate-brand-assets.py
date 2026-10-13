@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Generate the outlined Quosparr horizontal lockup from the SVG master."""
+"""Wrap the approved raster artwork in SVG and add the outlined wordmark."""
 
 from pathlib import Path
-import re
+import base64
 
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
@@ -32,26 +32,28 @@ def outlined_wordmark() -> tuple[str, float]:
     return "\n".join(paths), cursor
 
 
-def extract_symbol(master: str) -> str:
-    start = master.index('  <g id="symbol">')
-    depth = 0
-    for match in re.finditer(r"<g\b|</g>", master[start:]):
-        depth += 1 if match.group() == "<g" else -1
-        if depth == 0:
-            return master[start : start + match.end()]
-    raise ValueError("unterminated symbol group")
+def raster_symbol() -> str:
+    source = (BRAND / "quosparr-logo-source.png").read_bytes()
+    encoded = base64.b64encode(source).decode("ascii")
+    return f'''  <g id="symbol">
+    <image width="256" height="256" href="data:image/png;base64,{encoded}"/>
+  </g>'''
 
 
 def main() -> None:
-    master = (BRAND / "quosparr-logo.svg").read_text(encoding="utf-8")
-    defs = master[master.index("  <defs>") : master.index("  </defs>") + len("  </defs>")]
-    symbol = extract_symbol(master)
+    symbol = raster_symbol()
+    master = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="title desc">
+  <title id="title">Quosparr sparrow logo</title>
+  <desc id="desc">Embedded approved raster artwork preserving the original soft sculpted shading; not vector paths.</desc>
+{symbol}
+</svg>
+'''
+    (BRAND / "quosparr-logo.svg").write_text(master, encoding="utf-8")
     wordmark, end_x = outlined_wordmark()
     width = round(end_x + 34)
     horizontal = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} 256" width="{width}" height="256" role="img" aria-labelledby="title desc">
   <title id="title">Quosparr horizontal logo</title>
   <desc id="desc">Quosparr sparrow symbol with an outlined rounded wordmark.</desc>
-{defs}
   <g transform="translate(20 32) scale(0.75)">
 {symbol}
   </g>
