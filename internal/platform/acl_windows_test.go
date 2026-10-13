@@ -72,6 +72,21 @@ func TestWindowsPrivateDirectoryReplacesPermissiveACL(t *testing.T) {
 	assertWindowsOwnerOnly(t, dir)
 }
 
+func TestWindowsNewDirectoriesArePrivateBeforePostCreationProtection(t *testing.T) {
+	root := t.TempDir()
+	allowEveryone(t, root)
+	dir := filepath.Join(root, "runtime", "sqlite", "version")
+	if err := mkdirPrivate(dir); err != nil {
+		t.Fatal(err)
+	}
+	for path := dir; path != root; path = filepath.Dir(path) {
+		assertWindowsOwnerOnly(t, path)
+	}
+	if err := verifyOwnerOnly(root, 0o700); err == nil {
+		t.Fatal("creation must not change an existing ancestor's ACL")
+	}
+}
+
 func TestWindowsTemporaryCredentialIsPrivateBeforeWriting(t *testing.T) {
 	dir := t.TempDir()
 	allowEveryone(t, dir)

@@ -8,10 +8,7 @@ import (
 // EnsurePrivateDirectory creates an app-owned or credential directory and
 // enforces 0700 on Unix or a protected, current-user-only DACL on Windows.
 func EnsurePrivateDirectory(path string) error {
-	if err := os.MkdirAll(path, 0o700); err != nil {
-		return err
-	}
-	return ProtectOwnerOnly(path, 0o700)
+	return ensurePrivateDirectory(path)
 }
 
 // ProtectOwnerOnly enforces private permissions and verifies Windows' DACL.
