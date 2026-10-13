@@ -4,7 +4,7 @@ The Quosparr mark is a compact right-facing sparrow. Its open Q-shaped wing uses
 
 ## Files
 
-- `quosparr-logo.svg`: scalable two-colour symbol master
+- `quosparr-logo.svg`: scalable colour symbol master with subtle chestnut and apricot shading
 - `quosparr-logo-4096.png` and `quosparr-logo-1024.png`: transparent raster handoff files
 - `quosparr-logo-small-black.svg` and `quosparr-logo-small-white.svg`: simplified one-colour small-size masters
 - `quosparr-logo-horizontal.svg`: symbol plus outlined wordmark
@@ -17,6 +17,8 @@ The Quosparr mark is a compact right-facing sparrow. Its open Q-shaped wing uses
 - Quosparr Chestnut `#B3582D`: primary mark and application theme colour
 - Apricot `#E9A65C`: belly and wing surface
 - Deep Brown `#553C30`: beak
+
+The colour master adds soft highlights and shadows to these base colours for a shallow sculpted appearance; the black and white small-size masters remain flat.
 
 ## Use
 
