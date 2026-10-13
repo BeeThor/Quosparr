@@ -22,13 +22,20 @@ cp "$CONFIG_STAGE/mygo.json" "$WORK/config/mygo.json"
 if [[ "$DEVELOPMENT" == 1 ]]; then
   export GOFLAGS="${GOFLAGS:+$GOFLAGS }-tags=quosparr_dev_package"
 fi
-go run github.com/egoist/mygo/cmd/mygo build -platform "$TARGET" -o "$WORK" "$CONFIG_STAGE"
+if [[ "$TARGET" == windows/* ]]; then
+  MYGO_MODULE="$(go list -m -f '{{.Dir}}' github.com/egoist/mygo)"
+  python3 "$ROOT/Scripts/prepare-windows-sqlite.py" "$MYGO_MODULE" "$CONFIG_STAGE"
+  go -C "$CONFIG_STAGE/mygo-cli" run -mod=readonly ./cmd/mygo build -platform "$TARGET" -o "$WORK" "$CONFIG_STAGE"
+else
+  go run github.com/egoist/mygo/cmd/mygo build -platform "$TARGET" -o "$WORK" "$CONFIG_STAGE"
+fi
 STAGE="$WORK/${TARGET//\//-}"
 EXECUTABLE="$STAGE/quosparr"
 [[ "$TARGET" != windows/* ]] || EXECUTABLE="$STAGE/Quosparr.exe"
 go version -m "$EXECUTABLE" | python3 -c 'import sys; tags=[line.strip().split("=",1)[1] for line in sys.stdin if line.strip().startswith("build\t-tags=")]; assert any("quosparr_dev_package" in value.split(",") for value in tags) == (sys.argv[1] == "1"), "packaged update mode mismatch"' "$DEVELOPMENT"
 VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$WORK/config/mygo.json")"
 if [[ "$TARGET" == windows/* ]]; then
+  [[ ! -e "$STAGE/mygo-sqlite3.dll" ]] || { printf 'Windows SQLite must be embedded in the executable\n' >&2; exit 1; }
   [[ -f "$STAGE/Quosparr Setup $VERSION ${TARGET#*/}.exe" ]] || { printf 'NSIS installer missing; install makensis\n' >&2; exit 1; }
 fi
 if [[ "$DEVELOPMENT" == 1 ]]; then

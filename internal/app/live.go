@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/egoist/mygo"
-	"github.com/egoist/mygo/plugins/sqlite"
 	"github.com/licoy/quosparr/internal/alerts"
 	"github.com/licoy/quosparr/internal/codex"
 	"github.com/licoy/quosparr/internal/codexapi"
@@ -28,6 +27,7 @@ import (
 	"github.com/licoy/quosparr/internal/resettoday"
 	"github.com/licoy/quosparr/internal/resettoday/runwayfmt"
 	"github.com/licoy/quosparr/internal/runway"
+	"github.com/licoy/quosparr/internal/sqliteruntime"
 	"github.com/licoy/quosparr/internal/store"
 	"github.com/licoy/quosparr/internal/usage"
 )
@@ -394,7 +394,7 @@ func refreshSection(s *runway.Service, sec runway.Section) {
 }
 
 func openUsage(home string) *usage.Repository {
-	if err := sqlite.Load(); err != nil {
+	if err := sqliteruntime.Load(); err != nil {
 		log.Println("usage index:", err)
 		return nil
 	}

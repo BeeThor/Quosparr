@@ -66,6 +66,8 @@ def verify_windows(dist,version,arch):
         if len(execution)!=1 or execution[0].attrib.get("level")!="asInvoker":
             raise ValueError("Windows installer must request user privileges")
         subprocess.run(["7z","x","-y",f"-o{temporary}",str(setup)],check=True,stdout=subprocess.DEVNULL)
+        if any(pathlib.Path(temporary).rglob("mygo-sqlite3.dll")):
+            raise ValueError("Windows installer must not ship an external SQLite DLL")
         for name,digest in expected.items():
             matches=[path for path in pathlib.Path(temporary).rglob(pathlib.Path(name).name)
                      if path.is_file() and path.as_posix().endswith("/"+name)]

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/plugins/sqlite"
+	"github.com/licoy/quosparr/internal/sqliteruntime"
 	"github.com/licoy/quosparr/internal/usage/decimal"
 )
 
@@ -20,7 +21,7 @@ import (
 // library to run offline.
 func requireSQLite(t testing.TB) {
 	t.Helper()
-	if err := sqlite.Load(); err != nil {
+	if err := sqliteruntime.Load(); err != nil {
 		if os.Getenv("USAGE_REQUIRE_SQLITE") == "1" {
 			t.Fatalf("sqlite native library unavailable: %v", err)
 		}

@@ -113,6 +113,8 @@ def verify(config, stage, target):
     if system == "linux":
         verify_deb(config, stage, arch)
     else:
+        if (stage / "mygo-sqlite3.dll").exists():
+            raise ValueError("Windows SQLite must be embedded, not shipped beside the executable")
         setup = stage / f"Quosparr Setup {config['version']} {arch}.exe"
         data = setup.read_bytes()
         if len(data) < 64 or data[:2] != b"MZ":

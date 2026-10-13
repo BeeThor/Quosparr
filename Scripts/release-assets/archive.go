@@ -42,6 +42,9 @@ func verifyArchiveRuntime(file, target, runtime string) error {
 	seen := map[string]bool{}
 	links := map[string]string{}
 	required := map[string]bool{executable: false, sqlite: false}
+	if system == "windows" {
+		delete(required, sqlite)
+	}
 	if system == "darwin" && runtime == "swift" {
 		required = map[string]bool{executable: false, "Quosparr.app/Contents/Frameworks/Sparkle.framework/Versions/B/Sparkle": false}
 	}
@@ -65,6 +68,9 @@ func verifyArchiveRuntime(file, target, runtime string) error {
 			return fmt.Errorf("duplicate archive entry %s", name)
 		}
 		seen[name] = true
+		if system == "windows" && path.Base(name) == sqlite {
+			return errors.New("Windows archive must embed SQLite instead of shipping a separate DLL")
+		}
 		if hdr.Typeflag == tar.TypeSymlink {
 			links[name] = hdr.Linkname
 		}
@@ -86,6 +92,9 @@ func verifyArchiveRuntime(file, target, runtime string) error {
 		}
 		if system == "windows" && name == executable {
 			if err := verifyWindowsIcon(data); err != nil {
+				return err
+			}
+			if err := verifyEmbeddedSQLite(data, arch); err != nil {
 				return err
 			}
 		}

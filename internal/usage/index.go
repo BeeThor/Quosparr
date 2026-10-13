@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/plugins/sqlite"
+	"github.com/licoy/quosparr/internal/sqliteruntime"
 )
 
 // Index schema and parser versions this package reads and writes. A database
@@ -220,6 +221,9 @@ func isUnambiguousCorruption(err error) bool {
 // database exists but does not match the expected schema, parser version or
 // time zone, it returns an *indexMismatch and leaves the file alone.
 func openIndexStore(ctx context.Context, path string, parserVersion int64, tzID string) (*indexStore, error) {
+	if err := sqliteruntime.Load(); err != nil {
+		return nil, err
+	}
 	db, err := sqlite.Open(ctx, path, sqlite.OpenOptions{BusyTimeout: 5 * time.Second})
 	if err != nil {
 		return nil, err

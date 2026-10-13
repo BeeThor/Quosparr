@@ -54,11 +54,15 @@ macOS 输出目录为 `build/v1-<arm64|x86_64>`，Windows/Linux 为 `build/v1-<o
 | windows-amd64 / arm64 | `Quosparr.Setup.<version>.<arch>.exe`、`quosparr-<version>-windows-<arch>.tar.gz`、`update-windows-<arch>.json` |
 | linux-amd64 / arm64 | `quosparr_<debVersion>_<arch>.deb`、`quosparr-<version>-linux-<arch>.tar.gz`、`update-linux-<arch>.json`、`install.sh` |
 
-Windows 使用 mygo 默认的用户级 NSIS 安装器，安装到 `%LOCALAPPDATA%\Programs\Quosparr`，`RequestExecutionLevel user`，不要求管理员权限；未生成 EXE 安装器时脚本报错；Linux tar 使用用户目录安装器，deb 声明 GTK3、AppIndicator 与密钥存储依赖，由包管理器管理更新；正式包内的 SQLite 动态库缺失或架构错误会阻止验收，应用不依赖首次启动时下载该库
+Windows 使用 mygo 默认的用户级 NSIS 安装器，安装到 `%LOCALAPPDATA%\Programs\Quosparr`，`RequestExecutionLevel user`，不要求管理员权限；未生成 EXE 安装器时脚本报错；Linux tar 使用用户目录安装器，deb 声明 GTK3、AppIndicator 与密钥存储依赖，由包管理器管理更新；SQLite 运行库缺失或架构错误会阻止验收，应用不依赖首次启动时下载该库
 
 Windows 构建目录保留 mygo 的 `Quosparr Setup <version> <arch>.exe` 名称，发布汇总时将空格替换为点号，再生成校验和，确保文件名与 GitHub 下载资产一致；独立的 `Quosparr.exe` 只属于应用载荷，不单独上传到 Release
 
-普通 CI 在 Windows 与 Linux 的 amd64、arm64 原生运行器上执行完整 Go 测试、构建开发安装包、核对载荷，并加载包内 SQLite 执行参数化查询；Windows 在一次性 Actions VM 内验证静默安装、临时 HOME 下的 `--self-check` 和卸载，Linux 用 `dpkg-deb` 解包后运行相同基础诊断；两者均不启动桌面界面、不登录真实账号；macOS 继续运行全量 race、Swift 回归和六目标交叉构建
+Windows 将对应架构的 SQLite DLL 嵌入 EXE，安装器和更新归档不再附带外置 DLL，单独复制 EXE 不会遗漏运行库；首次使用时从内嵌资源原子释放到 `~/.quosparr/runtime/sqlite/<SHA256>/mygo-sqlite3.dll`，目录和文件仅当前用户可访问，加载前检查内容；已有缓存损坏或路径异常会明确报错，不下载替代库、不加载 EXE 旁边的 DLL；缓存缺失时可从内嵌资源重新创建
+
+内嵌文件与 mygo v0.4.1 清单中的 Windows SHA256 一致；该版本 CLI 没有排除单个原生资源的配置，因此打包脚本复制固定版本 CLI 到临时目录，只调整 Windows SQLite 的外置资源收集，构建后清理副本，不修改 Go 模块缓存或升级框架；macOS / Linux 保留原有随包动态库
+
+普通 CI 在 Windows 与 Linux 的 amd64、arm64 原生运行器上执行完整 Go 测试、构建开发安装包、核对载荷，并加载 SQLite 执行参数化查询；Windows 在一次性 Actions VM 内验证静默安装、临时 HOME 下的 `--self-check` 和卸载，并将 EXE 单独复制到空目录，通过 `QUOSPARR_DEV_VERIFY_SQLITE=1` 检查内嵌库解包和真实 SQLite 查询，删除缓存后再检查离线重建；Linux 用 `dpkg-deb` 解包后运行相同基础诊断；两者均不启动桌面界面、不登录真实账号；macOS 继续运行全量 race、Swift 回归和六目标交叉构建
 
 `V1_DEVELOPMENT_PACKAGE=1` 明确关闭更新器，不需要发布密钥且不生成更新清单；开发包也必须通过可执行文件 / SQLite 架构、资源完整性和安装器结构校验，Linux 额外逐文件比对 deb 与归档载荷；`verify-payload` 仅验证包内容，不能代替正式发布的 `verify` 签名门禁；默认正式构建缺少 `MYGO_UPDATE_PRIVATE_KEY` 时仍直接失败
 

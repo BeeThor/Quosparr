@@ -13,6 +13,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location("platform_package", ROOT / "Scripts/verify-v1-platform.py")
 package = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(package)
+sqlite_spec = importlib.util.spec_from_file_location("embedded_sqlite", ROOT / "Scripts/prepare-windows-sqlite.py")
+embedded_sqlite = importlib.util.module_from_spec(sqlite_spec)
+sqlite_spec.loader.exec_module(embedded_sqlite)
 
 
 def tar_bytes(entries):
@@ -80,7 +83,7 @@ class PlatformPackages(unittest.TestCase):
     def test_windows_review_archive_contains_only_runtime_payload(self):
         with tempfile.TemporaryDirectory() as temporary:
             stage = pathlib.Path(temporary)
-            files = {"Quosparr.exe": b"application", "mygo-sqlite3.dll": b"sqlite", "LICENSE": b"license"}
+            files = {"Quosparr.exe": b"application-with-embedded-sqlite", "LICENSE": b"license"}
             for name, data in files.items():
                 (stage / name).write_bytes(data)
             (stage / "Quosparr Setup 1.0.0 amd64.exe").write_bytes(b"installer")
@@ -88,6 +91,21 @@ class PlatformPackages(unittest.TestCase):
             package.archive_windows({"version": "1.0.0"}, stage, "windows/amd64")
             archive = package.tar_members((stage / "quosparr-1.0.0-windows-amd64.tar.gz").read_bytes())
             self.assertEqual({name: value[0] for name, value in archive.items()}, files)
+
+    def test_windows_cli_copy_is_private_to_build_and_removable(self):
+        module = pathlib.Path(subprocess.check_output(
+            ["go", "list", "-m", "-f", "{{.Dir}}", "github.com/egoist/mygo"], cwd=ROOT, text=True).strip())
+        source = module / "cmd/mygo/natives.go"
+        original = source.read_bytes()
+        with tempfile.TemporaryDirectory() as temporary:
+            stage = pathlib.Path(temporary)
+            embedded_sqlite.prepare(module, stage)
+            cli = stage / "mygo-cli"
+            self.assertEqual(source.read_bytes(), original, "module cache must remain unchanged")
+            self.assertEqual((cli / "go.mod").read_bytes(), (module / "go.mod").read_bytes())
+            self.assertIn('goos == "windows" && l.Name == "mygo-sqlite3"', (cli / "cmd/mygo/natives.go").read_text())
+            for directory in [cli, *(path for path in cli.rglob("*") if path.is_dir())]:
+                self.assertTrue(directory.stat().st_mode & 0o200, f"build directory cannot be cleaned: {directory}")
 
     def test_windows_installer_must_be_pe(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -102,6 +120,9 @@ class PlatformPackages(unittest.TestCase):
             data[80:84] = b"PE\0\0"
             setup.write_bytes(data)
             package.verify({"version": "1.0.0"}, stage, "windows/amd64")
+            (stage / "mygo-sqlite3.dll").write_bytes(b"external DLL")
+            with self.assertRaisesRegex(ValueError, "SQLite must be embedded"):
+                package.verify({"version": "1.0.0"}, stage, "windows/amd64")
 
     def test_packages_reject_source_only_licenses(self):
         for target in ("windows/amd64", "linux/arm64"):

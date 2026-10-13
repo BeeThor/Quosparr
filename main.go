@@ -18,6 +18,7 @@ import (
 	"github.com/licoy/quosparr/internal/app"
 	"github.com/licoy/quosparr/internal/migration"
 	"github.com/licoy/quosparr/internal/platform"
+	"github.com/licoy/quosparr/internal/sqliteruntime"
 )
 
 // mygoJSON is the packaging config, which holds the product version.
@@ -41,6 +42,14 @@ func appVersion() string {
 }
 
 func main() {
+	if os.Getenv("QUOSPARR_DEV_VERIFY_SQLITE") == "1" {
+		if err := sqliteruntime.Verify(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		fmt.Println("SQLite runtime: load and parameterized query passed")
+		return
+	}
 	command := app.ParseArgs(os.Args[1:])
 	switch command {
 	case app.CommandHelp:
