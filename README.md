@@ -41,16 +41,34 @@ Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. I
 
 ## Screenshots
 
-<p align="center">
-  <img src="docs/images/1.webp" alt="Quosparr quota overview" width="260">
-  <img src="docs/images/2.webp" alt="Quosparr reset credits details" width="260">
-  <img src="docs/images/3.webp" alt="Quosparr API-equivalent cost" width="260">
-  <img src="docs/images/4.webp" alt="Quosparr settings" width="260">
-  <img src="docs/images/5.webp" alt="Quosparr multi-account" width="260">
-  <img src="docs/images/6.webp" alt="Quosparr Grok quota" width="260">
-</p>
+<table>
+  <tr>
+    <th colspan="2">Main panel</th>
+    <th colspan="2">API-equivalent cost</th>
+    <th colspan="2">Subscription quota estimate</th>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp" alt="Quosparr Main panel" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp" alt="Quosparr API-equivalent cost" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp" alt="Quosparr Subscription quota estimate" width="240"></td>
+  </tr>
+  <tr>
+    <th colspan="3">Multi-account</th>
+    <th colspan="3">Display settings</th>
+  </tr>
+  <tr>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp" alt="Quosparr Multi-account" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp" alt="Quosparr Display settings" width="370"></td>
+  </tr>
+  <tr>
+    <th colspan="6">Windows settings and Grok panel</th>
+  </tr>
+  <tr>
+    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp" alt="Quosparr Windows settings and Grok panel" width="780"></td>
+  </tr>
+</table>
 
-The screenshots show the macOS Swift baseline; the v1 interface may differ in details.
+The screenshots show the v1 interface on macOS and Windows.
 
 ## Installation
 

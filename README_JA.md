@@ -41,16 +41,34 @@ Quosparr は macOS、Windows、Linux 向けのネイティブなメニューバ�
 
 ## スクリーンショット
 
-<p align="center">
-  <img src="docs/images/1.webp" alt="Quosparr クォータ概要" width="260">
-  <img src="docs/images/2.webp" alt="Quosparr reset credits の詳細" width="260">
-  <img src="docs/images/3.webp" alt="Quosparr API 換算コスト" width="260">
-  <img src="docs/images/4.webp" alt="Quosparr 設定" width="260">
-  <img src="docs/images/5.webp" alt="Quosparr 複数アカウント" width="260">
-  <img src="docs/images/6.webp" alt="Quosparr Grok クォータ" width="260">
-</p>
+<table>
+  <tr>
+    <th colspan="2">メインパネル</th>
+    <th colspan="2">API 換算コスト</th>
+    <th colspan="2">サブスク枠の推定</th>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp" alt="Quosparr メインパネル" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp" alt="Quosparr API 換算コスト" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp" alt="Quosparr サブスク枠の推定" width="240"></td>
+  </tr>
+  <tr>
+    <th colspan="3">複数アカウント</th>
+    <th colspan="3">表示設定</th>
+  </tr>
+  <tr>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp" alt="Quosparr 複数アカウント" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp" alt="Quosparr 表示設定" width="370"></td>
+  </tr>
+  <tr>
+    <th colspan="6">Windows の設定と Grok パネル</th>
+  </tr>
+  <tr>
+    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp" alt="Quosparr Windows の設定と Grok パネル" width="780"></td>
+  </tr>
+</table>
 
-スクリーンショットは macOS の Swift ベースラインのものです。v1 の画面は細部が異なる場合があります。
+スクリーンショットは macOS と Windows 上の v1 の画面です。
 
 ## インストール
 

@@ -41,16 +41,34 @@ Quosparr는 macOS, Windows, Linux용 네이티브 메뉴 막대 / 시스템 트�
 
 ## 스크린샷
 
-<p align="center">
-  <img src="docs/images/1.webp" alt="Quosparr 할당량 개요" width="260">
-  <img src="docs/images/2.webp" alt="Quosparr 리셋 크레딧 상세" width="260">
-  <img src="docs/images/3.webp" alt="Quosparr API 환산 비용" width="260">
-  <img src="docs/images/4.webp" alt="Quosparr 설정" width="260">
-  <img src="docs/images/5.webp" alt="Quosparr 다중 계정" width="260">
-  <img src="docs/images/6.webp" alt="Quosparr Grok 할당량" width="260">
-</p>
+<table>
+  <tr>
+    <th colspan="2">메인 패널</th>
+    <th colspan="2">API 환산 비용</th>
+    <th colspan="2">구독 한도 추정</th>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp" alt="Quosparr 메인 패널" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp" alt="Quosparr API 환산 비용" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp" alt="Quosparr 구독 한도 추정" width="240"></td>
+  </tr>
+  <tr>
+    <th colspan="3">다중 계정</th>
+    <th colspan="3">표시 설정</th>
+  </tr>
+  <tr>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp" alt="Quosparr 다중 계정" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp" alt="Quosparr 표시 설정" width="370"></td>
+  </tr>
+  <tr>
+    <th colspan="6">Windows 설정 및 Grok 패널</th>
+  </tr>
+  <tr>
+    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp" alt="Quosparr Windows 설정 및 Grok 패널" width="780"></td>
+  </tr>
+</table>
 
-스크린샷은 macOS Swift 기준 버전이며, v1 인터페이스는 세부 사항이 다를 수 있습니다.
+스크린샷은 macOS와 Windows에서의 v1 인터페이스입니다.
 
 ## 설치
 

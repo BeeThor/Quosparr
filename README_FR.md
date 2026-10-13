@@ -41,16 +41,34 @@ Quosparr est une application native de barre de menus / zone de notification pou
 
 ## Captures d’écran
 
-<p align="center">
-  <img src="docs/images/1.webp" alt="Aperçu des quotas Quosparr" width="260">
-  <img src="docs/images/2.webp" alt="Détails des crédits de réinitialisation Quosparr" width="260">
-  <img src="docs/images/3.webp" alt="Coût équivalent API Quosparr" width="260">
-  <img src="docs/images/4.webp" alt="Réglages Quosparr" width="260">
-  <img src="docs/images/5.webp" alt="Multi-comptes Quosparr" width="260">
-  <img src="docs/images/6.webp" alt="Quota Grok Quosparr" width="260">
-</p>
+<table>
+  <tr>
+    <th colspan="2">Panneau principal</th>
+    <th colspan="2">Coût équivalent API</th>
+    <th colspan="2">Estimation du quota d’abonnement</th>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp" alt="Quosparr Panneau principal" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp" alt="Quosparr Coût équivalent API" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp" alt="Quosparr Estimation du quota d’abonnement" width="240"></td>
+  </tr>
+  <tr>
+    <th colspan="3">Multi-comptes</th>
+    <th colspan="3">Réglages d’affichage</th>
+  </tr>
+  <tr>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp" alt="Quosparr Multi-comptes" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp" alt="Quosparr Réglages d’affichage" width="370"></td>
+  </tr>
+  <tr>
+    <th colspan="6">Windows : réglages et panneau Grok</th>
+  </tr>
+  <tr>
+    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp" alt="Quosparr Windows : réglages et panneau Grok" width="780"></td>
+  </tr>
+</table>
 
-Les captures montrent la version de référence Swift sur macOS ; l’interface v1 peut différer dans les détails.
+Les captures montrent l’interface v1 sur macOS et Windows.
 
 ## Installation
 

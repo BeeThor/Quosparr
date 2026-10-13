@@ -79,7 +79,7 @@ bash Scripts/package-app.sh
 
 Quosparr v1 面向 macOS、Windows、Linux，主程序使用 Go + mygo/ui 原生菜单栏 / 系统托盘，macOS 保留 Swift WidgetKit 扩展；提供 Codex 与 Grok 额度、重置动态、reset credits、API 等价成本、本机会话和各供应商独立的多账号管理
 
-- 当前仍是开发中的候选版本，尚未宣告正式发布，现有截图展示 Swift 基线
+- 当前仍是开发中的候选版本，尚未宣告正式发布，现有截图展示 v1 在 macOS 与 Windows 上的界面
 - 首次无偏好配置的启动显示设置并保存默认偏好，已有配置或从旧版迁移的用户普通启动时仅驻留菜单栏；主动点击设置或显式传入 `--settings` 才再次打开设置，日常 Dev 重启不附加该参数
 - Codex 支持配额窗口、订阅到期、reset credits、周额度推算与历史对比，Grok 展示官方 CLI chat-proxy 额度及 Build / Imagine / Chat 拆分、周期、预付余额和按需使用情况
 - 两个供应商均保留账号管理、本地 Token 用量图表、API 等价成本与最近会话，图表支持热力图、折线图和柱状图；Codex 另有会话索引修复与公开重置动态

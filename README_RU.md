@@ -41,16 +41,34 @@ Quosparr — нативное приложение для строки меню 
 
 ## Снимки экрана
 
-<p align="center">
-  <img src="docs/images/1.webp" alt="Обзор квот Quosparr" width="260">
-  <img src="docs/images/2.webp" alt="Сведения о кредитах сброса Quosparr" width="260">
-  <img src="docs/images/3.webp" alt="Эквивалентная стоимость API в Quosparr" width="260">
-  <img src="docs/images/4.webp" alt="Настройки Quosparr" width="260">
-  <img src="docs/images/5.webp" alt="Несколько аккаунтов в Quosparr" width="260">
-  <img src="docs/images/6.webp" alt="Квота Grok в Quosparr" width="260">
-</p>
+<table>
+  <tr>
+    <th colspan="2">Главная панель</th>
+    <th colspan="2">Эквивалентная стоимость API</th>
+    <th colspan="2">Оценка лимита подписки</th>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/1.webp" alt="Quosparr Главная панель" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/3.webp" alt="Quosparr Эквивалентная стоимость API" width="240"></td>
+    <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp" alt="Quosparr Оценка лимита подписки" width="240"></td>
+  </tr>
+  <tr>
+    <th colspan="3">Несколько аккаунтов</th>
+    <th colspan="3">Настройки отображения</th>
+  </tr>
+  <tr>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp" alt="Quosparr Несколько аккаунтов" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp" alt="Quosparr Настройки отображения" width="370"></td>
+  </tr>
+  <tr>
+    <th colspan="6">Windows: настройки и панель Grok</th>
+  </tr>
+  <tr>
+    <td colspan="6" align="center" valign="top"><img src="docs/images/2.webp" alt="Quosparr Windows: настройки и панель Grok" width="780"></td>
+  </tr>
+</table>
 
-На снимках показана базовая версия на Swift для macOS; интерфейс v1 может отличаться в деталях.
+На снимках показан интерфейс v1 в macOS и Windows.
 
 ## Установка
 
