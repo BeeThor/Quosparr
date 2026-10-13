@@ -72,10 +72,7 @@ func TestTimestampGolden(t *testing.T) {
 			f := strings.Split(line, "\t")
 			ts := unswift(f[1])
 			for zi, cell := range f[2:] {
-				loc, err := time.LoadLocation(goldenZones[zi])
-				if err != nil {
-					t.Fatal(err)
-				}
+				loc := loadZone(t, goldenZones[zi])
 				p := newRecordParser(loc)
 				rec, err := p.parse([]byte(`{"timestamp":"` + jsonEscapeForTS(ts) + `"}`))
 				var got string

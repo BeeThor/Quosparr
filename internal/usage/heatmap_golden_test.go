@@ -2,6 +2,8 @@ package usage
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -62,7 +64,12 @@ func hex64(s string) string { return strconv.FormatUint(fnv64(s), 16) }
 
 func loadZone(t *testing.T, name string) *time.Location {
 	t.Helper()
-	loc, err := time.LoadLocation(name)
+	// The zone rules are part of the Swift golden input, not the runner's OS.
+	data, err := os.ReadFile(filepath.Join("testdata", "timezones", filepath.FromSlash(name)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	loc, err := time.LoadLocationFromTZData(name, data)
 	if err != nil {
 		t.Fatal(err)
 	}
