@@ -263,13 +263,14 @@ jobs:
             gh release create "$tag" dist-v1/* --repo "$GITHUB_REPOSITORY" --verify-tag --draft --prerelease --latest=false --title "$tag" --notes-file release-notes.md
           fi
 
-      # Public release, latest promotion and the shared Beta feed are paused
-      # - name: Publish reviewed stable release and promote latest
-      #   if: needs.v1-preflight.outputs.channel == 'stable'
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-      #   run: gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --latest=true
+      # Every asset is verified above, so a stable tag goes public as latest
+      - name: Publish stable release and promote latest
+        if: needs.v1-preflight.outputs.channel == 'stable'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --latest=true
 
+      # The shared Beta feed stays paused; Beta tags remain prerelease drafts
       # - name: Update Beta channel and publish reviewed Beta
       #   if: needs.v1-preflight.outputs.channel == 'beta'
       #   env:

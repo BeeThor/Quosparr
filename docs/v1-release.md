@@ -2,7 +2,7 @@
 
 v1 已正式发布（`v1.0.0`、`v1.0.1`），Swift 主应用已从仓库移除，不再提供 Swift 构建或应急回滚；本文件描述后续版本的流水线与门禁，安装升级验收仍须在一次性虚拟机执行
 
-Actions 只执行到 GitHub Release 草稿：稳定版 `v*` 和 Beta `beta-v*` 均执行测试、打包、验签及附件上传，创建时统一使用 `--draft --latest=false`；Beta 草稿同时标记 `--prerelease`；自动公开发布、latest 提升、固定 `v1-beta` 频道更新及 Homebrew Cask 准备步骤已在工作流中注释，审阅草稿后人工公开稳定版并提升 latest，现有公开 Release 与更新源不会被本流程改写
+稳定版 `v*` 和 Beta `beta-v*` 标签均执行测试、打包、验签及附件上传，先以 `--draft --latest=false` 创建草稿，Beta 草稿同时标记 `--prerelease`；稳定版在全部资产验签通过后由同一作业公开并设为 latest，mygo 清单与 Sparkle appcast 均从 `/releases/latest/download/` 读取，公开后用户即可收到更新；任一校验失败则不创建或不公开 Release；Beta 保持草稿，固定 `v1-beta` 频道更新及 Homebrew Cask 准备步骤仍在工作流中注释
 
 ## 更名与旧版本入口
 

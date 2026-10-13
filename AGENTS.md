@@ -98,7 +98,7 @@ Quosparr v1 面向 macOS、Windows、Linux，主程序使用 Go + mygo/ui 原生
 ### 更新与 Swift 用户迁移
 
 - 三端使用 mygo 原生更新器检查、下载、验签、安装和重启，自动检查遵循保存的偏好，开启时每次启动后检查一次、运行期间每小时检查一次（失败后 1 小时重试），默认不自动下载安装；开发包禁用更新器
-- 当前 Actions 只生成 Release 草稿，审阅后人工公开稳定版并提升 latest，自动公开发布、固定 `v1-beta` 频道更新和 Homebrew 阶段均暂停；Beta 候选标签为 `beta-v<version>`，草稿标记 prerelease 且 `latest=false`
+- 稳定版标签 `v<version>` 在全部资产验签通过后由 Actions 自动公开并设为 latest；Beta 候选标签 `beta-v<version>` 只生成标记 prerelease 且 `latest=false` 的草稿，固定 `v1-beta` 频道更新和 Homebrew 阶段仍暂停
 - 恢复 Beta 分发后使用独立的 `v1-beta` 频道与不可变候选 Release，二者均为 prerelease 且 `latest=false`，不改生产 latest；稳定版标签 `v<version>` 必须匹配 `mygo.json` 的版本
 - 新身份是 `com.quosparr.app`、`quosparr://` 和 `~/.quosparr`，旧名称用户需退出旧应用后手动安装；旧 Sparkle feed 只提供下载页入口，不能跨 bundle ID 自动安装；同身份 Quosparr Swift 版本经独立 feed 在线升级到 Go 版本
 - 首次启动复制旧应用数据并导入缺失偏好，保留原目录和已有 Quosparr 数据；新目录已存在时也补入缺失文件与账号 ID，新账号元数据、当前选择和数据库整组优先
@@ -147,5 +147,5 @@ V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 
 - 提交源代码、测试、依赖锁定文件、必要资源与 fixture；生成的 glyph Go 源文件、`internal/l10n/tables.go` 和兼容测试的 SQLite、JSONL、压缩样本属于源码或测试资产，不按扩展名批量删除
 - 构建目录、安装包输出、Python 字节码、IDE 用户状态、本地临时目录、发布说明生成结果及签名私钥不进入 Git；清理只针对确认可重新生成的本地文件
-- 推送 `main` / `v1` 触发普通 CI，开发打包无需发布 Secrets；版本标签触发签名打包与 Release 草稿，需要 `MYGO_UPDATE_PRIVATE_KEY`、`SPARKLE_PUBLIC_KEY`、`SPARKLE_PRIVATE_KEY`，私钥必须匹配配置公钥
+- 推送 `main` / `v1` 触发普通 CI，开发打包无需发布 Secrets；版本标签触发签名打包与 Release（稳定版自动公开，Beta 为草稿），需要 `MYGO_UPDATE_PRIVATE_KEY`、`SPARKLE_PUBLIC_KEY`、`SPARKLE_PRIVATE_KEY`，私钥必须匹配配置公钥
 - 本地测试通过不等于线上 Actions 已通过，推送后需核对 Windows / Linux 原生安装与 SQLite 验证、macOS 双架构打包的实际结果

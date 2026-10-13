@@ -60,7 +60,7 @@ class DraftWorkflowTests(unittest.TestCase):
             with self.subTest(job=job, channel=channel):
                 result, calls = self.invoke(job, tag, channel)
                 self.assertEqual(result.returncode, 0, result.stderr)
-                self.assertEqual(len(calls), 1, "a draft must not trigger publication or channel updates")
+                self.assertEqual(len(calls), 1, "creating the draft is a single gh call")
                 args = calls[0]
                 self.assertEqual(args[:3], ["release", "create", tag])
                 for flag in ("--draft", "--latest=false", "--verify-tag", "--notes-file"):
@@ -75,9 +75,23 @@ class DraftWorkflowTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 23)
                 self.assertEqual(len(calls), 1)
 
-    def test_publication_and_distribution_steps_are_inactive(self):
-        forbidden = ("--draft=false", "--latest=true", "gh release edit", "gh release upload",
-                     "gh release create v1-beta", "generate-v1-homebrew.py")
+    def test_only_stable_tags_publish_as_latest(self):
+        publish = []
+        for name, workflow in self.workflows.items():
+            for job_id, job in workflow["jobs"].items():
+                for step in job.get("steps", []):
+                    if "gh release edit" in step.get("run", ""):
+                        publish.append((name, job_id, step))
+        self.assertEqual(len(publish), 1, "expected one active publication step")
+        name, job_id, step = publish[0]
+        self.assertEqual((name, job_id), ("release.yml", "v1-release"))
+        self.assertEqual(step["if"], "needs.v1-preflight.outputs.channel == 'stable'")
+        steps = self.workflows[name]["jobs"][job_id]["steps"]
+        self.assertGreater(steps.index(step), next(i for i, s in enumerate(steps) if "gh release create" in s.get("run", "")))
+        self.assertEqual(step["run"], 'gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --latest=true')
+
+    def test_beta_channel_and_distribution_steps_are_inactive(self):
+        forbidden = ("gh release upload", "gh release create v1-beta", "generate-v1-homebrew.py")
         for workflow in self.workflows.values():
             for job in workflow["jobs"].values():
                 for step in job.get("steps", []):
