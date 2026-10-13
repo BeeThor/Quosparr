@@ -33,11 +33,7 @@ for target in "${SELECTED[@]}"; do
   mkdir -p "$WORK/$target/tar" "$WORK/$target/zip"
   tar -xzf "$DIST/quosparr-$VERSION-$target.tar.gz" -C "$WORK/$target/tar"
   ditto -x -k "$DIST/Quosparr-macos-$ARCH.zip" "$WORK/$target/zip"
-  if [[ "${V1_SWIFT_ROLLBACK:-0}" == 1 ]]; then
-    bash "$ROOT/Scripts/verify-packaged-app.sh" "$WORK/$target/tar/Quosparr.app" "$ARCH" local
-  else
-    bash "$ROOT/Scripts/verify-v1-app.sh" "$WORK/$target/tar/Quosparr.app" "$ARCH" "$CONFIG"
-  fi
+  bash "$ROOT/Scripts/verify-v1-app.sh" "$WORK/$target/tar/Quosparr.app" "$ARCH" "$CONFIG"
   codesign --verify --deep --strict "$WORK/$target/zip/Quosparr.app"
   diff -qr "$WORK/$target/tar/Quosparr.app" "$WORK/$target/zip/Quosparr.app"
   hdiutil verify "$DIST/Quosparr-macos-$ARCH.dmg" >/dev/null

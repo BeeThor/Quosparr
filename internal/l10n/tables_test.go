@@ -9,8 +9,9 @@ import (
 )
 
 func TestKeyCount(t *testing.T) {
-	if got := len(allKeys); got != 614 {
-		t.Errorf("len(allKeys) = %d, want 614 (Swift L10nKey case count)", got)
+	// Pinned so that adding or dropping a key is a deliberate change.
+	if got := len(allKeys); got != 612 {
+		t.Errorf("len(allKeys) = %d, want 612", got)
 	}
 	seen := map[Key]bool{}
 	for _, k := range allKeys {

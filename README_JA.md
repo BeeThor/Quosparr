@@ -72,7 +72,7 @@ Quosparr は macOS、Windows、Linux 向けのネイティブなメニューバ�
 
 ## インストール
 
-v1 はまだリリース候補です。[GitHub Releases](https://github.com/Licoy/Quosparr/releases) で公開済みの Release からのみダウンロードし、お使いの OS と CPU に合うパッケージを選んでください。
+[GitHub Releases](https://github.com/Licoy/Quosparr/releases) からダウンロードし、お使いの OS と CPU に合うパッケージを選んでください。
 
 | システム | パッケージ | インストール方法 |
 | --- | --- | --- |
@@ -171,7 +171,7 @@ macOS の開発用パッケージをビルドします（アップデーター�
 V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 ```
 
-Swift アプリ（`Package.swift`、`Sources/Quosparr*`、`Tests/`）は互換性のベースラインと緊急ロールバック用に残してあり、`swift run Quosparr` で起動できます。Windows / Linux のパッケージ化とリリース確認については [docs/v1-release.md](docs/v1-release.md)、貢献に関する注意は [CONTRIBUTORS.md](CONTRIBUTORS.md) を参照してください。
+Windows / Linux のパッケージ化とリリース確認については [docs/v1-release.md](docs/v1-release.md)、貢献に関する注意は [CONTRIBUTORS.md](CONTRIBUTORS.md) を参照してください。
 
 ## コミュニティ
 

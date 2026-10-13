@@ -42,7 +42,4 @@ for arch in (sys.argv[4].split(",") if len(sys.argv)>4 else ("arm64","x86_64")):
         raise SystemExit("legacy archive length mismatch")
     signature=enclosure.attrib[f"{{{ns}}}edSignature"]
     subprocess.run(["go","run","./Scripts/release-assets","verify-sparkle","-config",str(config),"-file",str(dist/name),"-signature",signature],cwd=root,check=True)
-    if os.environ.get("SPARKLE_PRIVATE_KEY"):
-        tools=pathlib.Path(os.environ.get("SPARKLE_TOOLS_DIR",root/".build/artifacts/sparkle/Sparkle/bin"))
-        subprocess.run([str(tools/"sign_update"),"--verify","--ed-key-file","-",str(dist/name),signature],input=os.environ["SPARKLE_PRIVATE_KEY"].encode(),check=True)
 print("Legacy appcasts, public-key signatures, versions and lengths verified")

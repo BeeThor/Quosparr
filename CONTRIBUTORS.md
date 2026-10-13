@@ -12,44 +12,47 @@
 
 ## 可以贡献什么
 
-- Swift / AppKit / SwiftUI 功能实现。
+- Go / mygo 原生界面功能实现，以及 macOS WidgetKit 扩展（Swift）。
 - 配额、reset credits、API 等价成本、多账号导入/切号和会话修复逻辑的测试。
-- macOS 菜单栏、弹层和控制台体验优化。
-- 简体中文和英文文案改进。
+- macOS 菜单栏、Windows / Linux 系统托盘、弹层和设置体验优化。
+- 七种语言文案改进。
 - 打包、CI、Release 和在线更新流程改进。
 - Bug 报告和复现步骤。
 
 ## 开发环境
 
-- macOS 12+
-- Swift 6+
+- macOS 12+、Windows 10 / 11 或带系统托盘的 Linux 桌面
+- Go 与 mygo 版本以 `go.mod` 为准
+- 构建 macOS 桌面组件需要 Xcode
 - 推荐本机已使用过 Codex；可通过 `~/.codex/auth.json` 或应用内导入/登录添加测试账号
 
 常用命令：
 
 ```bash
-swift test
-swift build
-swift build -c release
-swift run Quosparr --self-check
-swift run Quosparr
+go test ./...
+go vet ./...
+go build ./...
+QUOSPARR_TEST_HOME="$(mktemp -d)"
+HOME="$QUOSPARR_TEST_HOME" QUOSPARR_PREFS_DOMAIN=com.quosparr.app.dev-test go run . --self-check
+bash Scripts/run-dev-app.sh
 ```
+
+`run-dev-app.sh` 使用正式身份和真实数据运行开发包，需先退出已安装的 Quosparr；只想隔离试用时使用上面的临时 HOME 与独立偏好域。
 
 打包命令：
 
 ```bash
-ARCH=arm64 bash Scripts/package-app.sh
-ARCH=x86_64 bash Scripts/package-app.sh
+V1_DEVELOPMENT_PACKAGE=1 ARCH=arm64 bash Scripts/package-v1-app.sh
+V1_DEVELOPMENT_PACKAGE=1 ARCH=x86_64 bash Scripts/package-v1-app.sh
 ```
 
 ## 代码边界
 
-- 核心逻辑放在 `Sources/QuosparrCore`。
-- AppKit / SwiftUI 入口和 UI 放在 `Sources/Quosparr`。
+- 原生界面与系统协调放在 `internal/app`，业务模块放在其余 `internal/*` 包。
+- macOS 桌面组件放在 `Sources/QuosparrWidget`，桥接库放在 `Sources/QuosparrWidgetBridge`。
 - UI 不直接解析 JSON、不直接扫描本地会话文件。
-- 所有用户可见文案必须走 `L10n`，新增 key 需要同时补英文和简体中文。
-- 默认不新增依赖；在线更新功能已批准使用 Sparkle。
-- 不创建 Xcode project，除非维护者明确要求。
+- 所有用户可见文案必须走 `internal/l10n`，新增 key 需要同时补齐英文、简体中文、繁体中文、韩文、日文、俄文、法文。
+- 默认不新增依赖；标准库和系统框架能解决的问题不要加包。
 
 ## 隐私和安全
 
@@ -68,22 +71,14 @@ ARCH=x86_64 bash Scripts/package-app.sh
 提交前至少运行：
 
 ```bash
-swift test
-swift build
+go vet ./...
+go test ./...
 ```
 
-涉及打包或更新时额外运行：
+涉及打包或桌面组件时额外运行：
 
 ```bash
-ARCH=arm64 bash Scripts/package-app.sh
-ARCH=x86_64 bash Scripts/package-app.sh
-codesign --verify --deep --strict dist/Quosparr.app
-```
-
-涉及本地诊断时运行：
-
-```bash
-swift run Quosparr --self-check
+V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 ```
 
 如果某项验证无法运行，需要在提交说明或 PR 说明里写明原因。

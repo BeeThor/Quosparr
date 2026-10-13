@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-// The fixtures in testdata/swift_*.json were produced by compiling the Swift
-// QuosparrCore sources (see testdata/gen_swift_fixtures.swift.txt), so these
-// tests compare Go against what the macOS app really writes and reads.
+// The fixtures in testdata/swift_*.json were produced by the Swift releases'
+// core and are frozen, so these tests compare Go against what the previous
+// macOS app really wrote and read.
 
 func fixture(t testing.TB, name string) []byte {
 	t.Helper()

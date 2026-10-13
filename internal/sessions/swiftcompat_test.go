@@ -10,8 +10,8 @@ import (
 	"github.com/licoy/quosparr/internal/export/swiftjson"
 )
 
-// The fixtures in testdata come from the real Swift scanner and repairer (see
-// internal/export/testdata/gen); the Go port must reproduce them.
+// The frozen fixtures in testdata come from the Swift releases' scanner and
+// repairer; the Go port must reproduce them.
 func swiftCompatHome(t *testing.T) *fixture {
 	f := newFixture(t)
 	idx := f.write("session_index.jsonl", `{"id":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","thread_name":"Index title \"quoted\"/slash","updated_at":"2026-06-29T00:04:00Z"}

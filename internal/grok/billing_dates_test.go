@@ -16,9 +16,9 @@ import (
 // right behind a separator that the system parser reads as an ignorable.
 var billingDateExotic = regexp.MustCompile(`^\s*-?\d*[eE]|\.\d*[eE]|:\d+[eE][+-]?\d{4,}|\.\d{10,}|\.-|\s--`)
 
-// TestBillingParseDateMatchesSwift replays inputs through the Swift app's
-// ISO8601DateFormatter (see testdata/gen_billing_goldens.swift.txt): 4000
-// mutated timestamps plus hand-picked edge cases.
+// TestBillingParseDateMatchesSwift replays the frozen results of the Swift
+// releases' ISO8601DateFormatter: 4000 mutated timestamps plus hand-picked
+// edge cases.
 func TestBillingParseDateMatchesSwift(t *testing.T) {
 	raw, err := os.ReadFile("testdata/billing_dates_golden.json")
 	if err != nil {

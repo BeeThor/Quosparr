@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// Ports of Tests/QuosparrCoreTests/GrokBillingTests.swift.
+// Ports of the Swift releases' Grok billing tests.
 
 func billingMustDecode(t *testing.T, body string) BillingSnapshot {
 	t.Helper()

@@ -23,8 +23,6 @@ Options:
 Other options go to the app, e.g. --settings or --self-check.
 Env: ARCH=arm64|x86_64 (default: this Mac).
 
-For the Swift compatibility app use Scripts/run-swift-dev-app.sh.
-
 Examples:
   Scripts/run-dev-app.sh
   Scripts/run-dev-app.sh --settings

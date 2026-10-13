@@ -72,7 +72,7 @@ Quosparr는 macOS, Windows, Linux용 네이티브 메뉴 막대 / 시스템 트�
 
 ## 설치
 
-v1은 아직 릴리스 후보입니다. [GitHub Releases](https://github.com/Licoy/Quosparr/releases)에서 공개된 Release만 내려받고, 사용하는 시스템과 CPU에 맞는 패키지를 고르세요.
+[GitHub Releases](https://github.com/Licoy/Quosparr/releases)에서 내려받고, 사용하는 시스템과 CPU에 맞는 패키지를 고르세요.
 
 | 시스템 | 패키지 | 설치 방법 |
 | --- | --- | --- |
@@ -171,7 +171,7 @@ macOS 개발 패키지를 빌드합니다(업데이터 비활성화, 선택적�
 V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 ```
 
-Swift 앱(`Package.swift`, `Sources/Quosparr*`, `Tests/`)은 호환성 기준선이자 긴급 롤백용으로 유지되며 `swift run Quosparr`로 실행합니다. Windows / Linux 패키징과 릴리스 점검은 [docs/v1-release.md](docs/v1-release.md)를, 기여 안내는 [CONTRIBUTORS.md](CONTRIBUTORS.md)를 보세요.
+Windows / Linux 패키징과 릴리스 점검은 [docs/v1-release.md](docs/v1-release.md)를, 기여 안내는 [CONTRIBUTORS.md](CONTRIBUTORS.md)를 보세요.
 
 ## 커뮤니티
 

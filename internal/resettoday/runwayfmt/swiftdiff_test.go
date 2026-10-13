@@ -12,7 +12,7 @@ import (
 	"github.com/licoy/quosparr/internal/resettoday"
 )
 
-// The fixture is written by ../testdata/gen from the real Swift core; only
+// The frozen fixture comes from the Swift releases' core; only
 // the copy fields that need the runway formatters are read here.
 type swiftDetail struct {
 	Type    *string  `json:"type"`

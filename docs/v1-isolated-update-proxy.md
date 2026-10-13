@@ -1,6 +1,6 @@
 # v1 隔离 HTTPS 更新代理
 
-状态：配置与步骤已准备，尚未执行真实安装升级；旧名称客户端只能接收手动下载提示，以下在线 ZIP 升级流程仅用于 bundle ID 已为 com.quosparr.app 的 Swift 构建；本文件服务于[隔离验收清单](v1-acceptance-checklist.md)，不能把示例语法检查记为 Sparkle / mygo 真实更新通过
+状态：配置与步骤用于后续版本公开发布前的隔离验收，代理配置不等于真实更新已通过；旧名称客户端只能接收手动下载提示，以下在线 ZIP 升级流程仅用于 bundle ID 已为 com.quosparr.app 的 Swift 构建；本文件服务于[隔离验收清单](v1-acceptance-checklist.md)，不能把示例语法检查记为 Sparkle / mygo 真实更新通过
 
 ## 边界与测试拓扑
 
@@ -30,7 +30,7 @@ Go 候选 app
 ## 候选资产准备
 
 1. 在受控构建环境生成并验证候选资产，按[发布文档](v1-release.md)保存最终文件的 SHA256、长度、版本、架构、签名与构建号，私钥只在签名环境，不传入代理 VM
-2. Swift 过渡所需 `quosparr-appcast-arm64.xml`、`quosparr-appcast-x86_64.xml` 指向同一最终签名 app 生成的 `Quosparr-macos-{arm64|x86_64}.zip`，ZIP 使用现有 Sparkle 密钥签名，旧包 `SUPublicEDKey` 验证必须成功
+2. Swift 过渡所需 `quosparr-appcast-arm64.xml`、`quosparr-appcast-x86_64.xml` 由 `release-assets sparkle-appcast` 生成，指向同一最终签名 app 生成的 `Quosparr-macos-{arm64|x86_64}.zip`，ZIP 使用现有 Sparkle 密钥签名，旧包 `SUPublicEDKey` 验证必须成功
 3. 六目标 mygo 清单分别为 `update-darwin-arm64.json`、`update-darwin-amd64.json`、`update-windows-amd64.json`、`update-windows-arm64.json`、`update-linux-amd64.json`、`update-linux-arm64.json`，每份对应 `quosparr-<version>-<target>.tar.gz`
 4. beta 的 Go 配置通过 `updates.url` 指向 `https://github.com/Licoy/Quosparr/releases/download/v1-beta`，清单及归档同 base；不可变候选 Release 为 `beta-v<version>`，两者均为 prerelease 且 `latest=false`；不得改用原生 tag feed 期待它包含 prerelease
 5. 样例采用具体演示版本 `1.0.0-beta.1`，不是已发布事实；使用前逐一替换为实际候选版本、legacy appcast 的实际 TAG、XML enclosure 的实际 URL、清单归档的实际 URL 与 VM 内文件路径，不扩大为版本通配符
@@ -80,11 +80,11 @@ Go 开发包会移除 updates 配置，不能用于在线验收；当前开发�
 ## 切换阶段与故障用例
 
 - 每一轮绑定明确的候选版本和公开文件指纹，修改映射前停掉代理并保存 VM 快照，重新启动代理后验证响应字节；不要在一轮安装中替换候选文件
-- Swift → G1 使用旧 feed 路径加 immutable beta ZIP，G1 → G2 使用固定 beta mygo JSON / tar.gz，G2 → 高版本 Swift S1 使用其真实 mygo 归档和独立兼容 ZIP，S1 → 更高 Go G3 使用真实 Sparkle appcast / ZIP；每个阶段重新精确填入本轮实际 URL
+- Swift → G1 使用旧 feed 路径加 immutable beta ZIP，G1 → G2 使用固定 beta mygo JSON / tar.gz；每个阶段重新精确填入本轮实际 URL；Swift 版本不再作为回滚目标
 - Windows / Linux 使用各自 target 的实际 JSON / 归档，认证域同样直通；Linux deb 用包管理器更新，不用此代理绕过包管理器规则
 - 更新中断可在 VM 停代理 / 断网 / 退出应用，错误签名 / 损坏归档用候选副本，不修改原生产资产、不重签历史 app
 - 读旧代理密码可能首次触发 Keychain 授权，分别记录允许 / 拒绝的实际体验；更新窗口语言首次显示后固定，记录同进程与重启后的差异
-- 应用回滚保留最新 token，不能通过恢复轮换前 VM 凭据快照修复认证；仅用于启动前隔离准备的快照与数据无损回滚验收应明确分开
+- 手动恢复应用保留最新 token，不能通过恢复轮换前 VM 凭据快照修复认证；启动前隔离准备的 VM 快照与数据无损恢复验收应明确分开
 
 ## 收尾与证据
 

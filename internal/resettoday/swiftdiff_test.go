@@ -12,8 +12,8 @@ import (
 	"github.com/licoy/quosparr/internal/l10n"
 )
 
-// swiftCase is one feed evaluated by the real Swift core
-// (testdata/gen/main.swift) in one time zone.
+// swiftCase is one feed evaluated by the Swift releases' core in one time
+// zone; the fixture is frozen.
 type swiftCase struct {
 	Name        string       `json:"name"`
 	Feed        string       `json:"feed"`

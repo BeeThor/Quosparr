@@ -2,21 +2,20 @@
 
 ## 项目定位
 
-Quosparr 是一个原生 macOS 状态栏应用，用 Swift 编写，用于读取本机 Codex 配置和会话数据，展示配额、reset credits、API 等价成本，并修复本机会话索引。
+Quosparr 是 macOS、Windows、Linux 原生菜单栏 / 系统托盘应用，用 Go + mygo/ui 实现，读取本机 Codex / Grok 配置和会话数据，展示配额、reset credits、API 等价成本，并修复本机会话索引。
 
-`v1` 分支以 Go + mygo/ui 实现 macOS、Windows、Linux 原生托盘主应用，macOS 保留 Swift WidgetKit 扩展与系统桥接；Swift 主应用、`Package.swift` 和 `Tests/` 继续保留，作为兼容基线与应急回滚能力，三端正式发布前必须完成隔离安装升级验收
+v1 已正式发布（`v1.0.0`、`v1.0.1`）；macOS 仅保留 Swift WidgetKit 扩展（`Sources/QuosparrWidget`）与系统桥接（`Sources/QuosparrWidgetBridge`）；Swift 主应用、`Package.swift`、`Tests/` 和应急回滚链已移除，不再恢复；后续版本公开发布前仍须完成隔离安装升级验收
 
 ## 技术边界
 
-- 使用 Swift 6、SwiftPM、AppKit、SwiftUI、Foundation。
-- macOS 最低版本为 12.0。
-- 默认不引入第三方依赖；标准库和系统框架能解决的问题不要加包。在线更新功能批准使用 Sparkle。
-- 不创建 Xcode project，除非用户明确要求。
+- macOS 最低版本为 12.0，Widget 要求 macOS 14+。
+- 默认不引入第三方依赖；标准库和系统框架能解决的问题不要加包。
+- Widget 与桥接使用 Swift 6、WidgetKit、SwiftUI、Foundation；Widget 工程由 `WidgetExtension/project.yml` 经 xcodegen 生成，不另建 Xcode project，除非用户明确要求。
 - 状态栏应用必须保持 `LSUIElement=true`，不要显示 Dock 图标。
 - Go 版本和依赖版本以 `go.mod` 为准，当前固定 Go 1.27.1、mygo v0.4.8；不将框架升级与迁移改动混在一起
 - mygo/ui 只负责原生界面与框架服务，不引入 WebView 前端；业务核心不能依赖 UI
 - purego 仅用于必要的平台 API、SQLite 和 Swift 桥接边界，按平台拆分并检查 ABI、资源生命周期与错误传播；不用它增加业务抽象
-- macOS Go 主应用使用 mygo 更新器，不嵌入 Sparkle 运行库；保留 Sparkle 公钥与 Quosparr Swift 的独立 ZIP / appcast，旧身份 appcast 仅提供手动下载链接，不做跨 bundle ID 自动安装
+- macOS Go 主应用使用 mygo 更新器，不嵌入 Sparkle 运行库；保留 `SUPublicEDKey`，已安装的同身份 Quosparr Swift 版本通过 `quosparr-appcast-<arch>.xml` 升级到 Go 版本，该 appcast 由 `go run ./Scripts/release-assets sparkle-appcast` 直接生成并以 Ed25519 签名 ZIP，不依赖 Sparkle 工具或 Swift 构建；旧身份 appcast 仅提供手动下载链接，不做跨 bundle ID 自动安装
 - 安装包必须随包携带相应架构的 SQLite 运行库，首次运行不得联网下载；Widget 与桥接嵌入后从内到外签名，最终签名之后才生成发布归档
 
 ## 隐私与安全
@@ -34,16 +33,13 @@ Quosparr 是一个原生 macOS 状态栏应用，用 Swift 编写，用于读取
 
 ## 代码约定
 
-- 核心逻辑放在 `Sources/QuosparrCore`，UI 放在 `Sources/Quosparr`。
 - Go 入口为 `main.go`，原生 UI 与系统协调放在 `internal/app`，后台协调放在 `internal/runway`，存储 / 平台 / 网络 / 本地化边界分别放在 `internal/store`、`internal/platform`、`internal/netx`、`internal/l10n`
 - Go 业务模块放在 `internal/codex`、`internal/codexapi`、`internal/grok`、`internal/usage`、`internal/sessions`、`internal/alerts`、`internal/estimate`、`internal/export`、`internal/resettoday`；UI 经业务 API 读取结果，不直接解析 JSON 或扫描文件
-- UI 不直接解析 JSON、不直接扫描文件；通过 core API 获取结果。
-- 所有用户可见文案必须通过 `L10n`，新增 key 需要同时补英文和简体中文。
-- Go 文案通过 `internal/l10n` 与现有附加文案入口，新增用户可见 key 必须补齐英文、简体中文、繁体中文、韩文、日文、俄文、法文，Swift 新文案同样遵守七语言完整性
+- 用户可见文案通过 `internal/l10n`（手工维护的 `tables.go`）与现有附加文案入口，新增 key 必须补齐英文、简体中文、繁体中文、韩文、日文、俄文、法文
+- Widget 使用自带的 `Sources/QuosparrWidget/RunwayWidgetL10n.swift` 与快照类型副本，修改共享 key 或快照 schema 时与 Go 侧保持同步，同样遵守七语言完整性
 - 函数保持短小，优先用简单结构体和函数，不做多 provider 抽象。
 - 错误信息可以面向用户，但不要包含本地密钥或完整认证 JSON。
-- 新行为优先补 `Tests/QuosparrCoreTests`。
-- Go 新行为在对应 `internal/*` 包补必要测试，兼容数据使用 Swift 对照 fixture，不能以交叉编译替代 Windows ACL、系统权限或真机安装验收
+- 新行为在对应 `internal/*` 包补必要测试，`testdata/swift_*` 等 Swift 版本冻结 fixture 只读保留、不再重新生成，不能以交叉编译替代 Windows ACL、系统权限或真机安装验收
 - 保留 `QUOSPARR_DEV_*` 环境钩子；手动开发运行使用临时 HOME 和 `QUOSPARR_PREFS_DOMAIN=<测试域>`，不触碰开发机真实账号、UserDefaults、Keychain、登录项或生产 feed，结束后退出自行启动的进程
 
 ## 常用命令
@@ -56,12 +52,9 @@ go test -race -count=1 ./internal/...
 go run . --self-check
 bash Scripts/run-dev-app.sh
 V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
-bash Scripts/test-swift.sh
-swift run Quosparr --self-check
-bash Scripts/package-app.sh
 ```
 
-`go run . --self-check` 当前只检查基础目录、锁与文件存在性，并明确列出尚未移植的诊断；不能将其描述为 Swift 完整自检；开发打包必须显式设置 `V1_DEVELOPMENT_PACKAGE=1`，生产默认 `0` 并要求发布环境中的更新签名私钥；Windows / Linux 交叉构建及完整发布校验见 `docs/v1-release.md`
+`go run . --self-check` 当前只检查基础目录、锁与文件存在性，并明确列出尚未移植的诊断；开发打包必须显式设置 `V1_DEVELOPMENT_PACKAGE=1`，生产默认 `0` 并要求发布环境中的更新签名私钥；Windows / Linux 交叉构建及完整发布校验见 `docs/v1-release.md`
 
 ## 文档规则
 
@@ -69,7 +62,7 @@ bash Scripts/package-app.sh
 - 用户可见文档应说明隐私边界、ad-hoc signed app、开发命令和功能状态。
 - 价格表必须带版本日期；未知模型不要估算为精确费用。
 - 根目录 `README*.md` 已按 v1 Quosparr 重写：语言切换位于左上角首行，名称、小号斜体的名称由来概述（加粗 **Quo**ta + **Sparr**ow 取字部分）与简介水平居中，不单设名称由来章节，不嵌入视频；安装部分按全新安装说明，旧版升级说明放在 `docs/upgrade-from-codexrunway*.md` 七种语言并由首页链接；七种语言保持相同结构与事实，修改任一语言时同步其余六种；`README_EN.md` 仅作跳转
-- 候选资产和清单准备完成不代表已正式发布或已通过真机验收
+- 新版本的资产和清单准备完成不代表已公开发布或已通过真机验收
 - 隔离验收按 `docs/v1-acceptance-checklist.md` 与 `docs/v1-isolated-update-proxy.md` 执行，未修改且未重签的历史应用须保留真实 Sparkle 归档验签；不得改生产源或关闭 TLS 校验
 
 ## v1 分支说明（从 README 迁入）
@@ -80,18 +73,18 @@ bash Scripts/package-app.sh
 
 Quosparr v1 面向 macOS、Windows、Linux，主程序使用 Go + mygo/ui 原生菜单栏 / 系统托盘，macOS 保留 Swift WidgetKit 扩展；提供 Codex 与 Grok 额度、重置动态、reset credits、API 等价成本、本机会话和各供应商独立的多账号管理
 
-- 当前仍是开发中的候选版本，尚未宣告正式发布，现有截图展示 v1 在 macOS 与 Windows 上的界面
+- v1 已正式发布（`v1.0.0`、`v1.0.1`），现有截图展示 v1 在 macOS 与 Windows 上的界面
 - 首次无偏好配置的启动显示设置并保存默认偏好，已有配置或从旧版迁移的用户普通启动时仅驻留菜单栏；主动点击设置或显式传入 `--settings` 才再次打开设置，日常 Dev 重启不附加该参数
 - Codex 支持配额窗口、订阅到期、reset credits、周额度推算与历史对比，Grok 展示官方 CLI chat-proxy 额度及 Build / Imagine / Chat 拆分、周期、预付余额和按需使用情况
 - 两个供应商均保留账号管理、本地 Token 用量图表、API 等价成本与最近会话，图表支持热力图、折线图和柱状图；Codex 另有会话索引修复与公开重置动态
 - 主应用支持浅色、深色、跟随系统，以及英文、简体中文、繁体中文、韩文、日文、俄文、法文
-- 自动测试和交叉编译不能替代三端安装、桌面、迁移与回滚验收，待验收项见 [验收清单](docs/v1-acceptance-checklist.md) 与 [发布说明](docs/v1-release.md)
+- 自动测试和交叉编译不能替代三端安装、桌面与迁移验收，待验收项见 [验收清单](docs/v1-acceptance-checklist.md) 与 [发布说明](docs/v1-release.md)
 
 ### 平台与安装
 
-项目仓库为 [Licoy/Quosparr](https://github.com/Licoy/Quosparr)，候选包按系统和 CPU 架构选择；只有对应 Release 公开后才向用户提供下载，不把已生成的本地资产或草稿描述为已发布版本
+项目仓库为 [Licoy/Quosparr](https://github.com/Licoy/Quosparr)，安装包按系统和 CPU 架构选择，从 GitHub Releases 下载；不把已生成的本地资产或草稿描述为已发布版本
 
-| 系统 | 候选包 | 安装方式 |
+| 系统 | 安装包 | 安装方式 |
 | --- | --- | --- |
 | macOS 12+ Apple Silicon / Intel | `Quosparr-macos-arm64.dmg` / `Quosparr-macos-x86_64.dmg`，或同名 `.zip` | 退出旧实例后将 `Quosparr.app` 放入 `Applications` |
 | Windows 10 / 11 amd64 / arm64 | `Quosparr Setup <version> <arch>.exe` | 用户级安装到 `%LOCALAPPDATA%\Programs\Quosparr`，不要求管理员身份 |
@@ -105,13 +98,13 @@ Quosparr v1 面向 macOS、Windows、Linux，主程序使用 Go + mygo/ui 原生
 ### 更新与 Swift 用户迁移
 
 - 三端使用 mygo 原生更新器检查、下载、验签、安装和重启，自动检查遵循保存的偏好，开启时每次启动后检查一次、运行期间每小时检查一次（失败后 1 小时重试），默认不自动下载安装；开发包禁用更新器
-- 当前 Actions 只生成 Release 草稿，正式公开发布、latest 提升、固定 `v1-beta` 频道更新和 Homebrew 阶段均暂停；Beta 候选标签为 `beta-v<version>`，草稿标记 prerelease 且 `latest=false`
+- 当前 Actions 只生成 Release 草稿，审阅后人工公开稳定版并提升 latest，自动公开发布、固定 `v1-beta` 频道更新和 Homebrew 阶段均暂停；Beta 候选标签为 `beta-v<version>`，草稿标记 prerelease 且 `latest=false`
 - 恢复 Beta 分发后使用独立的 `v1-beta` 频道与不可变候选 Release，二者均为 prerelease 且 `latest=false`，不改生产 latest；稳定版标签 `v<version>` 必须匹配 `mygo.json` 的版本
-- 新身份是 `com.quosparr.app`、`quosparr://` 和 `~/.quosparr`，旧用户需退出旧应用后手动安装；旧 Sparkle feed 只提供下载页入口，Quosparr Swift 构建使用独立 feed，不能跨 bundle ID 自动安装
+- 新身份是 `com.quosparr.app`、`quosparr://` 和 `~/.quosparr`，旧名称用户需退出旧应用后手动安装；旧 Sparkle feed 只提供下载页入口，不能跨 bundle ID 自动安装；同身份 Quosparr Swift 版本经独立 feed 在线升级到 Go 版本
 - 首次启动复制旧应用数据并导入缺失偏好，保留原目录和已有 Quosparr 数据；新目录已存在时也补入缺失文件与账号 ID，新账号元数据、当前选择和数据库整组优先
 - 迁移采用暂存事务并支持中断恢复，完成标记防止已删除的旧账号重新导入；引用的代理凭据在系统凭据库内复制，可能需要授权，迁移本身不修改官方 Codex / Grok 登录文件
 - 新身份不自动继承系统权限，安装后重新添加桌面组件并检查登录项；已识别旧登录项在新项启用确认后清理，保留用户禁用选择，macOS 遗留的旧 SMAppService 注册可能仍需用户在系统登录项中手动移除
-- 旧名称的账号包仍可导入，新导出采用 `quosparr-accounts`；保留 `Package.swift`、`Sources/Quosparr*` 和 `Tests/` 作为 Swift 兼容基线与应急回滚，`swift run Quosparr` 启动的是 Swift 应用
+- 旧名称的账号包仍可导入，新导出采用 `quosparr-accounts`；Swift 主应用源码已移除，不提供 Swift 回滚包
 
 ### 官方 CLI 目录与凭据
 
@@ -134,8 +127,8 @@ V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 ```
 
 - Go 自检不请求网络、不解析凭据，只报告版本 / 平台、自有目录权限与可写性、锁状态、Codex auth 与会话索引是否存在；已有自有目录会创建并移除临时写入探针
-- 脱敏认证摘要、token 有效性、会话 dry-run 摘要、Grok CLI 版本、Grok 认证状态与身份仍明确列为 `not ported yet`，不能描述为 Swift 完整诊断
-- Go 桌面开发入口为 `bash Scripts/run-dev-app.sh`：以正式身份 `com.quosparr.app` 构建开发包（禁用更新器，`--widget` 时含 Widget）并在前台使用真实 HOME、数据与偏好运行，需先退出已安装实例；`mygo dev` 的 `.dev` 身份与正式应用冲突且无数据，不作为开发入口；隔离运行使用临时 HOME 加 `QUOSPARR_PREFS_DOMAIN=<测试域> go run .`；Swift 兼容应用使用 `Scripts/run-swift-dev-app.sh`；系统集成与升级验收使用一次性 VM
+- 脱敏认证摘要、token 有效性、会话 dry-run 摘要、Grok CLI 版本、Grok 认证状态与身份仍明确列为 `not ported yet`，不能描述为完整诊断
+- Go 桌面开发入口为 `bash Scripts/run-dev-app.sh`：以正式身份 `com.quosparr.app` 构建开发包（禁用更新器，`--widget` 时含 Widget）并在前台使用真实 HOME、数据与偏好运行，需先退出已安装实例；`mygo dev` 的 `.dev` 身份与正式应用冲突且无数据，不作为开发入口；隔离运行使用临时 HOME 加 `QUOSPARR_PREFS_DOMAIN=<测试域> go run .`；系统集成与升级验收使用一次性 VM
 - macOS 开发包输出到 `build/v1-<arch>/darwin-<goarch>/Quosparr.app` 和 `Quosparr-macos-<arch>-dev.zip`，目前保留正式 bundle 身份；正式打包默认 `V1_DEVELOPMENT_PACKAGE=0`，签名私钥通过发布环境提供
 - Widget 要求 macOS 14+，保留四类组件、供应商选择和深链，Windows / Linux 不提供 WidgetKit；现有桌面组件的升级接续仍需实际验收
 - Widget 快照为 schema 1，位于 `~/.quosparr/widget-snapshot.json`，权限 `0600`，只含非密钥派生数据，不含邮箱、账号 ID、token、完整认证 JSON 或事件原文；主程序是唯一写入者，组件只读
@@ -150,9 +143,9 @@ V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 - Codex 内置 API 价格表版本为 `openai-builtin-2026-09-27`，在线官方价格表采用 `openai-docs-` 版本，未知模型不报告精确费用；订阅额度推算使用 `credits-usd-2026-08-26`，1000 Credits 约对应 40 美元，属于非官方推算
 - Grok 额度只使用官方 CLI chat-proxy `/v1/billing?format=credits`，不读取浏览器 Cookie、不从本地日志伪造额度、不混入 API 账单；API 等价成本使用本地 `turn_completed` 用量和 `xai-builtin-2026-09-27`，区分输入、缓存、输出及长上下文价格，`costUsdTicks` 不作为 API 等价成本
 
-### 首次推送边界
+### 提交与推送边界
 
-- 提交源代码、测试、依赖锁定文件、必要资源与 fixture；生成的 glyph / 本地化 Go 源文件和兼容测试的 SQLite、JSONL、压缩样本属于源码或测试资产，不按扩展名批量删除
+- 提交源代码、测试、依赖锁定文件、必要资源与 fixture；生成的 glyph Go 源文件、`internal/l10n/tables.go` 和兼容测试的 SQLite、JSONL、压缩样本属于源码或测试资产，不按扩展名批量删除
 - 构建目录、安装包输出、Python 字节码、IDE 用户状态、本地临时目录、发布说明生成结果及签名私钥不进入 Git；清理只针对确认可重新生成的本地文件
 - 推送 `main` / `v1` 触发普通 CI，开发打包无需发布 Secrets；版本标签触发签名打包与 Release 草稿，需要 `MYGO_UPDATE_PRIVATE_KEY`、`SPARKLE_PUBLIC_KEY`、`SPARKLE_PRIVATE_KEY`，私钥必须匹配配置公钥
-- 本地测试通过不等于线上 Actions 已通过，首次推送后需核对 Windows / Linux 原生安装与 SQLite 验证、macOS 双架构打包的实际结果
+- 本地测试通过不等于线上 Actions 已通过，推送后需核对 Windows / Linux 原生安装与 SQLite 验证、macOS 双架构打包的实际结果

@@ -54,9 +54,8 @@ class DraftWorkflowTests(unittest.TestCase):
             calls = [json.loads(line) for line in capture.read_text().splitlines()]
             return result, calls
 
-    def test_swift_stable_and_beta_only_create_tagged_drafts(self):
-        for job, tag, channel in (("release", "v0.0.88", "stable"),
-                                  ("v1-release", "v1.0.0", "stable"),
+    def test_stable_and_beta_only_create_tagged_drafts(self):
+        for job, tag, channel in (("v1-release", "v1.0.0", "stable"),
                                   ("v1-release", "beta-v1.0.0-beta.1", "beta")):
             with self.subTest(job=job, channel=channel):
                 result, calls = self.invoke(job, tag, channel)
@@ -70,7 +69,7 @@ class DraftWorkflowTests(unittest.TestCase):
                 self.assertTrue(any(arg.endswith((".zip", ".tar.gz")) for arg in args), "draft lost its assets")
 
     def test_draft_creation_failure_stops_the_job(self):
-        for job, channel in (("release", "stable"), ("v1-release", "stable"), ("v1-release", "beta")):
+        for job, channel in (("v1-release", "stable"), ("v1-release", "beta")):
             with self.subTest(job=job, channel=channel):
                 result, calls = self.invoke(job, "fixture-tag", channel, exit_code=23)
                 self.assertEqual(result.returncode, 23)
@@ -90,7 +89,7 @@ class DraftWorkflowTests(unittest.TestCase):
             self.assertEqual(workflow["permissions"], {"contents": "read"})
             for job_id, job in workflow["jobs"].items():
                 write = job.get("permissions", {}).get("contents") == "write"
-                self.assertEqual(write, name == "release.yml" and job_id in {"release", "v1-release"})
+                self.assertEqual(write, name == "release.yml" and job_id == "v1-release")
 
 
 if __name__ == "__main__":

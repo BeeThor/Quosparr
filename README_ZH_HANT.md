@@ -72,7 +72,7 @@ Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應�
 
 ## 安裝
 
-v1 仍是候選版本，請只從 [GitHub Releases](https://github.com/Licoy/Quosparr/releases) 中已公開的 Release 下載，並依系統與 CPU 架構選擇安裝包：
+請從 [GitHub Releases](https://github.com/Licoy/Quosparr/releases) 下載，並依系統與 CPU 架構選擇安裝包：
 
 | 系統 | 安裝包 | 安裝方式 |
 | --- | --- | --- |
@@ -171,7 +171,7 @@ HOME="$QUOSPARR_TEST_HOME" QUOSPARR_PREFS_DOMAIN=com.quosparr.app.v1-test go run
 V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 ```
 
-Swift 應用程式（`Package.swift`、`Sources/Quosparr*`、`Tests/`）保留作為相容基線與緊急回滾，`swift run Quosparr` 啟動的是它。Windows / Linux 打包與發佈檢查請見 [docs/v1-release.md](docs/v1-release.md)，貢獻說明請見 [CONTRIBUTORS.md](CONTRIBUTORS.md)。
+Windows / Linux 打包與發佈檢查請見 [docs/v1-release.md](docs/v1-release.md)，貢獻說明請見 [CONTRIBUTORS.md](CONTRIBUTORS.md)。
 
 ## 社群支援
 

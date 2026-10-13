@@ -72,7 +72,7 @@ Quosparr 是面向 macOS、Windows、Linux 的原生菜单栏 / 系统托盘应�
 
 ## 安装
 
-v1 仍是候选版本，请只从 [GitHub Releases](https://github.com/Licoy/Quosparr/releases) 中已公开的 Release 下载，并按系统和 CPU 架构选择安装包：
+请从 [GitHub Releases](https://github.com/Licoy/Quosparr/releases) 下载，并按系统和 CPU 架构选择安装包：
 
 | 系统 | 安装包 | 安装方式 |
 | --- | --- | --- |
@@ -171,7 +171,7 @@ HOME="$QUOSPARR_TEST_HOME" QUOSPARR_PREFS_DOMAIN=com.quosparr.app.v1-test go run
 V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 ```
 
-Swift 应用（`Package.swift`、`Sources/Quosparr*`、`Tests/`）保留为兼容基线与应急回滚，`swift run Quosparr` 启动的是 Swift 应用。Windows / Linux 打包与发布校验见 [docs/v1-release.md](docs/v1-release.md)，贡献说明见 [CONTRIBUTORS.md](CONTRIBUTORS.md)
+Windows / Linux 打包与发布校验见 [docs/v1-release.md](docs/v1-release.md)，贡献说明见 [CONTRIBUTORS.md](CONTRIBUTORS.md)
 
 ## 社区支持
 

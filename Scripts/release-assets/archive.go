@@ -15,8 +15,7 @@ import (
 	"strings"
 )
 
-func verifyArchive(file, target string) error { return verifyArchiveRuntime(file, target, "") }
-func verifyArchiveRuntime(file, target, runtime string) error {
+func verifyArchive(file, target string) error {
 	f, err := os.Open(file)
 	if err != nil {
 		return err
@@ -45,10 +44,7 @@ func verifyArchiveRuntime(file, target, runtime string) error {
 	if system == "windows" {
 		delete(required, sqlite)
 	}
-	if system == "darwin" && runtime == "swift" {
-		required = map[string]bool{executable: false, "Quosparr.app/Contents/Frameworks/Sparkle.framework/Versions/B/Sparkle": false}
-	}
-	if system == "darwin" && runtime != "swift" {
+	if system == "darwin" {
 		required["Quosparr.app/Contents/Frameworks/libQuosparrWidgetBridge.dylib"] = false
 		required["Quosparr.app/Contents/PlugIns/QuosparrWidget.appex/Contents/MacOS/QuosparrWidget"] = false
 	}

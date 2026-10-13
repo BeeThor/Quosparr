@@ -2,11 +2,9 @@ package l10n
 
 import "strings"
 
-// Key identifies one localized string. Values are the Swift L10nKey raw
-// values; the typed constants live in tables_gen.go.
+// Key identifies one localized string. Values keep the raw keys of the
+// Swift releases; the typed constants live in tables.go.
 type Key string
-
-//go:generate go run ../../Scripts/gen-l10n -root ../..
 
 // Localizer looks up strings for one resolved language.
 type Localizer struct {
@@ -67,7 +65,7 @@ func Lookup(lang Language, key Key) (string, bool) {
 	return s, ok
 }
 
-// Keys returns every key in Swift L10nKey declaration order.
+// Keys returns every key in declaration order.
 func Keys() []Key { return append([]Key(nil), allKeys...) }
 
 // MissingTranslations lists keys that lang does not translate (absent or

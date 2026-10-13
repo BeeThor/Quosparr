@@ -14,62 +14,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  test:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Verify draft-only release boundaries
-        run: python3 Scripts/Tests/test-workflow-drafts.py
-      - name: Test
-        run: bash Scripts/test-swift.sh
-
-  package:
-    if: startsWith(github.ref_name, 'v0.')
-    needs: test
-    runs-on: macos-26
-    steps:
-      - uses: actions/checkout@v7
-      - name: Check Sparkle signing secrets
-        env:
-          SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
-          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
-        run: |
-          test -n "$SPARKLE_PUBLIC_KEY" || { echo "Missing SPARKLE_PUBLIC_KEY secret"; exit 1; }
-          test -n "$SPARKLE_PRIVATE_KEY" || { echo "Missing SPARKLE_PRIVATE_KEY secret"; exit 1; }
-      - name: Package both architectures
-        env:
-          EXPECTED_MACOS_SDK_MAJOR: "26"
-          INCLUDE_WIDGET: "1"
-          RUNWAY_WIDGET_STORAGE_MODE: local
-          SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
-          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
-        run: |
-          # One macos-26 runner. Asking for two at once was cancelled:
-          # "The job was not acquired by Runner of type hosted even after multiple attempts".
-          for arch in arm64 x86_64; do
-            ARCH="$arch" bash Scripts/package-app.sh
-            bash Scripts/verify-packaged-app.sh dist/Quosparr.app "$arch" local
-            mkdir -p "dist/quosparr-appcast-$arch"
-            cp "dist/Quosparr-macos-$arch.zip" "dist/quosparr-appcast-$arch/"
-            printf '%s' "$SPARKLE_PRIVATE_KEY" | .build/artifacts/sparkle/Sparkle/bin/generate_appcast \
-              --ed-key-file - \
-              --download-url-prefix "https://github.com/Licoy/Quosparr/releases/download/${GITHUB_REF_NAME}/" \
-              -o "dist/quosparr-appcast-$arch.xml" \
-              "dist/quosparr-appcast-$arch"
-          done
-      - uses: actions/upload-artifact@v7
-        with:
-          name: Quosparr-macos
-          path: |
-            dist/Quosparr-macos-arm64.zip
-            dist/Quosparr-macos-x86_64.zip
-            dist/Quosparr-macos-arm64.app.tar.gz
-            dist/Quosparr-macos-x86_64.app.tar.gz
-            dist/Quosparr-macos-arm64.dmg
-            dist/Quosparr-macos-x86_64.dmg
-            dist/quosparr-appcast-arm64.xml
-            dist/quosparr-appcast-x86_64.xml
-
   release-notes:
     runs-on: ubuntu-latest
     steps:
@@ -97,55 +41,13 @@ jobs:
           These builds are ad-hoc signed and not notarized. Prefer the .dmg download for manual install; if macOS blocks the app, use right-click Open or Privacy & Security > Open Anyway.
           Desktop widgets are included and require macOS 14 or later.
           EOF
-          if [[ "$GITHUB_REF_NAME" != v0.* ]]; then
-            printf '\nWindows installers support per-user updates; Linux archives support user-directory installs and Debian packages use the system package manager.\n' >> release-notes.md
-          fi
+          printf '\nWindows installers support per-user updates; Linux archives support user-directory installs and Debian packages use the system package manager.\n' >> release-notes.md
       - uses: actions/upload-artifact@v7
         with:
           name: release-notes
           path: release-notes.md
 
-  release:
-    name: Create Swift release draft
-    needs: [package, release-notes]
-    runs-on: macos-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v8
-        with:
-          path: dist
-          merge-multiple: true
-      - uses: actions/download-artifact@v8
-        with:
-          name: release-notes
-          path: .
-      - name: Create GitHub release draft
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          tag="${GITHUB_REF_NAME}"
-          gh release create "$tag" \
-            --repo "$GITHUB_REPOSITORY" \
-            dist/Quosparr-macos-arm64.zip \
-            dist/Quosparr-macos-x86_64.zip \
-            dist/Quosparr-macos-arm64.app.tar.gz \
-            dist/Quosparr-macos-x86_64.app.tar.gz \
-            dist/Quosparr-macos-arm64.dmg \
-            dist/Quosparr-macos-x86_64.dmg \
-            dist/quosparr-appcast-arm64.xml \
-            dist/quosparr-appcast-x86_64.xml \
-            --title "$tag" \
-            --notes-file release-notes.md --verify-tag --draft --latest=false
-
-      # Publication is paused; drafts require manual review in GitHub Releases
-      # - name: Publish reviewed Swift release
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-      #   run: gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --latest=false
-
   v1-preflight:
-    if: ${{ !startsWith(github.ref_name, 'v0.') }}
     runs-on: macos-latest
     outputs:
       channel: ${{ steps.version.outputs.channel }}
@@ -200,19 +102,20 @@ jobs:
           python3 Scripts/Tests/test-v1-release.py
           python3 Scripts/Tests/test-v1-homebrew.py
           python3 Scripts/Tests/test-v1-platform.py
+          python3 Scripts/Tests/test-workflow-drafts.py
           for target in darwin/arm64 darwin/amd64 windows/amd64 windows/arm64 linux/amd64 linux/arm64; do
             GOOS="${target%/*}" GOARCH="${target#*/}" CGO_ENABLED=0 go build ./...
           done
 
   v1-macos:
-    needs: [test, v1-preflight, v1-test]
+    needs: [v1-preflight, v1-test]
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - name: Package final apps and legacy Sparkle feeds
+      - name: Package final apps and Sparkle feeds
         env:
           V1_UPDATE_CHANNEL: ${{ needs.v1-preflight.outputs.channel }}
           SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
@@ -226,7 +129,6 @@ jobs:
             ARCH="$arch" V1_DEVELOPMENT_PACKAGE=0 bash Scripts/package-v1-app.sh
             cp "$V1_BUILD_DIR"/*.zip "$V1_BUILD_DIR"/*.dmg "$V1_BUILD_DIR"/*.tar.gz "$V1_BUILD_DIR"/update-*.json dist-v1/
           done
-          swift build --product Quosparr
           bash Scripts/legacy-appcast.sh "$PWD/dist-v1" "$V1_BUILD_DIR/config/mygo.json" "$GITHUB_REF_NAME"
       - uses: actions/upload-artifact@v7
         with:

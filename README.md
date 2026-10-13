@@ -72,7 +72,7 @@ The screenshots show the v1 interface on macOS and Windows.
 
 ## Installation
 
-v1 is still a release candidate. Download only from a Release that has been made public on [GitHub Releases](https://github.com/Licoy/Quosparr/releases), and pick the package for your system and CPU:
+Download from [GitHub Releases](https://github.com/Licoy/Quosparr/releases) and pick the package for your system and CPU:
 
 | System | Package | How to install |
 | --- | --- | --- |
@@ -171,7 +171,7 @@ Build a macOS development package (updater disabled; optionally `ARCH=arm64` or 
 V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 ```
 
-The Swift app (`Package.swift`, `Sources/Quosparr*`, `Tests/`) is kept as a compatibility baseline and emergency rollback; `swift run Quosparr` launches it. See [docs/v1-release.md](docs/v1-release.md) for Windows / Linux packaging and release checks, and [CONTRIBUTORS.md](CONTRIBUTORS.md) for contribution notes.
+See [docs/v1-release.md](docs/v1-release.md) for Windows / Linux packaging and release checks, and [CONTRIBUTORS.md](CONTRIBUTORS.md) for contribution notes.
 
 ## Community
 

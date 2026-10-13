@@ -10,8 +10,8 @@ import (
 	"time"
 )
 
-// The account_swift_*.json fixtures were produced by the Swift app's own code
-// (see testdata/account_gen_swift_fixtures.swift.txt) with synthetic tokens.
+// The account_swift_*.json fixtures were produced by the Swift releases' own
+// code with synthetic tokens and are frozen.
 
 var (
 	fixtureNow     = time.Unix(1_785_499_200, 750_000_000)

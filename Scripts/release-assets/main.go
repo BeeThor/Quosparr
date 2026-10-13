@@ -1,5 +1,6 @@
 // release-assets signs final, post-processed archives using mygo v0.4.8's
-// Ed25519-over-SHA256 protocol; the private key is read only from the environment.
+// Ed25519-over-SHA256 protocol, and writes the Sparkle feed of the Swift
+// releases; private keys are read only from the environment.
 package main
 
 import (
@@ -21,9 +22,8 @@ import (
 )
 
 type config struct {
-	ReleaseRuntime string                                             `json:"releaseRuntime"`
-	Version        string                                             `json:"version"`
-	Updates        struct{ PublicKey, GitHub, TagPrefix, URL string } `json:"updates"`
+	Version string                                             `json:"version"`
+	Updates struct{ PublicKey, GitHub, TagPrefix, URL string } `json:"updates"`
 }
 type manifest struct {
 	Version   string `json:"version"`
@@ -47,8 +47,11 @@ func run(args []string) error {
 	if len(args) > 0 && args[0] == "verify-sparkle" {
 		return verifySparkle(args[1:])
 	}
+	if len(args) > 0 && args[0] == "sparkle-appcast" {
+		return sparkleAppcast(args[1:])
+	}
 	if len(args) == 0 {
-		return errors.New("usage: release-assets sign|verify -config mygo.json -dir dist [-targets target,...]")
+		return errors.New("usage: release-assets sign|verify -config mygo.json -dir dist [-targets target,...] | sparkle-appcast | verify-sparkle")
 	}
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	cfgPath := flags.String("config", "mygo.json", "configuration")
@@ -78,7 +81,7 @@ func run(args []string) error {
 		}
 		switch args[0] {
 		case "verify-payload":
-			err = verifyArchiveRuntime(filepath.Join(*dir, archiveName(cfg.Version, target)), target, cfg.ReleaseRuntime)
+			err = verifyArchive(filepath.Join(*dir, archiveName(cfg.Version, target)), target)
 		case "sign":
 			err = sign(cfg, *dir, target)
 		case "verify":
@@ -206,7 +209,7 @@ func verify(cfg config, dir, target string) error {
 	if err != nil || !ed25519.Verify(pub, sum, sig) {
 		return errors.New("invalid archive signature")
 	}
-	return verifyArchiveRuntime(path, target, cfg.ReleaseRuntime)
+	return verifyArchive(path, target)
 }
 
 // Sparkle signs the archive bytes, while mygo signs their SHA256 digest

@@ -72,7 +72,7 @@ Quosparr — нативное приложение для строки меню 
 
 ## Установка
 
-v1 пока остаётся релиз-кандидатом. Скачивайте только из Release, опубликованного на [GitHub Releases](https://github.com/Licoy/Quosparr/releases), и выбирайте пакет под свою систему и процессор:
+Скачивайте из [GitHub Releases](https://github.com/Licoy/Quosparr/releases) и выбирайте пакет под свою систему и процессор:
 
 | Система | Пакет | Как установить |
 | --- | --- | --- |
@@ -171,7 +171,7 @@ HOME="$QUOSPARR_TEST_HOME" QUOSPARR_PREFS_DOMAIN=com.quosparr.app.v1-test go run
 V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 ```
 
-Приложение на Swift (`Package.swift`, `Sources/Quosparr*`, `Tests/`) сохранено как база совместимости и для аварийного отката; его запускает `swift run Quosparr`. Упаковка для Windows / Linux и проверки выпуска описаны в [docs/v1-release.md](docs/v1-release.md), заметки по вкладу — в [CONTRIBUTORS.md](CONTRIBUTORS.md).
+Упаковка для Windows / Linux и проверки выпуска описаны в [docs/v1-release.md](docs/v1-release.md), заметки по вкладу — в [CONTRIBUTORS.md](CONTRIBUTORS.md).
 
 ## Сообщество
 

@@ -13,34 +13,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Swift version
-        run: swift --version
-      - name: Test Swift
-        run: bash Scripts/test-swift.sh
-
-  build:
-    runs-on: macos-26
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [arm64, x86_64]
-    steps:
-      - uses: actions/checkout@v7
-      - name: Package ${{ matrix.arch }}
-        env:
-          EXPECTED_MACOS_SDK_MAJOR: "26"
-          INCLUDE_WIDGET: "1"
-          RUNWAY_BUNDLE_ID: com.quosparr.app.dev
-          RUNWAY_APP_GROUP_ID: group.com.quosparr.app.dev
-          RUNWAY_WIDGET_STORAGE_MODE: local
-        run: ARCH=${{ matrix.arch }} bash Scripts/package-app.sh
-      - name: Verify embedded widget ${{ matrix.arch }}
-        run: bash Scripts/verify-packaged-app.sh dist/Quosparr.app ${{ matrix.arch }} local
-
   go-checks:
     runs-on: macos-latest
     steps:

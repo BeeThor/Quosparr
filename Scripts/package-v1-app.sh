@@ -78,7 +78,7 @@ plutil -replace NSAppDataUsageDescription -string \
   "$CONTENTS/Info.plist"
 
 # Sign only after every resource is embedded, inside out, then archive that
-# final bundle. Sparkle belongs to the rollback Swift package, never this one.
+# final bundle. The app updates through mygo and never embeds Sparkle.
 [[ ! -e "$CONTENTS/Frameworks/Sparkle.framework" ]] || { printf 'Unexpected Sparkle.framework\n' >&2; exit 1; }
 APP_ENTITLEMENTS="$WORK/app-entitlements.plist"
 WIDGET_ENTITLEMENTS="$WORK/widget-entitlements.plist"

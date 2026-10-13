@@ -72,7 +72,7 @@ Les captures montrent l’interface v1 sur macOS et Windows.
 
 ## Installation
 
-La v1 est encore une version candidate. Téléchargez uniquement depuis une Release rendue publique sur [GitHub Releases](https://github.com/Licoy/Quosparr/releases), et choisissez le paquet correspondant à votre système et à votre processeur :
+Téléchargez depuis [GitHub Releases](https://github.com/Licoy/Quosparr/releases) et choisissez le paquet correspondant à votre système et à votre processeur :
 
 | Système | Paquet | Comment l’installer |
 | --- | --- | --- |
@@ -171,7 +171,7 @@ Construisez un paquet de développement macOS (mise à jour désactivée ; `ARCH
 V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 ```
 
-L’app Swift (`Package.swift`, `Sources/Quosparr*`, `Tests/`) est conservée comme référence de compatibilité et pour un retour arrière d’urgence ; `swift run Quosparr` la lance. Voir [docs/v1-release.md](docs/v1-release.md) pour le paquetage Windows / Linux et les vérifications de publication, et [CONTRIBUTORS.md](CONTRIBUTORS.md) pour les notes de contribution.
+Voir [docs/v1-release.md](docs/v1-release.md) pour le paquetage Windows / Linux et les vérifications de publication, et [CONTRIBUTORS.md](CONTRIBUTORS.md) pour les notes de contribution.
 
 ## Communauté
 
