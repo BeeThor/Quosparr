@@ -52,6 +52,7 @@ jobs:
         run: |
           go vet ./...
           go test -race -count=1 ./...
+          go test -tags=quosparr_dev_package -count=1 ./internal/app -run '^TestPackagedDevelopmentUpdate'
       - name: Compile all six targets
         run: |
           for target in darwin/arm64 darwin/amd64 windows/amd64 windows/arm64 linux/amd64 linux/arm64; do
@@ -108,6 +109,7 @@ jobs:
         run: |
           go vet ./...
           go test -count=1 -timeout=5m ./...
+          go test -tags=quosparr_dev_package -count=1 ./internal/app -run '^TestPackagedDevelopmentUpdate'
       - name: Build and verify development installer
         shell: bash
         env:

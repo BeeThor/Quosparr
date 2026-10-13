@@ -19,8 +19,14 @@ trap 'rm -rf "$CONFIG_STAGE"' EXIT
 V1_DEVELOPMENT_PACKAGE="$DEVELOPMENT" python3 "$ROOT/Scripts/stage-v1-config.py" "$ROOT" "$CONFIG_STAGE"
 mkdir -p "$WORK/config"
 cp "$CONFIG_STAGE/mygo.json" "$WORK/config/mygo.json"
+if [[ "$DEVELOPMENT" == 1 ]]; then
+  export GOFLAGS="${GOFLAGS:+$GOFLAGS }-tags=quosparr_dev_package"
+fi
 go run github.com/egoist/mygo/cmd/mygo build -platform "$TARGET" -o "$WORK" "$CONFIG_STAGE"
 STAGE="$WORK/${TARGET//\//-}"
+EXECUTABLE="$STAGE/quosparr"
+[[ "$TARGET" != windows/* ]] || EXECUTABLE="$STAGE/Quosparr.exe"
+go version -m "$EXECUTABLE" | python3 -c 'import sys; tags=[line.strip().split("=",1)[1] for line in sys.stdin if line.strip().startswith("build\t-tags=")]; assert any("quosparr_dev_package" in value.split(",") for value in tags) == (sys.argv[1] == "1"), "packaged update mode mismatch"' "$DEVELOPMENT"
 VERSION="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["version"])' "$WORK/config/mygo.json")"
 if [[ "$TARGET" == windows/* ]]; then
   [[ -f "$STAGE/Quosparr Setup $VERSION ${TARGET#*/}.exe" ]] || { printf 'NSIS installer missing; install makensis\n' >&2; exit 1; }

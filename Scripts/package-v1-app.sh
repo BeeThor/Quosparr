@@ -34,6 +34,7 @@ V1_DEVELOPMENT_PACKAGE="$DEVELOPMENT" python3 "$ROOT/Scripts/stage-v1-config.py"
 mkdir -p "$WORK/config"
 cp "$CONFIG_STAGE/mygo.json" "$WORK/config/mygo.json"
 if [[ "$DEVELOPMENT" == 1 ]]; then
+  export GOFLAGS="${GOFLAGS:+$GOFLAGS }-tags=quosparr_dev_package"
   printf 'Development review package: updater disabled, no update manifest is generated\n'
 fi
 go run github.com/egoist/mygo/cmd/mygo build \
@@ -41,6 +42,7 @@ go run github.com/egoist/mygo/cmd/mygo build \
 # The CLI archive predates the Widget and final signatures; never ship it
 rm -f "$WORK/darwin-$GOARCH"/update-*.json "$WORK/darwin-$GOARCH"/*.tar.gz
 [[ -d "$APP" ]] || { printf 'Missing MyGo bundle: %s\n' "$APP" >&2; exit 1; }
+go version -m "$CONTENTS/MacOS/Quosparr" | python3 -c 'import sys; tags=[line.strip().split("=",1)[1] for line in sys.stdin if line.strip().startswith("build\t-tags=")]; assert any("quosparr_dev_package" in value.split(",") for value in tags) == (sys.argv[1] == "1"), "packaged update mode mismatch"' "$DEVELOPMENT"
 mkdir -p "$CONTENTS/Frameworks" "$CONTENTS/PlugIns"
 xcrun swiftc -swift-version 5 -O -emit-library \
   -module-cache-path "$WORK/bridge-module-cache" \

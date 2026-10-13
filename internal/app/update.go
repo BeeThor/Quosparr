@@ -173,7 +173,7 @@ func newUpdateService() *UpdateService {
 		checkUI:  updater.CheckForUpdates,
 		setAuto:  updater.SetAutomaticChecks,
 		goos:     runtime.GOOS,
-		dev:      mygo.IsDev,
+		dev:      func() bool { return developmentPackage || mygo.IsDev() },
 		openURL:  mygo.Shell.OpenExternal,
 		runAsync: func(f func()) { go f() },
 	}
