@@ -70,9 +70,6 @@ ditto "$WORK/widget-derived/Build/Products/Release/QuosparrWidget.appex" "$WIDGE
 for lproj in "$ROOT/Resources"/*.lproj; do
   ditto "$lproj" "$CONTENTS/Resources/$(basename "$lproj")"
 done
-mkdir -p "$CONTENTS/Resources/Licenses"
-cp "$ROOT/internal/app/assets/providers/LOBEHUB-LICENSE" \
-  "$ROOT/internal/app/assets/providers/REMIXICON-LICENSE" "$CONTENTS/Resources/Licenses/"
 plutil -replace RunwayWidgetStorageMode -string local "$CONTENTS/Info.plist"
 plutil -replace NSAppDataUsageDescription -string \
   'Quosparr reads local Codex and Grok configuration to show quota, reset credits, and API-equivalent cost.' \

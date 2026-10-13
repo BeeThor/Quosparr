@@ -21,14 +21,17 @@ type trayLayout struct {
 	rows          int
 }
 
-// TrayImage is the same offscreen renderer used by ApplyTray and visual QA
-// No window, account access or display server is needed
+// TrayImage renders menu bar content or returns the desktop application logo.
+// No window, account access or display server is needed.
 func TrayImage(r TrayRender, light, compact bool) ([]byte, error) {
-	return renderTrayImage(r, trayImageOptions{light: light, compact: compact})
+	if compact {
+		return desktopTrayIconPNG, nil
+	}
+	return renderTrayImage(r, trayImageOptions{light: light})
 }
 
 type trayImageOptions struct {
-	light, compact         bool
+	light                  bool
 	foreground, colorsOnly bool
 }
 
@@ -47,9 +50,6 @@ func renderTrayImage(r TrayRender, options trayImageOptions) ([]byte, error) {
 		width += w
 	}
 	width += float32(max(0, len(layout.widths)-1))*layout.gap + 2*trayHorizontalPadding
-	if options.compact {
-		width = trayContentHeight
-	}
 	img := ui.Render(func(c *ui.Context) {
 		theme := ui.LightTheme()
 		theme.Background = ui.Transparent
@@ -65,10 +65,6 @@ func renderTrayImage(r TrayRender, options trayImageOptions) ([]byte, error) {
 			}
 			if options.colorsOnly {
 				paint.ink = ui.Transparent
-			}
-			if options.compact {
-				drawCompactTray(p, r, paint)
-				return
 			}
 			drawTrayContent(p, r, layout, paint)
 		})

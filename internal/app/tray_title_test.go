@@ -44,31 +44,44 @@ func trayTestStatus(style store.StatusBarStyle, customize func(*store.Preference
 
 func TestTrayStatusRendersFiveDifferentStyles(t *testing.T) {
 	styles := []store.StatusBarStyle{store.StatusBarStyleMeters, store.StatusBarStyleCountdown, store.StatusBarStyleBattery, store.StatusBarStyleRings, store.StatusBarStyleText}
-	for _, compact := range []bool{false, true} {
-		seen := map[string]store.StatusBarStyle{}
-		for _, style := range styles {
-			v := trayTestStatus(style, nil)
-			r := TrayFromStatus(v)
-			if r.Style != style || r.RowsPerColumn != v.Plan.RowsPerColumn || len(r.Items) != 2 {
-				t.Fatalf("style/layout lost: %+v", r)
-			}
-			data, err := TrayImage(r, true, compact)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if prior, ok := seen[string(data)]; ok {
-				t.Fatalf("%s and %s rendered identically, compact=%v", prior, style, compact)
-			}
-			seen[string(data)] = style
-			img, err := png.Decode(bytes.NewReader(data))
-			if err != nil {
-				t.Fatal(err)
-			}
-			if img.Bounds().Dy() != 44 || compact && img.Bounds().Dx() != 44 {
-				t.Fatalf("unexpected tray image bounds %v", img.Bounds())
-			}
-			if _, _, _, alpha := img.At(0, 0).RGBA(); alpha != 0 {
-				t.Fatalf("style %s image has an opaque background", style)
+	seen := map[string]store.StatusBarStyle{}
+	for _, style := range styles {
+		v := trayTestStatus(style, nil)
+		r := TrayFromStatus(v)
+		if r.Style != style || r.RowsPerColumn != v.Plan.RowsPerColumn || len(r.Items) != 2 {
+			t.Fatalf("style/layout lost: %+v", r)
+		}
+		data, err := TrayImage(r, true, false)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if prior, ok := seen[string(data)]; ok {
+			t.Fatalf("%s and %s rendered identically", prior, style)
+		}
+		seen[string(data)] = style
+		img, err := png.Decode(bytes.NewReader(data))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if img.Bounds().Dy() != 44 {
+			t.Fatalf("unexpected tray image bounds %v", img.Bounds())
+		}
+		if _, _, _, alpha := img.At(0, 0).RGBA(); alpha != 0 {
+			t.Fatalf("style %s image has an opaque background", style)
+		}
+	}
+}
+
+func TestDesktopTrayKeepsApplicationLogoForEveryStatus(t *testing.T) {
+	states := []TrayRender{{}}
+	for _, style := range store.StatusBarStyles() {
+		states = append(states, TrayRender{Style: style}, TrayFromStatus(trayTestStatus(style, nil)))
+	}
+	for _, state := range states {
+		for _, light := range []bool{false, true} {
+			data, err := TrayImage(state, light, true)
+			if err != nil || !bytes.Equal(data, desktopTrayIconPNG) {
+				t.Fatalf("desktop tray replaced logo for style %q, light=%v: %v", state.Style, light, err)
 			}
 		}
 	}

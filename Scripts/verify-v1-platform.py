@@ -82,7 +82,7 @@ def verify_deb(config, stage, arch):
         if dependency not in fields.get("Depends", ""):
             raise ValueError(f"missing runtime dependency: {dependency}")
     installed = tar_members(members["data.tar.gz"])
-    # All runtime resources, including SQLite and licenses, must be identical
+    # All runtime resources, including SQLite, must be identical
     # to the archive whose executable architecture is checked by release-assets.
     for source in payload_files(stage):
         if source.suffix in {".desktop", ".png", ".xml"}:
@@ -106,6 +106,9 @@ def verify_deb(config, stage, arch):
 
 
 def verify(config, stage, target):
+    extra_licenses = {"LOBEHUB-LICENSE", "REMIXICON-LICENSE", "TOML-LICENSE"}
+    if any(path.name in extra_licenses for path in stage.rglob("*")):
+        raise ValueError("source-only license files must not be copied into the package")
     system, arch = target.split("/")
     if system == "linux":
         verify_deb(config, stage, arch)

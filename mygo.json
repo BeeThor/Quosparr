@@ -39,10 +39,5 @@
       "libayatana-appindicator3-1",
       "gnome-keyring | kwalletmanager"
     ]
-  },
-  "resources": [
-    "internal/app/assets/providers/LOBEHUB-LICENSE",
-    "internal/app/assets/providers/REMIXICON-LICENSE",
-    "Resources/Licenses/TOML-LICENSE"
-  ]
+  }
 }

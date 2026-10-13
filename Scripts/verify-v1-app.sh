@@ -39,6 +39,8 @@ assert info["CFBundleVersion"] == str(config["macos"]["infoPlist"]["CFBundleVers
 assert info["SUPublicEDKey"] == config["macos"]["infoPlist"]["SUPublicEDKey"], "Sparkle key changed"
 assert int(info["CFBundleVersion"]) >= 100
 icon=pathlib.Path(sys.argv[3]).read_bytes()
+extra_licenses={"LOBEHUB-LICENSE","REMIXICON-LICENSE","TOML-LICENSE"}
+assert not any(p.name in extra_licenses for p in pathlib.Path(sys.argv[3]).parent.rglob("*")), "source-only licenses copied into app"
 assert icon[:4] == b"icns"
 offset=8
 found=False

@@ -7,6 +7,7 @@ PNG="$ROOT/Resources/AppIcon.png"
 ICNS="$ROOT/Resources/AppIcon.icns"
 ICO="$ROOT/Resources/AppIcon.ico"
 EMBED="$ROOT/internal/app/assets/app-icon.png"
+TRAY_EMBED="$ROOT/internal/app/assets/tray-app-icon.png"
 
 [[ -f "$SOURCE" ]] || { printf 'Missing icon source: %s\n' "$SOURCE" >&2; exit 1; }
 [[ "$(sips -g pixelWidth "$SOURCE" | awk '/pixelWidth:/ { print $2 }')" == 1024 ]]
@@ -78,7 +79,8 @@ PY
 
 cp "$SOURCE" "$PNG"
 cp "$SOURCE" "$EMBED"
+cp "$WINDOWS/64.png" "$TRAY_EMBED"
 cp "$WORK/AppIcon.icns" "$ICNS"
 cp "$WORK/AppIcon.ico" "$ICO"
 cmp "$PNG" "$EMBED"
-printf 'Exported AppIcon.png, AppIcon.icns, AppIcon.ico and embedded app icon\n'
+printf 'Exported AppIcon.png, AppIcon.icns, AppIcon.ico and embedded app/tray icons\n'

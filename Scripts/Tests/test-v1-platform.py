@@ -103,6 +103,15 @@ class PlatformPackages(unittest.TestCase):
             setup.write_bytes(data)
             package.verify({"version": "1.0.0"}, stage, "windows/amd64")
 
+    def test_packages_reject_source_only_licenses(self):
+        for target in ("windows/amd64", "linux/arm64"):
+            for name in ("LOBEHUB-LICENSE", "REMIXICON-LICENSE", "TOML-LICENSE"):
+                with self.subTest(target=target, name=name), tempfile.TemporaryDirectory() as temporary:
+                    stage = pathlib.Path(temporary)
+                    (stage / name).write_text("source notice")
+                    with self.assertRaisesRegex(ValueError, "source-only license"):
+                        package.verify({"version": "1.0.0"}, stage, target)
+
     def test_production_packaging_never_falls_back_to_unsigned(self):
         env = os.environ.copy()
         env.update(V1_DEVELOPMENT_PACKAGE="0", MYGO_UPDATE_PRIVATE_KEY="", MYGO_UPDATER_PRIVATE_KEY="")

@@ -4,11 +4,18 @@ import (
 	"bytes"
 	"image/png"
 	"os"
+	"runtime"
 	"testing"
 )
 
-func TestTrayIconIsATemplatePNG(t *testing.T) {
+func TestTrayIconMatchesPlatform(t *testing.T) {
 	data, template := trayIcon()
+	if runtime.GOOS != "darwin" {
+		if template || !bytes.Equal(data, desktopTrayIconPNG) {
+			t.Fatal("desktop tray must start with the color application logo")
+		}
+		return
+	}
 	if !template {
 		t.Error("tray icon should be a template image")
 	}
@@ -33,6 +40,19 @@ func TestTrayIconIsATemplatePNG(t *testing.T) {
 	}
 	if opaque == 0 || opaque >= trayIconWidth*trayIconHeight {
 		t.Errorf("expected a glyph on transparent background, got %d pixels", opaque)
+	}
+}
+
+func TestDesktopTrayIconIsSquareAndTransparent(t *testing.T) {
+	img, err := png.Decode(bytes.NewReader(desktopTrayIconPNG))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if b := img.Bounds(); b.Dx() != 64 || b.Dy() != 64 {
+		t.Fatalf("desktop tray icon must be 64x64, got %v", b)
+	}
+	if _, _, _, alpha := img.At(0, 0).RGBA(); alpha != 0 {
+		t.Fatal("desktop tray icon lost transparent corners")
 	}
 }
 

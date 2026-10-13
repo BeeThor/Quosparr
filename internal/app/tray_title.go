@@ -116,15 +116,15 @@ func trayInk(light bool) color.NRGBA {
 	return color.NRGBA{R: 255, G: 255, B: 255, A: 255}
 }
 
-// ApplyTray renders the complete menu bar content, or a compact desktop
-// tray icon with tooltip; identical content reuses the last successful draw
+// ApplyTray renders the complete menu bar content, or the desktop application
+// icon with tooltip; identical content reuses the last successful draw
 // It may be called from any goroutine
 func ApplyTray(tray *mygo.Tray, r TrayRender) {
 	if tray == nil {
 		return
 	}
 	mygo.RunOnMain(func() {
-		if r.Style == "" {
+		if r.Style == "" && trayIsTemplate() {
 			applyLegacyTray(tray, r)
 			return
 		}

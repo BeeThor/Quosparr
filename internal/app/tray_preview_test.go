@@ -15,6 +15,7 @@ import (
 	"github.com/licoy/quosparr/internal/l10n"
 	"github.com/licoy/quosparr/internal/runway"
 	"github.com/licoy/quosparr/internal/store"
+	xdraw "golang.org/x/image/draw"
 )
 
 func TestTrayStylePreview(t *testing.T) {
@@ -71,7 +72,7 @@ func writeTrayPreview(t *testing.T, dir string, lang l10n.Language) {
 			full := decodeTrayPreview(t, r, light, false)
 			draw.Draw(canvas, full.Bounds().Add(image.Pt(x, y)), full, image.Point{}, draw.Over)
 			icon := decodeTrayPreview(t, r, light, true)
-			draw.Draw(canvas, icon.Bounds().Add(image.Pt(x+columnWidth-64, y)), icon, image.Point{}, draw.Over)
+			xdraw.CatmullRom.Scale(canvas, image.Rect(x+columnWidth-64, y, x+columnWidth-20, y+44), icon, icon.Bounds(), draw.Over, nil)
 		}
 	}
 	name := "tray-styles-" + string(lang) + ".png"
