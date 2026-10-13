@@ -218,7 +218,7 @@ func accountPrivate(on bool, v string) string {
 // anchored to the control that asked: a title, a message, optional extra
 // controls and a Cancel / confirm pair.
 func confirmPopover(c *ui.Context, l l10n.Localizer, anchor ui.Element, open *bool, title, message, confirm string, extra func(), onConfirm func()) {
-	ui.Popover(c, anchor, open, func() {
+	panelPopover(c, anchor, open, func() {
 		ui.Column(c).Gap(14).Width(280).Padding(4).Children(func() {
 			ui.Text(c, title).FontSize(fsTitle3).FontWeight(600)
 			if message != "" {

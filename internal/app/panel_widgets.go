@@ -86,12 +86,35 @@ func infoButton(c *ui.Context, st *panelState, in sectionInfo) {
 	if anchor.Clicked() {
 		st.info, open = in.id, true
 	}
-	ui.Popover(c, anchor, &open, func() {
+	panelPopover(c, anchor, &open, func() {
 		ui.Column(c).Gap(14).Width(280).Padding(4).Children(in.body)
 	})
 	if !open && st.info == in.id {
 		st.info = ""
 	}
+}
+
+// panelPopover is ui.Popover over a dimmed panel. The theme's popover shares
+// the panel's background (clear under native material), so it blends into
+// the content behind it; this one has an opaque raised surface instead. The
+// scrim passes presses through, so a click outside still closes the popover.
+func panelPopover(c *ui.Context, anchor ui.Element, open *bool, fn func()) {
+	if !*open {
+		return
+	}
+	t := c.Theme()
+	scrim := ui.RGBA(0, 0, 0, 0.18)
+	if t.Dark {
+		scrim = ui.RGBA(0, 0, 0, 0.45)
+	}
+	ui.Overlay(c, func() {
+		ui.Box(c).Absolute().Left(0).Top(0).Right(0).Bottom(0).PassThrough().Role(ui.RoleNone).Background(scrim)
+	})
+	ui.PopoverBase(c, anchor, open, func(panel ui.Element) {
+		panel.Margin(4, 0, 0, 0).Padding(4).Radius(t.Radius+2).Background(pal(t).Inset).Border(1, pal(t).Line).
+			Shadow(0, 8, 24, 0, ui.RGBA(0, 0, 0, 0.3))
+		fn()
+	})
 }
 
 // popoverBody is the title / text / OK layout of the Swift info popovers.

@@ -79,7 +79,7 @@ func (a *App) grokAddMenu(c *ui.Context, l l10n.Localizer, ac AccountActions) {
 			a.accountsRun("", ac.GrokImportOfficial)
 		}
 	})
-	ui.Popover(c, add, &st.pasteOpen, func() { a.grokPasteBody(c, l, ac) })
+	panelPopover(c, add, &st.pasteOpen, func() { a.grokPasteBody(c, l, ac) })
 }
 
 // grokPasteBody is the paste-import sheet: the hint, the text, and the

@@ -223,7 +223,7 @@ func repairRow(c *ui.Context, l l10n.Localizer, acts PanelActions, st *panelStat
 	if row.Clicked() {
 		st.info, open = "repair-confirm", true
 	}
-	ui.Popover(c, row, &open, func() {
+	panelPopover(c, row, &open, func() {
 		ui.Column(c).Gap(14).Width(280).Padding(4).Children(func() {
 			ui.Text(c, l.Text(l10n.KeyRepairConfirmTitle)).FontSize(fsTitle3).FontWeight(600)
 			calloutDim(c, l.Text(l10n.KeyRepairConfirmMessage))
