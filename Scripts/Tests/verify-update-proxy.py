@@ -28,8 +28,8 @@ def run(arguments, **kwargs):
 
 
 def compile_fixture(build, work):
-    objects = sorted((build / "CodexRunwayCore.build").glob("*.swift.o"))
-    if not objects or not (build / "Modules/CodexRunwayCore.swiftmodule").exists():
+    objects = sorted((build / "QuosparrCore.build").glob("*.swift.o"))
+    if not objects or not (build / "Modules/QuosparrCore.swiftmodule").exists():
         raise RuntimeError("Run swift test first to produce the debug Core module and objects")
     executable = work / "UpdateProxyFixture"
     run([
@@ -93,7 +93,7 @@ def create_signed_feed(case, key_file, invalid_archive):
 <channel><title>Update proxy fixture</title><item><title>Version 2</title>
 <sparkle:version>2</sparkle:version><sparkle:shortVersionString>2</sparkle:shortVersionString>
 <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
-<enclosure url="https://github.com/Licoy/codex-runway/releases/download/fixture/UpdateProxyFixture.zip"
+<enclosure url="https://github.com/Licoy/Quosparr/releases/download/fixture/UpdateProxyFixture.zip"
 sparkle:edSignature="{signature}" length="{archive.stat().st_size}" type="application/octet-stream"/>
 </item></channel></rss>
 ''')
@@ -151,7 +151,7 @@ def test_case(name, work, executable, framework, public_key, timeout):
     case = work / name
     case.mkdir()
     (case / "events.jsonl").touch()
-    identifier = f"com.github.codex-runway.proxy-fixture.{uuid.uuid4().hex}"
+    identifier = f"com.quosparr.app.proxy-fixture.{uuid.uuid4().hex}"
     app = make_app(case, executable, framework, public_key, "1", identifier)
     payload = make_app(case, executable, framework, public_key, "2", identifier)
     archive = case / "UpdateProxyFixture.zip"
@@ -202,7 +202,7 @@ def main():
     parser.add_argument("--build-dir", type=Path, default=ROOT / f".build/{os.uname().machine}-apple-macosx/debug")
     parser.add_argument("--timeout", type=int, default=90)
     args = parser.parse_args()
-    work = Path(tempfile.mkdtemp(prefix="codex-runway-update-fixture-", dir="/tmp"))
+    work = Path(tempfile.mkdtemp(prefix="quosparr-update-fixture-", dir="/tmp"))
     print(f"Fixture artifacts: {work}", flush=True)
     try:
         executable = compile_fixture(args.build_dir, work)

@@ -2,7 +2,7 @@
 
 [README](README.md) | [简体中文](README_ZH.md)
 
-感谢所有为 CodexRunway 提交代码、测试、反馈、文档和设计建议的人。
+感谢所有为 Quosparr 提交代码、测试、反馈、文档和设计建议的人。
 
 ## 当前维护
 
@@ -31,8 +31,8 @@
 swift test
 swift build
 swift build -c release
-swift run CodexRunway --self-check
-swift run CodexRunway
+swift run Quosparr --self-check
+swift run Quosparr
 ```
 
 打包命令：
@@ -44,8 +44,8 @@ ARCH=x86_64 bash Scripts/package-app.sh
 
 ## 代码边界
 
-- 核心逻辑放在 `Sources/CodexRunwayCore`。
-- AppKit / SwiftUI 入口和 UI 放在 `Sources/CodexRunway`。
+- 核心逻辑放在 `Sources/QuosparrCore`。
+- AppKit / SwiftUI 入口和 UI 放在 `Sources/Quosparr`。
 - UI 不直接解析 JSON、不直接扫描本地会话文件。
 - 所有用户可见文案必须走 `L10n`，新增 key 需要同时补英文和简体中文。
 - 默认不新增依赖；在线更新功能已批准使用 Sparkle。
@@ -55,7 +55,7 @@ ARCH=x86_64 bash Scripts/package-app.sh
 
 - 不要在代码、日志、README、issue、测试输出中写入 access token、refresh token、id token 或 API key。
 - 读取 `~/.codex/auth.json` 时只使用必要字段。
-- 多账号凭据仅允许存放在 `~/.codex-runway/accounts/<id>/auth.json`（目录 `0700`、文件 `0600`，原子写入）；账号索引 `index.json` 不得包含 token。
+- 多账号凭据仅允许存放在 `~/.quosparr/accounts/<id>/auth.json`（目录 `0700`、文件 `0600`，原子写入）；账号索引 `index.json` 不得包含 token。
 - 修改官方 `~/.codex/auth.json` 仅限：OAuth refresh 回写、以及用户主动切号时的原子写入。
 - 刷新非当前托管账号 token 时只写账号库副本，不得写官方 `auth.json`；刷新当前账号时同步官方 auth 与账号库副本。
 - 无效或 mock 凭据不得写回官方 `auth.json`。
@@ -77,13 +77,13 @@ swift build
 ```bash
 ARCH=arm64 bash Scripts/package-app.sh
 ARCH=x86_64 bash Scripts/package-app.sh
-codesign --verify --deep --strict dist/CodexRunway.app
+codesign --verify --deep --strict dist/Quosparr.app
 ```
 
 涉及本地诊断时运行：
 
 ```bash
-swift run CodexRunway --self-check
+swift run Quosparr --self-check
 ```
 
 如果某项验证无法运行，需要在提交说明或 PR 说明里写明原因。

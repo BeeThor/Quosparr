@@ -1,22 +1,30 @@
-name: Release
+name: Release Draft
 
 on:
   push:
     tags:
       - "v*"
+      - "beta-v*"
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: quosparr-release
+  cancel-in-progress: false
 
 jobs:
   test:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Verify draft-only release boundaries
+        run: python3 Scripts/Tests/test-workflow-drafts.py
       - name: Test
-        run: swift test
+        run: bash Scripts/test-swift.sh
 
   package:
+    if: startsWith(github.ref_name, 'v0.')
     needs: test
     runs-on: macos-26
     steps:
@@ -40,27 +48,27 @@ jobs:
           # "The job was not acquired by Runner of type hosted even after multiple attempts".
           for arch in arm64 x86_64; do
             ARCH="$arch" bash Scripts/package-app.sh
-            bash Scripts/verify-packaged-app.sh dist/CodexRunway.app "$arch" local
-            mkdir -p "dist/appcast-$arch"
-            cp "dist/CodexRunway-macos-$arch.zip" "dist/appcast-$arch/"
+            bash Scripts/verify-packaged-app.sh dist/Quosparr.app "$arch" local
+            mkdir -p "dist/quosparr-appcast-$arch"
+            cp "dist/Quosparr-macos-$arch.zip" "dist/quosparr-appcast-$arch/"
             printf '%s' "$SPARKLE_PRIVATE_KEY" | .build/artifacts/sparkle/Sparkle/bin/generate_appcast \
               --ed-key-file - \
-              --download-url-prefix "https://github.com/Licoy/codex-runway/releases/download/${GITHUB_REF_NAME}/" \
-              -o "dist/appcast-$arch.xml" \
-              "dist/appcast-$arch"
+              --download-url-prefix "https://github.com/Licoy/Quosparr/releases/download/${GITHUB_REF_NAME}/" \
+              -o "dist/quosparr-appcast-$arch.xml" \
+              "dist/quosparr-appcast-$arch"
           done
       - uses: actions/upload-artifact@v7
         with:
-          name: CodexRunway-macos
+          name: Quosparr-macos
           path: |
-            dist/CodexRunway-macos-arm64.zip
-            dist/CodexRunway-macos-x86_64.zip
-            dist/CodexRunway-macos-arm64.app.tar.gz
-            dist/CodexRunway-macos-x86_64.app.tar.gz
-            dist/CodexRunway-macos-arm64.dmg
-            dist/CodexRunway-macos-x86_64.dmg
-            dist/appcast-arm64.xml
-            dist/appcast-x86_64.xml
+            dist/Quosparr-macos-arm64.zip
+            dist/Quosparr-macos-x86_64.zip
+            dist/Quosparr-macos-arm64.app.tar.gz
+            dist/Quosparr-macos-x86_64.app.tar.gz
+            dist/Quosparr-macos-arm64.dmg
+            dist/Quosparr-macos-x86_64.dmg
+            dist/quosparr-appcast-arm64.xml
+            dist/quosparr-appcast-x86_64.xml
 
   release-notes:
     runs-on: ubuntu-latest
@@ -77,10 +85,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Write release notes
+        env:
+          RELEASE_NOTES: ${{ steps.cliff.outputs.content }}
         run: |
-          cat > release-notes.md <<'EOF'
-          ${{ steps.cliff.outputs.content }}
-          EOF
+          printf '%s\n' "$RELEASE_NOTES" > release-notes.md
           if ! grep -q '[^[:space:]]' release-notes.md; then
             printf 'macOS builds for Apple Silicon and Intel.\n' > release-notes.md
           fi
@@ -89,14 +97,20 @@ jobs:
           These builds are ad-hoc signed and not notarized. Prefer the .dmg download for manual install; if macOS blocks the app, use right-click Open or Privacy & Security > Open Anyway.
           Desktop widgets are included and require macOS 14 or later.
           EOF
+          if [[ "$GITHUB_REF_NAME" != v0.* ]]; then
+            printf '\nWindows installers support per-user updates; Linux archives support user-directory installs and Debian packages use the system package manager.\n' >> release-notes.md
+          fi
       - uses: actions/upload-artifact@v7
         with:
           name: release-notes
           path: release-notes.md
 
   release:
+    name: Create Swift release draft
     needs: [package, release-notes]
     runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/download-artifact@v8
         with:
@@ -106,20 +120,265 @@ jobs:
         with:
           name: release-notes
           path: .
-      - name: Create GitHub release
+      - name: Create GitHub release draft
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="${GITHUB_REF_NAME}"
           gh release create "$tag" \
             --repo "$GITHUB_REPOSITORY" \
-            dist/CodexRunway-macos-arm64.zip \
-            dist/CodexRunway-macos-x86_64.zip \
-            dist/CodexRunway-macos-arm64.app.tar.gz \
-            dist/CodexRunway-macos-x86_64.app.tar.gz \
-            dist/CodexRunway-macos-arm64.dmg \
-            dist/CodexRunway-macos-x86_64.dmg \
-            dist/appcast-arm64.xml \
-            dist/appcast-x86_64.xml \
+            dist/Quosparr-macos-arm64.zip \
+            dist/Quosparr-macos-x86_64.zip \
+            dist/Quosparr-macos-arm64.app.tar.gz \
+            dist/Quosparr-macos-x86_64.app.tar.gz \
+            dist/Quosparr-macos-arm64.dmg \
+            dist/Quosparr-macos-x86_64.dmg \
+            dist/quosparr-appcast-arm64.xml \
+            dist/quosparr-appcast-x86_64.xml \
             --title "$tag" \
-            --notes-file release-notes.md
+            --notes-file release-notes.md --verify-tag --draft --latest=false
+
+      # Publication is paused; drafts require manual review in GitHub Releases
+      # - name: Publish reviewed Swift release
+      #   env:
+      #     GH_TOKEN: ${{ github.token }}
+      #   run: gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --latest=false
+
+  v1-preflight:
+    if: ${{ !startsWith(github.ref_name, 'v0.') }}
+    runs-on: macos-latest
+    outputs:
+      channel: ${{ steps.version.outputs.channel }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Validate version and required signing secrets
+        id: version
+        env:
+          SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          MYGO_UPDATE_PRIVATE_KEY: ${{ secrets.MYGO_UPDATE_PRIVATE_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          config = json.load(open('mygo.json'))
+          version, tag = config['version'], os.environ['GITHUB_REF_NAME']
+          base = r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)'
+          identifier = r'(?:0|[1-9]\d*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)'
+          stable = re.fullmatch(base, version)
+          beta = re.fullmatch(base + '-' + identifier + r'(?:\.' + identifier + ')*', version)
+          if stable and tag == 'v' + version:
+              channel = 'stable'
+          elif beta and tag == 'beta-v' + version:
+              channel = 'beta'
+          else:
+              raise SystemExit('release tag must match the stable or beta version in mygo.json')
+          for key in ('SPARKLE_PUBLIC_KEY', 'SPARKLE_PRIVATE_KEY', 'MYGO_UPDATE_PRIVATE_KEY'):
+              if not os.environ.get(key, '').strip():
+                  raise SystemExit('Missing ' + key + ' secret')
+          if os.environ['SPARKLE_PUBLIC_KEY'].strip() != config['macos']['infoPlist']['SUPublicEDKey']:
+              raise SystemExit('SPARKLE_PUBLIC_KEY must match SUPublicEDKey')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('channel=' + channel + '\n')
+          PY
+      - name: Check all published Sparkle build numbers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 Scripts/check-v1-build-number.py --config mygo.json
+
+  v1-test:
+    needs: v1-preflight
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Vet, race tests and six target compilation
+        run: |
+          go vet ./...
+          go test -race -count=1 ./...
+          python3 Scripts/Tests/test-v1-release.py
+          python3 Scripts/Tests/test-v1-homebrew.py
+          python3 Scripts/Tests/test-v1-platform.py
+          for target in darwin/arm64 darwin/amd64 windows/amd64 windows/arm64 linux/amd64 linux/arm64; do
+            GOOS="${target%/*}" GOARCH="${target#*/}" CGO_ENABLED=0 go build ./...
+          done
+
+  v1-macos:
+    needs: [test, v1-preflight, v1-test]
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Package final apps and legacy Sparkle feeds
+        env:
+          V1_UPDATE_CHANNEL: ${{ needs.v1-preflight.outputs.channel }}
+          SPARKLE_PUBLIC_KEY: ${{ secrets.SPARKLE_PUBLIC_KEY }}
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          MYGO_UPDATE_PRIVATE_KEY: ${{ secrets.MYGO_UPDATE_PRIVATE_KEY }}
+        run: |
+          # Keep one macos-26 runner: concurrent hosted runners previously failed acquisition
+          mkdir -p dist-v1
+          for arch in arm64 x86_64; do
+            export V1_BUILD_DIR="$RUNNER_TEMP/v1-release-$arch"
+            ARCH="$arch" V1_DEVELOPMENT_PACKAGE=0 bash Scripts/package-v1-app.sh
+            cp "$V1_BUILD_DIR"/*.zip "$V1_BUILD_DIR"/*.dmg "$V1_BUILD_DIR"/*.tar.gz "$V1_BUILD_DIR"/update-*.json dist-v1/
+          done
+          swift build --product Quosparr
+          bash Scripts/legacy-appcast.sh "$PWD/dist-v1" "$V1_BUILD_DIR/config/mygo.json" "$GITHUB_REF_NAME"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: v1-macos
+          path: dist-v1/*
+          if-no-files-found: error
+
+  v1-platforms:
+    needs: [v1-preflight, v1-test]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+          - os: ubuntu-latest
+            platform: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v6
+        if: runner.os == 'Windows'
+        with:
+          python-version: "3.13"
+      - name: Install NSIS compiler
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install nsis --no-progress --yes
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $nsisDirectory = Join-Path ${env:ProgramFiles(x86)} 'NSIS'
+          if (-not (Test-Path "$nsisDirectory\makensis.exe")) { throw 'NSIS compiler missing' }
+          $nsisDirectory >> $env:GITHUB_PATH
+      - name: Install Linux desktop dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libayatana-appindicator3-dev
+      - name: Test without desktop interaction
+        run: go test -count=1 ./...
+      - name: Package both architectures
+        shell: bash
+        env:
+          V1_UPDATE_CHANNEL: ${{ needs.v1-preflight.outputs.channel }}
+          MYGO_UPDATE_PRIVATE_KEY: ${{ secrets.MYGO_UPDATE_PRIVATE_KEY }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          # The Windows runner exposes Python as python; the scripts use python3
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            python3() { python "$@"; }
+            export -f python3
+          fi
+          mkdir -p dist-v1
+          for arch in amd64 arm64; do
+            export V1_BUILD_DIR="$PWD/build/v1-release-$PLATFORM-$arch"
+            bash Scripts/package-v1-platform.sh "$PLATFORM/$arch"
+            stage="$V1_BUILD_DIR/$PLATFORM-$arch"
+            cp "$stage"/*.tar.gz "$stage"/update-*.json dist-v1/
+            if [[ "$PLATFORM" == windows ]]; then
+              cp "$stage"/*.exe dist-v1/
+            else
+              cp "$stage"/*.deb dist-v1/
+            fi
+          done
+          if [[ "$PLATFORM" == linux ]]; then
+            cmp build/v1-release-linux-amd64/linux-amd64/install.sh build/v1-release-linux-arm64/linux-arm64/install.sh
+            cp build/v1-release-linux-amd64/linux-amd64/install.sh dist-v1/install.sh
+          fi
+      - name: Verify native Windows installation and bundled SQLite
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./Scripts/verify-v1-windows-native.ps1 -Stage "build/v1-release-windows-amd64/windows-amd64" -Arch amd64
+      - name: Verify native Linux package and bundled SQLite
+        if: runner.os == 'Linux'
+        run: bash Scripts/verify-v1-linux-native.sh "build/v1-release-linux-amd64/linux-amd64" amd64
+      - uses: actions/upload-artifact@v7
+        with:
+          name: v1-${{ matrix.platform }}
+          path: dist-v1/*
+          if-no-files-found: error
+
+  v1-release:
+    name: Create v1 release draft
+    needs: [v1-preflight, v1-macos, v1-platforms, release-notes]
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: v1-*
+          path: dist-v1
+          merge-multiple: true
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-notes
+          path: .
+      - name: Verify every final release asset
+        env:
+          V1_UPDATE_CHANNEL: ${{ needs.v1-preflight.outputs.channel }}
+          V1_RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          brew install sevenzip
+          mkdir -p "$RUNNER_TEMP/v1-tools"
+          ln -s "$(command -v 7zz)" "$RUNNER_TEMP/v1-tools/7z"
+          export PATH="$RUNNER_TEMP/v1-tools:$PATH"
+          python3 Scripts/stage-v1-config.py "$PWD" "$RUNNER_TEMP/v1-release-config"
+          python3 Scripts/release-checksums.py write dist-v1
+          bash Scripts/verify-v1-release.sh "$PWD/dist-v1" "$RUNNER_TEMP/v1-release-config/mygo.json"
+      # Distribution preparation is paused together with public publication
+      # - name: Prepare Homebrew Cask
+      #   if: needs.v1-preflight.outputs.channel == 'stable'
+      #   run: python3 Scripts/generate-v1-homebrew.py dist-v1 mygo.json dist-v1/quosparr.rb
+
+      - name: Create validated stable or Beta draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V1_UPDATE_CHANNEL: ${{ needs.v1-preflight.outputs.channel }}
+        run: |
+          tag="$GITHUB_REF_NAME"
+          if [[ "$V1_UPDATE_CHANNEL" == stable ]]; then
+            gh release create "$tag" dist-v1/* --repo "$GITHUB_REPOSITORY" --verify-tag --draft --latest=false --title "$tag" --notes-file release-notes.md
+          else
+            gh release create "$tag" dist-v1/* --repo "$GITHUB_REPOSITORY" --verify-tag --draft --prerelease --latest=false --title "$tag" --notes-file release-notes.md
+          fi
+
+      # Public release, latest promotion and the shared Beta feed are paused
+      # - name: Publish reviewed stable release and promote latest
+      #   if: needs.v1-preflight.outputs.channel == 'stable'
+      #   env:
+      #     GH_TOKEN: ${{ github.token }}
+      #   run: gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --latest=true
+
+      # - name: Update Beta channel and publish reviewed Beta
+      #   if: needs.v1-preflight.outputs.channel == 'beta'
+      #   env:
+      #     GH_TOKEN: ${{ github.token }}
+      #   run: |
+      #     tag="$GITHUB_REF_NAME"
+      #     channel_id="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq '.[] | select(.tag_name == "v1-beta") | .id')"
+      #     if [[ -z "$channel_id" ]]; then
+      #       gh release create v1-beta --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --draft --prerelease --latest=false --title 'Quosparr v1 Beta channel' --notes-file release-notes.md
+      #     else
+      #       [[ "$(gh release view v1-beta --repo "$GITHUB_REPOSITORY" --json isPrerelease --jq .isPrerelease)" == true ]]
+      #     fi
+      #     # Keep versioned archives, then replace manifests only after review
+      #     gh release upload v1-beta dist-v1/*.tar.gz --repo "$GITHUB_REPOSITORY"
+      #     gh release upload v1-beta dist-v1/update-*.json dist-v1/install.sh --repo "$GITHUB_REPOSITORY" --clobber
+      #     gh release edit v1-beta --repo "$GITHUB_REPOSITORY" --draft=false --prerelease --latest=false --notes-file release-notes.md
+      #     gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft=false --prerelease --latest=false

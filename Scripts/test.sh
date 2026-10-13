@@ -2,4 +2,4 @@
 set -euo pipefail
 
 swift test
-swift run CodexRunway --self-check
+swift run Quosparr --self-check

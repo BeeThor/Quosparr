@@ -7,8 +7,8 @@ usage() {
   cat <<'EOF'
 Usage: Scripts/run-dev-app.sh [options]
 
-Build and launch CodexRunway Dev (widgets on macOS 14+).
-Same as: swift run CodexRunway -- [options]
+Build and launch Quosparr Dev (widgets on macOS 14+).
+Same as: swift run Quosparr -- [options]
 
 Options:
   -h, --help
@@ -19,11 +19,11 @@ Options:
 
   --dev-tier-badges
       Show every subscription-tier capsule in the popover.
-      Env: CODEX_RUNWAY_DEV_TIER_BADGES=1
+      Env: QUOSPARR_DEV_TIER_BADGES=1
 
   --mock-reset-today=completed|explicit-scheduled|inferred-scheduled|grace|expired|unavailable|no
       Use a local Codex Reset Updates fixture instead of the network.
-      Env: CODEX_RUNWAY_MOCK_RESET_TODAY=...
+      Env: QUOSPARR_MOCK_RESET_TODAY=...
 
   --dump-locale-metrics <output-directory>
       Write language-picker and panel layout metrics, then exit.
@@ -38,15 +38,15 @@ Options:
       Pages: main, accounts, reset-credits, api-cost.
 
 Environment:
-  CODEX_RUNWAY_DISABLE_DEV_APP=1
-      Skip wrapping into CodexRunway-dev.app (raw swift run process).
+  QUOSPARR_DISABLE_DEV_APP=1
+      Skip wrapping into Quosparr-dev.app (raw swift run process).
 
 Examples:
   Scripts/run-dev-app.sh
   Scripts/run-dev-app.sh --dev-tier-badges
   Scripts/run-dev-app.sh --self-check
   Scripts/run-dev-app.sh --mock-reset-today=scheduled
-  swift run CodexRunway -- --dev-tier-badges
+  swift run Quosparr -- --dev-tier-badges
 EOF
 }
 
@@ -77,25 +77,25 @@ if [[ "${1:-}" == "--" ]]; then
 fi
 
 if [[ -z "$HOST_EXECUTABLE" ]]; then
-  exec swift run --package-path "$ROOT" CodexRunway -- "$@"
+  exec swift run --package-path "$ROOT" Quosparr -- "$@"
 fi
 
 SOURCE_EXECUTABLE="$HOST_EXECUTABLE"
 # shellcheck source=codesign-helpers.sh
 source "$ROOT/Scripts/codesign-helpers.sh"
 ARCH="$(uname -m)"
-DEV_ROOT="$ROOT/.build/codex-runway-widget-dev"
-APP="$DEV_ROOT/CodexRunway-dev.app"
-STAGING="$DEV_ROOT/CodexRunway-dev.app.staging"
+DEV_ROOT="$ROOT/.build/quosparr-widget-dev"
+APP="$DEV_ROOT/Quosparr-dev.app"
+STAGING="$DEV_ROOT/Quosparr-dev.app.staging"
 DERIVED="$ROOT/.build/widget-derived-dev-$ARCH"
 CONTENTS="$STAGING/Contents"
 MACOS="$CONTENTS/MacOS"
 RESOURCES="$CONTENTS/Resources"
 FRAMEWORKS="$CONTENTS/Frameworks"
 PLUGINS="$CONTENTS/PlugIns"
-BUNDLE_ID="com.github.codex-runway.swift-dev"
-WIDGET_ID="com.github.codex-runway.widget.swift-dev"
-PREVIOUS_DEV_WIDGET_ID="com.github.codex-runway.widget.dev"
+BUNDLE_ID="com.quosparr.app.swift-dev"
+WIDGET_ID="com.quosparr.app.widget.swift-dev"
+PREVIOUS_DEV_WIDGET_ID="com.quosparr.app.widget.dev"
 BUILD_NUMBER="40.$(date +%H%M).$(date +%S)"
 MARKETING_VERSION="$(plutil -extract CFBundleShortVersionString raw "$ROOT/Resources/Info.plist")"
 LSREGISTER="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
@@ -120,34 +120,34 @@ terminate_dev_host_at_fixed_path() {
   while IFS= read -r pid; do
     [[ -n "$pid" ]] || continue
     executable="$(ps -p "$pid" -o comm= | sed 's/^[[:space:]]*//')"
-    if [[ "$executable" == "$APP/Contents/MacOS/CodexRunway" ]]; then
+    if [[ "$executable" == "$APP/Contents/MacOS/Quosparr" ]]; then
       kill "$pid" 2>/dev/null || true
     fi
-  done < <(pgrep -x CodexRunway || true)
+  done < <(pgrep -x Quosparr || true)
 }
 
 terminate_dev_host_at_fixed_path
-terminate_dev_processes CodexRunway "$BUNDLE_ID"
-terminate_dev_processes CodexRunwayWidget "$WIDGET_ID"
-terminate_dev_processes CodexRunwayWidget "$PREVIOUS_DEV_WIDGET_ID"
+terminate_dev_processes Quosparr "$BUNDLE_ID"
+terminate_dev_processes QuosparrWidget "$WIDGET_ID"
+terminate_dev_processes QuosparrWidget "$PREVIOUS_DEV_WIDGET_ID"
 sleep 0.2
 
-LOCK="$HOME/.codex-runway/codex-runway.lock"
-LEGACY_LOCK="$HOME/Library/Application Support/Codex Runway/codex-runway.lock"
+LOCK="$HOME/.quosparr/quosparr.lock"
+LEGACY_LOCK="$HOME/Library/Application Support/Quosparr/quosparr.lock"
 if { [[ -e "$LOCK" ]] && lsof -t "$LOCK" >/dev/null 2>&1; } || \
    { [[ -e "$LEGACY_LOCK" ]] && lsof -t "$LEGACY_LOCK" >/dev/null 2>&1; }; then
-  printf 'CodexRunway is already running. Quit the installed app before swift run.\n' >&2
+  printf 'Quosparr is already running. Quit the installed app before swift run.\n' >&2
   exit 1
 fi
 
 xcodebuild \
-  -project "$ROOT/WidgetExtension/CodexRunwayWidget.xcodeproj" \
-  -scheme CodexRunwayWidget \
+  -project "$ROOT/WidgetExtension/QuosparrWidget.xcodeproj" \
+  -scheme QuosparrWidget \
   -configuration Debug \
   -derivedDataPath "$DERIVED" \
   RUNWAY_WIDGET_BUNDLE_ID="$WIDGET_ID" \
-  RUNWAY_APP_GROUP_ID="group.com.github.codex-runway.swift-dev" \
-  RUNWAY_WIDGET_DISPLAY_NAME="CodexRunway Dev" \
+  RUNWAY_APP_GROUP_ID="group.com.quosparr.app.swift-dev" \
+  RUNWAY_WIDGET_DISPLAY_NAME="Quosparr Dev" \
   RUNWAY_WIDGET_STORAGE_MODE=local \
   MARKETING_VERSION="$MARKETING_VERSION" \
   CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
@@ -161,12 +161,12 @@ xcodebuild \
 mkdir -p "$DEV_ROOT"
 rm -rf "$STAGING"
 mkdir -p "$MACOS" "$RESOURCES" "$FRAMEWORKS" "$PLUGINS"
-/usr/bin/ditto "$SOURCE_EXECUTABLE" "$MACOS/CodexRunway"
+/usr/bin/ditto "$SOURCE_EXECUTABLE" "$MACOS/Quosparr"
 cp "$ROOT/Resources/Info.plist" "$CONTENTS/Info.plist"
 /usr/libexec/PlistBuddy \
   -c "Set :CFBundleIdentifier $BUNDLE_ID" \
-  -c "Set :CFBundleName CodexRunway Dev" \
-  -c "Add :CFBundleDisplayName string CodexRunway Dev" \
+  -c "Set :CFBundleName Quosparr Dev" \
+  -c "Add :CFBundleDisplayName string Quosparr Dev" \
   -c "Set :CFBundleVersion $BUILD_NUMBER" \
   -c "Add :RunwayWidgetStorageMode string local" \
   "$CONTENTS/Info.plist"
@@ -180,13 +180,13 @@ done
 BIN_DIR="$(cd "$(dirname "$SOURCE_EXECUTABLE")" && pwd)"
 if [[ -d "$BIN_DIR/Sparkle.framework" ]]; then
   /usr/bin/ditto "$BIN_DIR/Sparkle.framework" "$FRAMEWORKS/Sparkle.framework"
-  install_name_tool -add_rpath "@executable_path/../Frameworks" "$MACOS/CodexRunway" 2>/dev/null || true
+  install_name_tool -add_rpath "@executable_path/../Frameworks" "$MACOS/Quosparr" 2>/dev/null || true
   codesign --force --options runtime --sign - "$FRAMEWORKS/Sparkle.framework" >/dev/null
 fi
 
 /usr/bin/ditto \
-  "$DERIVED/Build/Products/Debug/CodexRunwayWidget.appex" \
-  "$PLUGINS/CodexRunwayWidget.appex"
+  "$DERIVED/Build/Products/Debug/QuosparrWidget.appex" \
+  "$PLUGINS/QuosparrWidget.appex"
 
 APP_ENTITLEMENTS="$(mktemp)"
 WIDGET_ENTITLEMENTS="$(mktemp)"
@@ -199,10 +199,10 @@ plutil -create xml1 "$WIDGET_ENTITLEMENTS"
 /usr/libexec/PlistBuddy \
   -c "Add :com.apple.security.app-sandbox bool true" \
   -c "Add :com.apple.security.temporary-exception.files.home-relative-path.read-only array" \
-  -c "Add :com.apple.security.temporary-exception.files.home-relative-path.read-only:0 string /.codex-runway/widget-snapshot.json" \
+  -c "Add :com.apple.security.temporary-exception.files.home-relative-path.read-only:0 string /.quosparr/widget-snapshot.json" \
   "$WIDGET_ENTITLEMENTS"
 runway_codesign \
-  "$PLUGINS/CodexRunwayWidget.appex" \
+  "$PLUGINS/QuosparrWidget.appex" \
   "$WIDGET_ID" \
   "$WIDGET_ENTITLEMENTS" >/dev/null
 runway_codesign \
@@ -225,7 +225,7 @@ done < <(find /private/tmp -maxdepth 2 -type d -name '*.app' -print 2>/dev/null)
 while IFS= read -r registered; do
   [[ -n "$registered" ]] && pluginkit -r "$registered" >/dev/null 2>&1 || true
 done < <(pluginkit -m -A -D -v -i "$WIDGET_ID" 2>/dev/null | awk 'NF {print $NF}')
-previous_dev_extension="$APP/Contents/PlugIns/CodexRunwayWidget.appex"
+previous_dev_extension="$APP/Contents/PlugIns/QuosparrWidget.appex"
 if [[ -d "$previous_dev_extension" ]]; then
   pluginkit -r "$previous_dev_extension" >/dev/null 2>&1 || true
 fi
@@ -233,9 +233,9 @@ fi
 rm -rf "$APP"
 mv "$STAGING" "$APP"
 "$LSREGISTER" -f "$APP"
-pluginkit -a "$APP/Contents/PlugIns/CodexRunwayWidget.appex"
+pluginkit -a "$APP/Contents/PlugIns/QuosparrWidget.appex"
 
-printf 'CodexRunway Dev: %s\n' "$APP"
+printf 'Quosparr Dev: %s\n' "$APP"
 if [[ "$#" -gt 0 ]]; then
   open -n "$APP" --args "$@"
 else

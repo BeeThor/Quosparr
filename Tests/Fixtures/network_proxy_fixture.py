@@ -111,7 +111,7 @@ def http_connect(connection, server):
         if supplied != expected:
             connection.sendall(
                 b"HTTP/1.1 407 Proxy Authentication Required\r\n"
-                b'Proxy-Authenticate: Basic realm="CodexRunwayFixture"\r\n'
+                b'Proxy-Authenticate: Basic realm="QuosparrFixture"\r\n'
                 b"Content-Length: 0\r\nConnection: close\r\n\r\n")
             return False
         server.state.change(authentication_successes=1)

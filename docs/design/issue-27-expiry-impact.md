@@ -2,7 +2,7 @@
 
 设计状态：已实施并完成本地验证；核验日期：2026-09-05；设计核验基线：`36383dc`
 
-需求来源：[issue #27](https://github.com/Licoy/CodexRunway/issues/27) 及其补充评论，反馈基于 0.0.72，本方案按当前工作区代码核验
+需求来源：[issue #27](https://github.com/Licoy/Quosparr/issues/27) 及其补充评论，反馈基于 0.0.72，本方案按当前工作区代码核验
 
 ## 推荐方案
 
@@ -55,8 +55,8 @@
 
 ## 最小实现步骤
 
-1. 在 `Sources/CodexRunwayCore/DisplayModels.swift` 的 `ResetCreditSummary` 中新增 `latestExpiryDate: Date?` 与 `latestExpiryRemaining: TimeInterval?`，复用候选集合取最大日期，保留现有 next 字段名；清除已无用途的 `totalRemainingDuration` 及其求和逻辑
-2. 修改 `Sources/CodexRunway/RunwaySummaryViews.swift` 与 `Sources/CodexRunway/RunwaySidePanel.swift`，落实左右顺序、空值和日期提示，直接复用现有组件与格式化器
+1. 在 `Sources/QuosparrCore/DisplayModels.swift` 的 `ResetCreditSummary` 中新增 `latestExpiryDate: Date?` 与 `latestExpiryRemaining: TimeInterval?`，复用候选集合取最大日期，保留现有 next 字段名；清除已无用途的 `totalRemainingDuration` 及其求和逻辑
+2. 修改 `Sources/Quosparr/RunwaySummaryViews.swift` 与 `Sources/Quosparr/RunwaySidePanel.swift`，落实左右顺序、空值和日期提示，直接复用现有组件与格式化器
 3. 在 `L10nKey` 新增 `latestExpiry` 和摘要日期说明所需的键，补齐英、简中、繁中、日、韩、俄、法 7 种语言，确认无引用后移除旧 `totalRemaining` 键及译文，不用旧键承载新含义
 4. 在现有 `QuotaTests` 更新“总和为 400”的旧需求断言为最大日期及对应剩余时长，保留最近到期、数量和风险断言，补充上述关键边界；在 `GrokQuotaPresentationTests` 校验共同摘要的最迟到期
 5. 运行核心与展示相关测试、全量测试和 self-check，复用现有 mock 检查主面板与详情页的浅色、深色及长语言文案布局
@@ -76,11 +76,11 @@
 
 ```bash
 swift test
-swift run CodexRunway --self-check
-swift run CodexRunway --render-main-panel-mock=main-light /tmp/issue-27-main-light.png
-swift run CodexRunway --render-main-panel-mock=main-dark /tmp/issue-27-main-dark.png
-swift run CodexRunway --render-main-panel-mock=reset-credits-light /tmp/issue-27-detail-light.png
-swift run CodexRunway --render-main-panel-mock=reset-credits-dark /tmp/issue-27-detail-dark.png
+swift run Quosparr --self-check
+swift run Quosparr --render-main-panel-mock=main-light /tmp/issue-27-main-light.png
+swift run Quosparr --render-main-panel-mock=main-dark /tmp/issue-27-main-dark.png
+swift run Quosparr --render-main-panel-mock=reset-credits-light /tmp/issue-27-detail-light.png
+swift run Quosparr --render-main-panel-mock=reset-credits-dark /tmp/issue-27-detail-dark.png
 ```
 
 这些截图命令目前固定简中且使用 Codex 数据，不能据此声称通过了全部语言和 Grok 专属预览；其余语言使用现有 `MainPanelMockRender.render(language:)` 入口检查，共用语义以 Grok 展示测试补足
@@ -93,19 +93,19 @@ swift run CodexRunway --render-main-panel-mock=reset-credits-dark /tmp/issue-27-
 
 | 结论 | 源码依据 |
 | --- | --- |
-| 总剩余确实是求和，next 从有日期的 available 卡中取最小值 | [DisplayModels.swift:98](../../Sources/CodexRunwayCore/DisplayModels.swift#L98) |
-| 当前主面板左总剩余、右剩余时长，详情第二排左总剩余、右最近到期 | [RunwaySummaryViews.swift:1139](../../Sources/CodexRunway/RunwaySummaryViews.swift#L1139)、[RunwaySidePanel.swift:366](../../Sources/CodexRunway/RunwaySidePanel.swift#L366) |
-| Codex/Grok 共用主面板摘要和详情组件 | [RunwayPopoverView.swift:248](../../Sources/CodexRunway/RunwayPopoverView.swift#L248)、[RunwayPopoverView.swift:294](../../Sources/CodexRunway/RunwayPopoverView.swift#L294)、[RunwaySidePanel.swift:80](../../Sources/CodexRunway/RunwaySidePanel.swift#L80) |
-| Grok 将 validityEnd 映射为 expiresAt 后复用同一摘要 | [GrokResetCredits.swift:35](../../Sources/CodexRunwayCore/GrokResetCredits.swift#L35)、[GrokQuotaPresentation.swift:161](../../Sources/CodexRunway/GrokQuotaPresentation.swift#L161) |
-| 卡片标题和数值目前限单行，主面板宽度为 400 pt | [RunwayDetailComponents.swift:6](../../Sources/CodexRunway/RunwayDetailComponents.swift#L6)、[MainPanelLayout.swift:5](../../Sources/CodexRunway/MainPanelLayout.swift#L5) |
-| 完整日期有现成格式化器与语言测试 | [Formatters.swift:179](../../Sources/CodexRunwayCore/Formatters.swift#L179)、[PreferencesTests.swift:482](../../Tests/CodexRunwayCoreTests/PreferencesTests.swift#L482) |
-| L10nKey 定义和完整性测试要求每个支持语言都有译文，英文回退不能通过完整性测试 | [Preferences.swift:3](../../Sources/CodexRunwayCore/Preferences.swift#L3)、[Preferences.swift:586](../../Sources/CodexRunwayCore/Preferences.swift#L586)、[PreferencesTests.swift:94](../../Tests/CodexRunwayCoreTests/PreferencesTests.swift#L94) |
-| 现有 noExpiry 英文为 no expiry，可能表达无限期，新的摘要未知状态应使用独立说明键 | [LocalizationTables.swift:219](../../Sources/CodexRunwayCore/LocalizationTables.swift#L219) |
-| 右键菜单没有总剩余，使用另一组摘要与逐卡数据 | [StatusControllerMenu.swift:30](../../Sources/CodexRunway/StatusControllerMenu.swift#L30)、[RunwayModel.swift:2364](../../Sources/CodexRunway/RunwayModel.swift#L2364) |
-| Widget 契约仅含可用数和即将到期数，重置卡告警使用逐卡风险分类 | [RunwayWidgetSnapshot.swift:56](../../Sources/CodexRunwayCore/RunwayWidgetSnapshot.swift#L56)、[RunwayAlerts.swift:58](../../Sources/CodexRunwayCore/RunwayAlerts.swift#L58) |
-| 预览数据已有 3、16、25 天的卡，mock 使用临时目录和测试服务 | [DevPreviewFixtures.swift:74](../../Sources/CodexRunwayCore/DevPreviewFixtures.swift#L74)、[MainPanelMockRender.swift:220](../../Sources/CodexRunway/MainPanelMockRender.swift#L220) |
-| 现有布局测试在无有效 NSHostingView 时可能跳过，不能只凭绿灯宣称视觉通过 | [MainPanelLayoutTests.swift:9](../../Tests/CodexRunwayTests/MainPanelLayoutTests.swift#L9) |
-| Grok 展示和映射测试可复用 | [GrokQuotaPresentationTests.swift:121](../../Tests/CodexRunwayTests/GrokQuotaPresentationTests.swift#L121)、[GrokResetCreditsTests.swift:97](../../Tests/CodexRunwayCoreTests/GrokResetCreditsTests.swift#L97) |
+| 总剩余确实是求和，next 从有日期的 available 卡中取最小值 | [DisplayModels.swift:98](../../Sources/QuosparrCore/DisplayModels.swift#L98) |
+| 当前主面板左总剩余、右剩余时长，详情第二排左总剩余、右最近到期 | [RunwaySummaryViews.swift:1139](../../Sources/Quosparr/RunwaySummaryViews.swift#L1139)、[RunwaySidePanel.swift:366](../../Sources/Quosparr/RunwaySidePanel.swift#L366) |
+| Codex/Grok 共用主面板摘要和详情组件 | [RunwayPopoverView.swift:248](../../Sources/Quosparr/RunwayPopoverView.swift#L248)、[RunwayPopoverView.swift:294](../../Sources/Quosparr/RunwayPopoverView.swift#L294)、[RunwaySidePanel.swift:80](../../Sources/Quosparr/RunwaySidePanel.swift#L80) |
+| Grok 将 validityEnd 映射为 expiresAt 后复用同一摘要 | [GrokResetCredits.swift:35](../../Sources/QuosparrCore/GrokResetCredits.swift#L35)、[GrokQuotaPresentation.swift:161](../../Sources/Quosparr/GrokQuotaPresentation.swift#L161) |
+| 卡片标题和数值目前限单行，主面板宽度为 400 pt | [RunwayDetailComponents.swift:6](../../Sources/Quosparr/RunwayDetailComponents.swift#L6)、[MainPanelLayout.swift:5](../../Sources/Quosparr/MainPanelLayout.swift#L5) |
+| 完整日期有现成格式化器与语言测试 | [Formatters.swift:179](../../Sources/QuosparrCore/Formatters.swift#L179)、[PreferencesTests.swift:482](../../Tests/QuosparrCoreTests/PreferencesTests.swift#L482) |
+| L10nKey 定义和完整性测试要求每个支持语言都有译文，英文回退不能通过完整性测试 | [Preferences.swift:3](../../Sources/QuosparrCore/Preferences.swift#L3)、[Preferences.swift:586](../../Sources/QuosparrCore/Preferences.swift#L586)、[PreferencesTests.swift:94](../../Tests/QuosparrCoreTests/PreferencesTests.swift#L94) |
+| 现有 noExpiry 英文为 no expiry，可能表达无限期，新的摘要未知状态应使用独立说明键 | [LocalizationTables.swift:219](../../Sources/QuosparrCore/LocalizationTables.swift#L219) |
+| 右键菜单没有总剩余，使用另一组摘要与逐卡数据 | [StatusControllerMenu.swift:30](../../Sources/Quosparr/StatusControllerMenu.swift#L30)、[RunwayModel.swift:2364](../../Sources/Quosparr/RunwayModel.swift#L2364) |
+| Widget 契约仅含可用数和即将到期数，重置卡告警使用逐卡风险分类 | [RunwayWidgetSnapshot.swift:56](../../Sources/QuosparrCore/RunwayWidgetSnapshot.swift#L56)、[RunwayAlerts.swift:58](../../Sources/QuosparrCore/RunwayAlerts.swift#L58) |
+| 预览数据已有 3、16、25 天的卡，mock 使用临时目录和测试服务 | [DevPreviewFixtures.swift:74](../../Sources/QuosparrCore/DevPreviewFixtures.swift#L74)、[MainPanelMockRender.swift:220](../../Sources/Quosparr/MainPanelMockRender.swift#L220) |
+| 现有布局测试在无有效 NSHostingView 时可能跳过，不能只凭绿灯宣称视觉通过 | [MainPanelLayoutTests.swift:9](../../Tests/QuosparrTests/MainPanelLayoutTests.swift#L9) |
+| Grok 展示和映射测试可复用 | [GrokQuotaPresentationTests.swift:121](../../Tests/QuosparrTests/GrokQuotaPresentationTests.swift#L121)、[GrokResetCreditsTests.swift:97](../../Tests/QuosparrCoreTests/GrokResetCreditsTests.swift#L97) |
 
 ## 实施记录
 
@@ -114,8 +114,8 @@ swift run CodexRunway --render-main-panel-mock=reset-credits-dark /tmp/issue-27-
 - 已补齐全部 7 种语言，保持原有可用性、风险分类、刷新节奏、明细排序、Widget 和原生菜单行为
 - 新增核心边界与展示测试，并扩展 Grok 展示测试，保留原有数量、风险和最近到期断言
 - 全量 `swift test` 通过，实际输出为 `Build complete! (6.19s)`、`644 tests in 83 suites passed after 6.638 seconds`
-- `swift run CodexRunway --self-check` 在当前沙箱中受 SwiftPM 缓存目录权限限制，随后直接运行刚编译完成的 `./.build/debug/CodexRunway --self-check`，退出码为 0，认证状态与本机会话统计检查正常执行
+- `swift run Quosparr --self-check` 在当前沙箱中受 SwiftPM 缓存目录权限限制，随后直接运行刚编译完成的 `./.build/debug/Quosparr --self-check`，退出码为 0，认证状态与本机会话统计检查正常执行
 - 使用临时测试入口复用现有离屏渲染器，生成 7 种语言、主面板与详情页、明暗主题的 28 张图，宽度检查均为 400 pt；另检查了 7 种语言摘要的已知日期与无日期状态
 - 已查看全部 7 种语言的详情统计区域明暗对照和摘要对照，最近 3 天、最迟 25 天显示正确，标题完整，原有统计卡无需调整换行；透明截图仅为检查可读性合成相应明暗底色
-- 离线预览位于 `/tmp/codex-runway-issue27-preview`，临时渲染测试已删除，未加入业务代码或常规测试套件
+- 离线预览位于 `/tmp/quosparr-issue27-preview`，临时渲染测试已删除，未加入业务代码或常规测试套件
 - `git diff --check` 通过，未修改认证数据或账号状态

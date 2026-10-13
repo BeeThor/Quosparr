@@ -1,0 +1,32 @@
+import Foundation
+import QuosparrCore
+// usage: sess <grokHome> <optsJSON>   opts = {recent, limit, window:[s,e]|null, now, cost:bool}
+let args = CommandLine.arguments
+let opts = try JSONSerialization.jsonObject(with: Data(args[2].utf8)) as! [String: Any]
+let now = Date(timeIntervalSince1970: (opts["now"] as! NSNumber).doubleValue)
+var window: DateInterval? = nil
+if let w = opts["window"] as? [Double] { window = DateInterval(start: Date(timeIntervalSince1970: w[0]), end: Date(timeIntervalSince1970: w[1])) }
+func ts(_ d: Date) -> String { String(format: "%.3f", d.timeIntervalSince1970) }
+func dec(_ d: Decimal?) -> Any { d.map { "\($0)" as Any } ?? NSNull() }
+func tot(_ t: GrokUsageTotals) -> [Any] { [t.totalTokens, t.inputTokens, t.outputTokens, t.cachedReadTokens, t.reasoningTokens, t.turns, t.modelCalls, dec(t.estimatedUSD)] }
+func at(_ t: ApiEquivalentTotals) -> [Int] { [t.totalTokens, t.uncachedInputTokens, t.cachedInputTokens, t.outputTokens, t.turns, t.threads] }
+func opt(_ s: String?) -> Any { s.map { $0 as Any } ?? NSNull() }
+let scanner = GrokSessionScanner(grokHome: URL(fileURLWithPath: args[1]))
+let r = try scanner.scan(recentLimit: opts["recent"] as! Int, sessionLimit: opts["limit"] as! Int, costWindow: window, now: now)
+let c = r.costSummary
+let out: [String: Any] = [
+    "totals": tot(r.totals), "count": r.sessionCount,
+    "models": r.modelRows.map { [$0.model, tot($0.totals)] as [Any] },
+    "items": r.recentItems.map { [$0.id, $0.title, $0.projectName, opt($0.cwd), opt($0.model), ts($0.updatedAt), $0.messageCount, tot($0.totals)] as [Any] },
+    "daily": r.dailyTokens, "label": r.sourceLabel, "calc": ts(r.calculatedAt),
+    "cost": [
+        "source": c.source.rawValue, "confidence": c.confidence.rawValue, "window": [ts(c.window.start), ts(c.window.end)],
+        "usd": dec(c.estimatedUSD), "totals": at(c.totals),
+        "dailyRows": c.dailyRows.map { [$0.date, at($0.totals), dec($0.estimatedUSD), $0.rawCredits] as [Any] },
+        "modelRows": c.modelRows.map { [$0.name, at($0.totals), dec($0.estimatedUSD)] as [Any] },
+        "projectRows": c.projectRows.map { [$0.name, at($0.totals), dec($0.estimatedUSD)] as [Any] },
+        "clientRows": c.clientRows.map { [$0.name, at($0.totals), dec($0.estimatedUSD)] as [Any] },
+        "raw": c.rawCredits, "warnings": c.warnings, "pv": c.pricingVersion, "calc": ts(c.calculatedAt),
+    ] as [String: Any],
+]
+print(String(data: try JSONSerialization.data(withJSONObject: out, options: [.sortedKeys]), encoding: .utf8)!)

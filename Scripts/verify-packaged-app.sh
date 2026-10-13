@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-APP="${1:-$ROOT/dist/CodexRunway.app}"
+APP="${1:-$ROOT/dist/Quosparr.app}"
 EXPECTED_ARCH="${2:-$(uname -m)}"
 EXPECTED_STORAGE_MODE="${3:-local}"
-WIDGET="$APP/Contents/PlugIns/CodexRunwayWidget.appex"
+WIDGET="$APP/Contents/PlugIns/QuosparrWidget.appex"
 
 [[ -d "$APP" ]] || { printf 'Missing app: %s\n' "$APP" >&2; exit 1; }
 [[ -d "$WIDGET" ]] || { printf 'Missing widget extension: %s\n' "$WIDGET" >&2; exit 1; }
@@ -20,13 +20,13 @@ WIDGET_VERSION="$(plutil -extract CFBundleShortVersionString raw "$WIDGET/Conten
 HOST_BUILD="$(plutil -extract CFBundleVersion raw "$APP/Contents/Info.plist")"
 WIDGET_BUILD="$(plutil -extract CFBundleVersion raw "$WIDGET/Contents/Info.plist")"
 STORAGE_MODE="$(plutil -extract RunwayWidgetStorageMode raw "$WIDGET/Contents/Info.plist")"
-WIDGET_ARCHS="$(lipo -archs "$WIDGET/Contents/MacOS/CodexRunwayWidget")"
+WIDGET_ARCHS="$(lipo -archs "$WIDGET/Contents/MacOS/QuosparrWidget")"
 
 [[ "$WIDGET_ID" == "$HOST_ID.widget" ]] || {
   printf 'Unexpected widget identifier: %s (host: %s)\n' "$WIDGET_ID" "$HOST_ID" >&2
   exit 1
 }
-[[ "$WIDGET_DISPLAY_NAME" == "CodexRunway" ]] || {
+[[ "$WIDGET_DISPLAY_NAME" == "Quosparr" ]] || {
   printf 'Unexpected widget display name: %s\n' "$WIDGET_DISPLAY_NAME" >&2
   exit 1
 }

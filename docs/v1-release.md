@@ -1,0 +1,106 @@
+# v1 发布与应急回滚
+
+本文件描述已准备的流水线与门禁，生成候选资产不等于正式发布，安装升级验收仍须在一次性虚拟机执行
+
+当前 Actions 只执行到 GitHub Release 草稿：Swift `v0.*`、Go 稳定版 `v*` 和 Beta `beta-v*` 均保留测试、打包、验签及附件上传，创建时统一使用 `--draft --latest=false`；Beta 草稿同时标记 `--prerelease`；正式公开发布、latest 提升、固定 `v1-beta` 频道更新及 Homebrew Cask 准备步骤已在工作流中注释，须审阅草稿后另行处理，现有公开 Release 与更新源不会被本流程改写
+
+## 更名与旧版本入口
+
+Quosparr 使用 `com.quosparr.app` 和 `quosparr://`，Git 仓库地址保留；旧名称客户端的 `appcast-<arch>.xml` 只包含版本与下载页 `<link>`，不得包含新应用的 `<enclosure>`；Quosparr Swift 构建使用独立 `quosparr-appcast-<arch>.xml` 和已签名 ZIP，首次更名安装采用退出旧应用、手动安装、启动迁移的流程
+
+首次启动将 `~/.codex-runway` 缺失的数据补入 `~/.quosparr`，新目录已存在也可接续；同路径新文件优先，两类账号索引按 ID 合并且保留新元数据、当前选择与排序，数据库和 WAL/SHM/journal 按整组保留新版本；在私有暂存目录完成校验后切换，进程中断后恢复原目录或已完成结果，完成标记防止以后再次导入已删除的旧账号，旧源目录始终保留；偏好依次从预览身份 `com.github.quosparr`、`com.github.codex-runway` 和早期 `dev.licoy.codex-runway` 导入缺失项，代理凭据复制到新 service；权限、坏索引、类型冲突等错误显式终止迁移，不以默认配置掩盖
+
+登录项迁移只处理已知旧身份及匹配命令，覆盖 macOS 会话登录项 / 旧 LaunchAgent、Windows Run、Linux autostart；先注册并确认新项启用，再删除旧项，旧项被禁用则不重新启用，等待系统批准时保留旧项并在批准后重启应用完成迁移；macOS 公开 API 无法由新 Bundle ID 直接注销旧应用的 `SMAppService.mainApp`，若系统设置仍列出旧应用，需在“通用 → 登录项”手动移除，不能宣称所有系统记录都已自动清理；旧 Widget 需重新添加，真实登录 / 重启与系统权限仍需验收
+
+## 密钥与版本
+
+产品版本只来自 `mygo.json` 的 `version`；macOS 的 `macos.infoPlist.CFBundleVersion` 是独立递增整数，必须至少为 100，并严格大于全部已发布 appcast 的构建号；宿主、Widget 和 legacy appcast 使用同一构建号
+
+GitHub Actions 需要 `MYGO_UPDATE_PRIVATE_KEY`、`SPARKLE_PUBLIC_KEY`、`SPARKLE_PRIVATE_KEY` 三个 secrets；本地脚本将 `MYGO_UPDATE_PRIVATE_KEY` 映射到 mygo v0.4.1 实际接受的 `MYGO_UPDATER_PRIVATE_KEY`；私钥只放受限临时文件或 secrets，不写配置、命令参数、仓库和日志
+
+mygo 与 Sparkle 使用独立密钥；保留现有 `SUPublicEDKey`；`legacy-appcast.sh` 要求 Sparkle secret 的公钥等于该字段，并用固定公钥与 Sparkle `sign_update --verify` 双重验证；新 Go 宿主不携带 Sparkle 运行库
+
+正式发布前运行 `python3 Scripts/check-v1-build-number.py`，它使用 `gh` 读取全部非 draft release 的两份 appcast，任何网络错误、缺少历史 appcast、不可解析构建号或候选构建号不够大都会阻止发布；`--appcasts` 只用于明确指定的隔离测试样本，不是生产查询失败时的后备路径
+
+## 构建与校验
+
+```bash
+# 开发包不启用更新器，也不生成更新清单
+ARCH=arm64 V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
+V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-platform.sh windows/amd64
+V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-platform.sh windows/arm64
+V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-platform.sh linux/amd64
+V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-platform.sh linux/arm64
+
+# 正式 macOS 候选包，签名密钥需提前放入环境
+ARCH=arm64 V1_DEVELOPMENT_PACKAGE=0 bash Scripts/package-v1-app.sh
+ARCH=x86_64 V1_DEVELOPMENT_PACKAGE=0 bash Scripts/package-v1-app.sh
+
+# Windows 与 Linux，逐个选择目标
+bash Scripts/package-v1-platform.sh windows/amd64
+bash Scripts/package-v1-platform.sh windows/arm64
+bash Scripts/package-v1-platform.sh linux/amd64
+bash Scripts/package-v1-platform.sh linux/arm64
+```
+
+macOS 输出目录为 `build/v1-<arm64|x86_64>`，Windows/Linux 为 `build/v1-<os>-<arch>/<os>-<arch>`；`V1_BUILD_DIR` 可指定绝对输出路径；mygo CLI 的临时配置在仓库 `.build` 下创建并清理，避免配置移到 Go 模块外导致构建失败；`V1_CONFIG_PATH` 可选择经过审阅的隔离配置
+
+先构建宿主、桥接与 Widget，写入最终 plist、资源和 SQLite，再从内到外签名；mygo 提前生成的 macOS 更新归档会被删除，最终 tar、DMG、Sparkle ZIP 均从同一份已验签 `.app` 生成；打包后再改资源必须重新执行整条链路
+
+| 目标 | 必需资产 |
+|---|---|
+| darwin-arm64 | `Quosparr-macos-arm64.zip`、`.dmg`、`quosparr-<version>-darwin-arm64.tar.gz`、`update-darwin-arm64.json`、`quosparr-appcast-arm64.xml`、手动下载提示 `appcast-arm64.xml` |
+| darwin-amd64 | `Quosparr-macos-x86_64.zip`、`.dmg`、`quosparr-<version>-darwin-amd64.tar.gz`、`update-darwin-amd64.json`、`quosparr-appcast-x86_64.xml`、手动下载提示 `appcast-x86_64.xml` |
+| windows-amd64 / arm64 | `Quosparr Setup <version> <arch>.exe`、`quosparr-<version>-windows-<arch>.tar.gz`、`update-windows-<arch>.json` |
+| linux-amd64 / arm64 | `quosparr_<debVersion>_<arch>.deb`、`quosparr-<version>-linux-<arch>.tar.gz`、`update-linux-<arch>.json`、`install.sh` |
+
+Windows 使用 mygo 默认的用户级 NSIS 安装器，安装到 `%LOCALAPPDATA%\Programs\Quosparr`，`RequestExecutionLevel user`，不要求管理员权限；未生成 EXE 安装器时脚本报错；Linux tar 使用用户目录安装器，deb 声明 GTK3、AppIndicator 与密钥存储依赖，由包管理器管理更新；正式包内的 SQLite 动态库缺失或架构错误会阻止验收，应用不依赖首次启动时下载该库
+
+普通 CI 在 Windows 与 Linux 的 amd64、arm64 原生运行器上执行完整 Go 测试、构建开发安装包、核对载荷，并加载包内 SQLite 执行参数化查询；Windows 在一次性 Actions VM 内验证静默安装、临时 HOME 下的 `--self-check` 和卸载，Linux 用 `dpkg-deb` 解包后运行相同基础诊断；两者均不启动桌面界面、不登录真实账号；macOS 继续运行全量 race、Swift 回归和六目标交叉构建
+
+`V1_DEVELOPMENT_PACKAGE=1` 明确关闭更新器，不需要发布密钥且不生成更新清单；开发包也必须通过可执行文件 / SQLite 架构、资源完整性和安装器结构校验，Linux 额外逐文件比对 deb 与归档载荷；`verify-payload` 仅验证包内容，不能代替正式发布的 `verify` 签名门禁；默认正式构建缺少 `MYGO_UPDATE_PRIVATE_KEY` 时仍直接失败
+
+本地生成安装包和交叉编译不能证明目标系统原生步骤已通过，修改后的 Actions 必须在上传同一版本代码后实际执行；这些自动检查也不能替代真实桌面的 OAuth、托盘、系统钥匙串、权限提示及升级验收
+
+合并各目标的平面资产，并用 `cmp` 确認兩個 Linux `install.sh` 一致后保留一份同名脚本，然后运行
+
+```bash
+bash Scripts/legacy-appcast.sh /absolute/path/to/dist mygo.json v1.0.0
+python3 Scripts/release-checksums.py write /absolute/path/to/dist
+bash Scripts/verify-v1-release.sh /absolute/path/to/dist mygo.json
+```
+
+校验先核对所有资产的 SHA256，再核对 mygo 归档签名、版本、长度、目标与 URL，验证 Sparkle ZIP 公钥签名后才解包或挂载；归档禁止路径穿越、重复条目和符号链接循环；每个可执行文件和 SQLite 都检查真实 Mach-O/PE/ELF 架构；macOS 还验证可执行权限、桥接、Widget、1024px icns、深度签名及 tar/ZIP/DMG 内容一致；Windows EXE 内必须包含 256px 图标，NSIS 通过 `7z` 解包后与已验签 tar 逐文件比较；Linux deb 的架构、版本、依赖和 payload 与 tar 比较
+
+## Beta 与 latest
+
+稳定版使用 `v<version>` 与生产 `/releases/latest/download/`；Beta 的 `mygo.json` 版本必须有 prerelease 后缀，并用 `V1_UPDATE_CHANNEL=beta` 生成候选；Beta 包内的 `updates.url` 固定为 `https://github.com/Licoy/Quosparr/releases/download/v1-beta`
+
+当前 Beta 候选只保存为 `beta-v<version>` 的 prerelease 草稿，不更新固定的 `v1-beta` 渠道；恢复分发时，候选与固定频道都必须 `latest=false`；mygo v0.4.1 的 GitHub `tagPrefix` 查询会排除 prerelease，所以不能用 prefix 查询代替这个固定渠道；生产 `/latest/` 与旧 Swift 的 appcast 入口均不受 Beta 影响
+
+Swift 维护草稿及其后续人工发布必须 `latest=false`，不能自动取代 Go 稳定版；Homebrew Cask 准备目前暂停，恢复后仍须在全部资产校验通过后同步 DMG 的版本与 SHA256，默认卸载仅移除应用，自有配置仅在用户主动 `--zap` 时删除
+
+## CLI 数据与认证边界
+
+Go 主应用的 Codex 账号、统计与会话修复统一使用 `CODEX_HOME`，默认 `~/.codex`，Windows 默认 `%USERPROFILE%\.codex`；Grok 继续使用 `GROK_HOME` 或相应用户目录下的 `.grok`；自有数据始终保存在 `.quosparr`
+
+Codex 的 `config.toml` 未指定 `cli_auth_credentials_store` 或指定为 `file` 时，使用文件凭据；`keyring`、`auto`、`ephemeral` 会显示七语言的不支持提示并阻止读取旧 `auth.json`、导入官方凭据和切号，不擅自更改 CLI 配置或访问其系统密钥项；托管账号副本仍可独立保留和刷新
+
+后台同步不重建缺失或损坏的 Codex 官方登录文件，退出登录后刷新只保留托管副本；Grok 刷新写回前在认证锁内重新核对当前账号及原始文件，外部切号、退出登录或同账号 token 轮换时停止写回；目录遍历和文件读取错误显式传播，会话修复必须在完整扫描成功后才备份和替换索引
+
+## Swift 应急回滚，只准备不发布
+
+保留已完成 Quosparr 更名的干净 Swift checkout，使用更高的稳定语义版本和整数构建号创建独立配置；两套公钥保持不变，不修改凭据、用户配置、官方 auth 或会话；执行前完成回滚数据与升级链验收
+
+```bash
+SWIFT_SOURCE_DIR=/absolute/path/to/clean-quosparr-swift-checkout \
+V1_CONFIG_PATH=/absolute/path/to/reviewed-rollback.json \
+V1_BUILD_DIR=/absolute/path/to/rollback-dist \
+bash Scripts/package-v1-rollback.sh
+```
+
+脚本检查 Swift checkout 干净且包含 Quosparr 模块、回滚版本与构建号均高于当前 Go 配置，并检查全部线上 appcast 构建号；Sparkle 工具默认从该 Swift checkout 的 `.build/artifacts/sparkle/Sparkle/bin` 读取，可显式覆盖 `SPARKLE_TOOLS_DIR`，两份 Swift 构建完成后检查实际工具存在；通过保留的 Swift 构建脚本传入版本/构建号覆盖值，产出带 Sparkle 的 Swift 包，再生成同包的 mygo 签名 tar、Sparkle ZIP/appcast 与 DMG，最后完成相同的签名与包结构验证；不创建 GitHub release，不自动改 latest
+
+Swift 回滚恢复原 Sparkle 更新流程，并继续尊重自动检查设置；不恢复备份中的旧 token，不删除单实例锁文件；旧跳过状态和回滚后继续升级须在隔离验收中确认；当应用或更新器无法启动时，用同名 DMG 手动覆盖恢复
+
+必须完成 `旧 Swift → Go v1 → 后续 Go → 更高版本 Swift 回滚 → 更高版本 Go 修复` 全链路，源码检查、交叉编译和临时签名包验证不能替代该门禁

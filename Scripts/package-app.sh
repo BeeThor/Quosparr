@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=codesign-helpers.sh
 source "$ROOT/Scripts/codesign-helpers.sh"
+if [[ "${1:-}" == "--source-root" ]]; then ROOT="${2:?source checkout required}"; fi
 ARCH="${ARCH:-$(uname -m)}"
 if [[ "${1:-}" == "--arch" ]]; then
   ARCH="${2:-}"
@@ -20,21 +21,21 @@ esac
 
 TRIPLE="${ARCH}-apple-macosx12.0"
 INCLUDE_WIDGET="${INCLUDE_WIDGET:-1}"
-RUNWAY_BUNDLE_ID="${RUNWAY_BUNDLE_ID:-com.github.codex-runway}"
-RUNWAY_APP_GROUP_ID="${RUNWAY_APP_GROUP_ID:-group.com.github.codex-runway}"
+RUNWAY_BUNDLE_ID="${RUNWAY_BUNDLE_ID:-com.quosparr.app}"
+RUNWAY_APP_GROUP_ID="${RUNWAY_APP_GROUP_ID:-group.com.quosparr.app}"
 RUNWAY_WIDGET_BUNDLE_ID="${RUNWAY_WIDGET_BUNDLE_ID:-${RUNWAY_BUNDLE_ID}.widget}"
 RUNWAY_WIDGET_STORAGE_MODE="${RUNWAY_WIDGET_STORAGE_MODE:-local}"
-DIST="$ROOT/dist"
-APP="$DIST/CodexRunway.app"
+DIST="${RUNWAY_DIST_DIR:-$ROOT/dist}"
+APP="$DIST/Quosparr.app"
 CONTENTS="$APP/Contents"
 MACOS="$CONTENTS/MacOS"
 RESOURCES="$CONTENTS/Resources"
 FRAMEWORKS="$CONTENTS/Frameworks"
 PLUGINS="$CONTENTS/PlugIns"
 WIDGET_DERIVED="$DIST/widget-derived-${ARCH}"
-ZIP="$DIST/CodexRunway-macos-${ARCH}.zip"
-TAR_GZ="$DIST/CodexRunway-macos-${ARCH}.app.tar.gz"
-DMG="$DIST/CodexRunway-macos-${ARCH}.dmg"
+ZIP="$DIST/Quosparr-macos-${ARCH}.zip"
+TAR_GZ="$DIST/Quosparr-macos-${ARCH}.app.tar.gz"
+DMG="$DIST/Quosparr-macos-${ARCH}.dmg"
 DMG_ROOT="$DIST/dmg-${ARCH}"
 
 case "$RUNWAY_WIDGET_STORAGE_MODE" in
@@ -50,9 +51,9 @@ mkdir -p "$MACOS" "$RESOURCES" "$FRAMEWORKS"
 
 swift build -c release --package-path "$ROOT" --triple "$TRIPLE"
 BIN_DIR="$(swift build -c release --package-path "$ROOT" --triple "$TRIPLE" --show-bin-path)"
-cp "$BIN_DIR/CodexRunway" "$MACOS/CodexRunway"
+cp "$BIN_DIR/Quosparr" "$MACOS/Quosparr"
 if [[ -n "${EXPECTED_MACOS_SDK_MAJOR:-}" ]]; then
-  SDK="$(otool -l "$MACOS/CodexRunway" | awk '$1 == "sdk" { print $2; exit }')"
+  SDK="$(otool -l "$MACOS/Quosparr" | awk '$1 == "sdk" { print $2; exit }')"
   case "$SDK" in
     "${EXPECTED_MACOS_SDK_MAJOR}".*) ;;
     *)
@@ -63,6 +64,12 @@ if [[ -n "${EXPECTED_MACOS_SDK_MAJOR:-}" ]]; then
 fi
 cp "$ROOT/Resources/Info.plist" "$CONTENTS/Info.plist"
 /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $RUNWAY_BUNDLE_ID" "$CONTENTS/Info.plist"
+if [[ -n "${RUNWAY_VERSION:-}" ]]; then
+  plutil -replace CFBundleShortVersionString -string "$RUNWAY_VERSION" "$CONTENTS/Info.plist"
+fi
+if [[ -n "${RUNWAY_BUILD_NUMBER:-}" ]]; then
+  plutil -replace CFBundleVersion -string "$RUNWAY_BUILD_NUMBER" "$CONTENTS/Info.plist"
+fi
 cp "$ROOT/Resources/AppIcon.png" "$RESOURCES/AppIcon.png"
 cp "$ROOT/Resources/AppIcon.icns" "$RESOURCES/AppIcon.icns"
 for lproj in "$ROOT/Resources"/*.lproj; do
@@ -74,7 +81,7 @@ if [[ -n "${SPARKLE_PUBLIC_KEY:-}" ]]; then
 fi
 if [[ -d "$BIN_DIR/Sparkle.framework" ]]; then
   /usr/bin/ditto "$BIN_DIR/Sparkle.framework" "$FRAMEWORKS/Sparkle.framework"
-  install_name_tool -add_rpath "@executable_path/../Frameworks" "$MACOS/CodexRunway" 2>/dev/null || true
+  install_name_tool -add_rpath "@executable_path/../Frameworks" "$MACOS/Quosparr" 2>/dev/null || true
 fi
 
 if [[ "$INCLUDE_WIDGET" == "1" ]]; then
@@ -84,7 +91,7 @@ if [[ "$INCLUDE_WIDGET" == "1" ]]; then
   WIDGET_BUILD_SETTINGS=(
     RUNWAY_WIDGET_BUNDLE_ID="$RUNWAY_WIDGET_BUNDLE_ID"
     RUNWAY_APP_GROUP_ID="$RUNWAY_APP_GROUP_ID"
-    RUNWAY_WIDGET_DISPLAY_NAME="CodexRunway"
+    RUNWAY_WIDGET_DISPLAY_NAME="Quosparr"
     RUNWAY_WIDGET_STORAGE_MODE="$RUNWAY_WIDGET_STORAGE_MODE"
     MARKETING_VERSION="$APP_VERSION"
     CURRENT_PROJECT_VERSION="$APP_BUILD"
@@ -96,16 +103,16 @@ if [[ "$INCLUDE_WIDGET" == "1" ]]; then
     WIDGET_BUILD_SETTINGS+=(ENABLE_APP_SANDBOX=NO CODE_SIGN_ENTITLEMENTS=)
   fi
   xcodebuild \
-    -project "$ROOT/WidgetExtension/CodexRunwayWidget.xcodeproj" \
-    -scheme CodexRunwayWidget \
+    -project "$ROOT/WidgetExtension/QuosparrWidget.xcodeproj" \
+    -scheme QuosparrWidget \
     -configuration Release \
     -derivedDataPath "$WIDGET_DERIVED" \
     "${WIDGET_BUILD_SETTINGS[@]}" \
     build
   mkdir -p "$PLUGINS"
   /usr/bin/ditto \
-    "$WIDGET_DERIVED/Build/Products/Release/CodexRunwayWidget.appex" \
-    "$PLUGINS/CodexRunwayWidget.appex"
+    "$WIDGET_DERIVED/Build/Products/Release/QuosparrWidget.appex" \
+    "$PLUGINS/QuosparrWidget.appex"
   /usr/libexec/PlistBuddy \
     -c "Add :RunwayWidgetStorageMode string $RUNWAY_WIDGET_STORAGE_MODE" \
     "$CONTENTS/Info.plist"
@@ -139,7 +146,7 @@ if command -v codesign >/dev/null 2>&1; then
     else
       /usr/libexec/PlistBuddy \
         -c "Add :com.apple.security.temporary-exception.files.home-relative-path.read-only array" \
-        -c "Add :com.apple.security.temporary-exception.files.home-relative-path.read-only:0 string /.codex-runway/widget-snapshot.json" \
+        -c "Add :com.apple.security.temporary-exception.files.home-relative-path.read-only:0 string /.quosparr/widget-snapshot.json" \
         "$WIDGET_ENTITLEMENTS"
     fi
   fi
@@ -148,7 +155,7 @@ if command -v codesign >/dev/null 2>&1; then
   fi
   if [[ "$INCLUDE_WIDGET" == "1" ]]; then
     runway_codesign \
-      "$PLUGINS/CodexRunwayWidget.appex" \
+      "$PLUGINS/QuosparrWidget.appex" \
       "$RUNWAY_WIDGET_BUNDLE_ID" \
       "$WIDGET_ENTITLEMENTS" >/dev/null
   fi
@@ -161,11 +168,11 @@ fi
 mkdir -p "$DIST"
 rm -rf "$DMG_ROOT"
 rm -f "$ZIP" "$TAR_GZ" "$DMG"
-(cd "$DIST" && /usr/bin/ditto -c -k --keepParent "CodexRunway.app" "$(basename "$ZIP")")
-(cd "$DIST" && /usr/bin/tar -czf "$(basename "$TAR_GZ")" "CodexRunway.app")
+(cd "$DIST" && /usr/bin/ditto -c -k --keepParent "Quosparr.app" "$(basename "$ZIP")")
+(cd "$DIST" && COPYFILE_DISABLE=1 /usr/bin/tar -czf "$(basename "$TAR_GZ")" "Quosparr.app")
 mkdir -p "$DMG_ROOT"
-/usr/bin/ditto "$APP" "$DMG_ROOT/CodexRunway.app"
+/usr/bin/ditto "$APP" "$DMG_ROOT/Quosparr.app"
 ln -s /Applications "$DMG_ROOT/Applications"
-hdiutil create -volname "CodexRunway" -srcfolder "$DMG_ROOT" -ov -format UDZO "$DMG" >/dev/null
+hdiutil create -volname "Quosparr" -srcfolder "$DMG_ROOT" -ov -format UDZO "$DMG" >/dev/null
 rm -rf "$DMG_ROOT"
 printf '%s\n%s\n%s\n' "$ZIP" "$TAR_GZ" "$DMG"

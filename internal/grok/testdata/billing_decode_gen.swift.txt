@@ -1,0 +1,39 @@
+import Foundation
+import QuosparrCore
+// usage: gen_billing in.json out.json
+let args = CommandLine.arguments
+let inputs = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: args[1]))) as! [String]
+let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+func isoMs(_ d: Date) -> String {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return f.string(from: d)
+}
+let enc = JSONEncoder()
+enc.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+enc.dateEncodingStrategy = .custom { date, e in var c = e.singleValueContainer(); try c.encode(isoMs(date)) }
+
+var out: [[String: Any]] = []
+for (idx, s) in inputs.enumerated() {
+    FileHandle.standardError.write(Data("\(idx)\n".utf8))
+    let data = Data(s.utf8)
+    var row: [String: Any] = [:]
+    do {
+        let snap = try GrokQuotaSnapshot.decodeBillingResponse(from: data, now: now)
+        row["bill"] = String(data: try enc.encode(snap), encoding: .utf8)!
+    } catch {
+        row["billErr"] = String(describing: error)
+    }
+    do {
+        let m = try GrokQuotaSnapshot.decodeMoneyAllowance(from: data)
+        let l: Any = m.limitCents.map { String($0) as Any } ?? NSNull()
+        let u: Any = m.usedCents.map { String($0) as Any } ?? NSNull()
+        row["money"] = [l, u]
+    } catch {
+        row["moneyErr"] = String(describing: error)
+    }
+    row["plan"] = GrokQuotaSnapshot.decodeSettingsPlan(from: data) ?? NSNull()
+    out.append(row)
+}
+try JSONSerialization.data(withJSONObject: out, options: [.sortedKeys]).write(to: URL(fileURLWithPath: args[2]))

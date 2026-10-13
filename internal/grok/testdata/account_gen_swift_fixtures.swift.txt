@@ -1,0 +1,301 @@
+import Foundation
+
+// Deterministic fixture generator for internal/grok/testdata/account_swift_*.json.
+// Compile together with Sources/QuosparrCore/*.swift. Fake tokens only.
+let out = URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: true)
+try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("grokgen-\(UUID().uuidString)", isDirectory: true)
+defer { try? FileManager.default.removeItem(at: tmp) }
+
+func str(_ d: Data) -> String { String(decoding: d, as: UTF8.self) }
+func write(_ name: String, _ object: Any) throws {
+    let data = try JSONSerialization.data(withJSONObject: object, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
+    try data.write(to: out.appendingPathComponent(name))
+}
+func errName(_ e: Error) -> String {
+    switch e {
+    case GrokAuthDocumentError.invalidRoot: return "invalidRoot"
+    case GrokAuthDocumentError.noManagedCredential: return "noManagedCredential"
+    case GrokAuthDocumentError.invalidManagedCredential: return "invalidManagedCredential"
+    default: return "other"
+    }
+}
+func identityJSON(_ id: GrokCredentialIdentity) -> String {
+    let enc = JSONEncoder()
+    enc.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+    enc.dateEncodingStrategy = .grokAccountStoreDates
+    return str(try! enc.encode(id))
+}
+let fixedNow = Date(timeIntervalSince1970: 1_785_499_200.75)
+let reauthProbe = Date(timeIntervalSince1970: 1_800_000_000)
+
+func oauth(_ body: String, scope: String = "https://auth.x.ai::desktop-client") -> String { "{\"\(scope)\":\(body)}" }
+
+// 1. Documents.
+let docInputs: [(String, String)] = [
+    ("oauth_full", oauth(#"{"auth_mode":"oidc","email":"Person@Example.com","expires_at":"2099-08-01T12:00:00Z","key":"k-access","oidc_client_id":"desktop-client","oidc_issuer":"https://auth.x.ai","principal_id":"Principal-123","principal_type":"User","refresh_token":"k-refresh","team_id":"Team-456","team_name":"Example Team","user_id":"User-789"}"#)),
+    ("legacy", #"{"https://accounts.x.ai/sign-in":{"auth_mode":"grok","email":"legacy@example.com","key":"k-legacy","user_id":"legacy-user"}}"#),
+    ("principal_only", oauth(#"{"key":"k","principal_id":"P-Only"}"#)),
+    ("email_only", oauth(#"{"key":"k","email":"Only@Example.com"}"#)),
+    ("email_team", oauth(#"{"key":"k","email":"a@b.c","team_id":"T1","oidc_issuer":"HTTPS://Auth.X.AI"}"#)),
+    ("padded", oauth(#"{"key":"  k  ","email":"  pad@example.com  ","user_id":" u1 ","refresh_token":"   "}"#)),
+    ("fractional_ms", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05.678Z"}"#)),
+    ("fractional_6", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05.678912Z"}"#)),
+    ("fractional_1", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05.5Z"}"#)),
+    ("offset", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05+08:00"}"#)),
+    ("offset_frac", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05.250-05:30"}"#)),
+    ("lowercase_tz", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02t03:04:05z"}"#)),
+    ("no_tz", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05"}"#)),
+    ("bad_date", oauth(#"{"key":"k","user_id":"u","expires_at":"soon"}"#)),
+    ("expired_no_refresh", oauth(#"{"key":"k","user_id":"u","expires_at":"2020-01-01T00:00:00Z"}"#)),
+    ("expired_refresh", oauth(#"{"key":"k","user_id":"u","expires_at":"2020-01-01T00:00:00Z","refresh_token":"r"}"#)),
+    ("no_access", oauth(#"{"user_id":"u","refresh_token":"r"}"#)),
+    ("api_key_only", #"{"xai::api_key":{"auth_mode":"api_key","key":"k"}}"#),
+    ("no_identity", oauth(#"{"key":"k"}"#)),
+    ("scope_not_object", #"{"https://auth.x.ai::desktop-client":"nope"}"#),
+    ("both_scopes", #"{"https://accounts.x.ai/sign-in":{"email":"l@x.ai","key":"k","user_id":"lu"},"https://auth.x.ai::zz":{"email":"o@x.ai","key":"k2","user_id":"ou"},"https://auth.x.ai::aa":{"email":"a@x.ai","key":"k3","user_id":"au"}}"#),
+    ("not_object", "[1,2]"),
+    ("not_json", "nope"),
+    ("empty_object", "{}"),
+    ("non_string_fields", oauth(#"{"key":"k","user_id":"u","email":5,"team_id":true}"#)),
+    ("unicode", oauth(#"{"key":"k","email":"ü@例え.jp","user_id":"Ü-ID","team_name":"日本語 チーム"}"#)),
+    ("d_offset_nocolon", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05+0800"}"#)),
+    ("d_offset_hour", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05+08"}"#)),
+    ("d_comma_frac", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05,5Z"}"#)),
+    ("d_space_sep", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02 03:04:05Z"}"#)),
+    ("d_leading_space", oauth(#"{"key":"k","user_id":"u","expires_at":" 2099-01-02T03:04:05Z "}"#)),
+    ("d_short_month", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-1-2T03:04:05Z"}"#)),
+    ("d_hour24", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T24:00:00Z"}"#)),
+    ("d_feb30", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-02-30T00:00:00Z"}"#)),
+    ("d_sec60", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:60Z"}"#)),
+    ("d_empty_frac", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05.Z"}"#)),
+    ("d_long_frac", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05.1239999999999Z"}"#)),
+    ("d_frac_999", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05.9996Z"}"#)),
+    ("d_year5", oauth(#"{"key":"k","user_id":"u","expires_at":"12099-01-02T03:04:05Z"}"#)),
+    ("d_date_only", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02"}"#)),
+    ("d_neg_offset_ms", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05.999-00:30"}"#)),
+    ("d_offset_9999", oauth(#"{"key":"k","user_id":"u","expires_at":"2099-01-02T03:04:05+99:99"}"#)),
+    ("d_epoch", oauth(#"{"key":"k","user_id":"u","expires_at":"1970-01-01T00:00:00Z"}"#)),
+    ("d_pre_epoch", oauth(#"{"key":"k","user_id":"u","expires_at":"1969-12-31T23:59:59.9996Z"}"#)),
+    ("d_number", oauth(#"{"key":"k","user_id":"u","expires_at":1785499200}"#)),
+]
+var docRows: [[String: Any]] = []
+for (name, input) in docInputs {
+    var row: [String: Any] = ["name": name, "input": input]
+    do {
+        let d = try GrokAuthDocument.parse(Data(input.utf8))
+        row["ok"] = true
+        row["stableID"] = d.stableID
+        row["displayName"] = d.identity.resolvedDisplayName
+        row["scopes"] = d.managedScopeKeys
+        row["identity"] = identityJSON(d.identity)
+        row["requiresReauth"] = d.requiresReauthentication(at: reauthProbe)
+        if let at = try? d.accessToken() { row["accessToken"] = at }
+        if let rt = try? d.refreshToken() { row["refreshToken"] = rt }
+        row["refreshed"] = (try? str(GrokAuthDocument.applyingTokenRefresh(
+            to: Data(input.utf8), accessToken: " new-access ", refreshToken: " new-refresh ", expiresIn: 3600, now: fixedNow))) ?? "ERR"
+        row["refreshedNoRotation"] = (try? str(GrokAuthDocument.applyingTokenRefresh(
+            to: Data(input.utf8), accessToken: "a2", refreshToken: nil, expiresIn: nil, now: fixedNow))) ?? "ERR"
+        row["refreshedBlankRefresh"] = (try? str(GrokAuthDocument.applyingTokenRefresh(
+            to: Data(input.utf8), accessToken: "a3", refreshToken: "  ", expiresIn: 0, now: fixedNow))) ?? "ERR"
+    } catch {
+        row["ok"] = false
+        row["error"] = errName(error)
+    }
+    docRows.append(row)
+}
+// Token refresh edge errors.
+var refreshErrors: [[String: Any]] = []
+for (name, input) in [("oauth_full", docInputs[0].1)] {
+    do { _ = try GrokAuthDocument.applyingTokenRefresh(to: Data(input.utf8), accessToken: "   ", refreshToken: nil, expiresIn: nil, now: fixedNow); refreshErrors.append(["name": name, "error": "none"]) }
+    catch { refreshErrors.append(["name": name, "error": errName(error)]) }
+}
+try write("account_swift_documents.json", ["rows": docRows, "refreshErrors": refreshErrors])
+
+// 2. Layout probe: key order, slashes, numbers, nesting, unicode, escapes.
+let layoutInput = #"""
+{"https://auth.x.ai::desktop-client":{"key":"k","user_id":"u","zeta":1,"Alpha":2,"alpha":3,"_under":4,"Ünï":5,"日本":6,"path":"a/b\/c","nested":{"b":[1,2.5,{"y":null,"X":true}],"a":{}},"emptyArr":[],"num":[1.0,0.10,1e3,-0,12345678901234567890,3.14159],"esc":"q\"uote\\back\nnl\ttab\u0001ctl","uni":"é😀 x","slash2":"https:\/\/x.ai"},"xai::api_key":{"key":"api","Z":1,"a":2}}
+"""#
+var layoutRows: [[String: Any]] = []
+do {
+    let official = layoutInput
+    let target = oauth(#"{"email":"t@x.ai","key":"tk","user_id":"tu","Beta":[3,2,1],"x/y":"p/q"}"#)
+    layoutRows.append(["name": "merge_full", "official": official, "target": target,
+        "out": str(try GrokAuthDocument.replacingManagedScopes(in: Data(official.utf8), with: Data(target.utf8)))])
+    layoutRows.append(["name": "merge_nil_official", "target": target,
+        "out": str(try GrokAuthDocument.replacingManagedScopes(in: nil, with: Data(target.utf8)))])
+    layoutRows.append(["name": "refresh_layout",  "official": official,
+        "out": str(try GrokAuthDocument.applyingTokenRefresh(to: Data(official.utf8), accessToken: "na", refreshToken: "nr", expiresIn: 60, now: fixedNow))])
+    // target with legacy + oauth + api key: only the chosen managed scope is copied.
+    let multi = #"{"https://accounts.x.ai/sign-in":{"email":"l@x.ai","key":"k","user_id":"lu"},"https://auth.x.ai::bb":{"email":"b@x.ai","key":"kb","user_id":"bu"},"xai::api_key":{"key":"target-api"}}"#
+    let official2 = #"{"https://auth.x.ai::old":{"email":"o@x.ai","key":"ko","user_id":"ou"},"xai::api_key":{"key":"official-api"},"https://idp.example.com::c":{"key":"custom","user_id":"cu"},"https://accounts.x.ai/sign-in":{"key":"oldlegacy","user_id":"x"}}"#
+    layoutRows.append(["name": "merge_multi", "official": official2, "target": multi,
+        "out": str(try GrokAuthDocument.replacingManagedScopes(in: Data(official2.utf8), with: Data(multi.utf8)))])
+    let apiOnly = #"{"xai::api_key":{"key":"official-api"}}"#
+    layoutRows.append(["name": "merge_api_only_official", "official": apiOnly, "target": multi,
+        "out": str(try GrokAuthDocument.replacingManagedScopes(in: Data(apiOnly.utf8), with: Data(multi.utf8)))])
+}
+// Escapes, number forms and key ordering.
+let probe1 = #"{"https://auth.x.ai::desktop-client":{"key":"k","user_id":"u","e1":"b\bf\fl\u001fv\u000bd\u007fz\u0000n\u00e9\ud83d\ude00\u2029 \r","n":[1e20,1E-7,0.000001,123456789.123456789,-1.5e300,5e-324,100000000000000000000,9223372036854775807,9223372036854775808,-9223372036854775808,-9223372036854775809,18446744073709551615,18446744073709551616,0.5,100,1.0e2,1E2,-0.0,2e0,0.1e1,123456789012345678]}}"#
+layoutRows.append(["name": "escapes_numbers", "official": probe1,
+    "out": str(try GrokAuthDocument.applyingTokenRefresh(to: Data(probe1.utf8), accessToken: "na", refreshToken: nil, expiresIn: nil, now: fixedNow))])
+var keys = ["a-b", "a_b", "a b", "a.b", "a/b", "a:b", "a1", "a2", "a10", "A", "b", "B", "aB", "Ab", "ab", "AB", "a", "_", "-", ".", "0", "9", "Z", "z", "é", "e", "f", "E", "ÿ", "y", "z1", "Ω", "ω", "я", "ä", "a~", "a!", "a@", "a#", "a$", "a%", "a^", "a&", "a*", "a(", "a+", "a=", "a|", "a?", "a,", "a;", "a'", "a\"", "a<", "a`", "key2", "key_2", "key-2", "Key", "KEY", "keys", "ǆ", "ß", "ss", "ﬁ", "fi", "ø", "o", "p", "œ", "oe", "æ", "ae", "å", "aa"]
+var objParts: [String] = []
+for (i, k) in keys.enumerated() {
+    let data = try JSONSerialization.data(withJSONObject: [k], options: [])
+    let arr = str(data); let lit = String(arr.dropFirst().dropLast())
+    objParts.append("\(lit):\(i)")
+}
+let probe2 = "{\"https://auth.x.ai::desktop-client\":{\"key\":\"k\",\"user_id\":\"u\"," + objParts.joined(separator: ",") + "}}"
+layoutRows.append(["name": "key_order", "official": probe2,
+    "out": str(try GrokAuthDocument.applyingTokenRefresh(to: Data(probe2.utf8), accessToken: "na", refreshToken: nil, expiresIn: nil, now: fixedNow))])
+// Top-level (scope) key order.
+let probe3 = #"{"xai::api_key":{"key":"a"},"https://auth.x.ai::zeta":{"key":"k","user_id":"u"},"https://auth.x.ai::Alpha":{"key":"k","user_id":"u2"},"Https://x":{"a":1},"_x":{},"1":[]}"#
+layoutRows.append(["name": "scope_order", "official": probe3,
+    "out": str(try GrokAuthDocument.applyingTokenRefresh(to: Data(probe3.utf8), accessToken: "na", refreshToken: nil, expiresIn: nil, now: fixedNow))])
+try write("account_swift_layout.json", layoutRows)
+
+// 3. Paste importer.
+let pastes: [(String, String)] = [
+    ("full", oauth(#"{"auth_mode":"oidc","email":"paste@example.com","expires_at":"2099-08-01T12:00:00Z","key":"pk","oidc_client_id":"desktop-client","oidc_issuer":"https://auth.x.ai","principal_id":"pp","refresh_token":"pr","user_id":"pu"}"#)),
+    ("bare", #"{"email":"body@example.com","key":"bk","refresh_token":"br","user_id":"bu","principal_id":"bp"}"#),
+    ("bare_legacy", #"{"auth_mode":"web_login","email":"legacy-paste@example.com","key":"lk","user_id":"lu"}"#),
+    ("bare_grok_mode", #"{"auth_mode":"grok","email":"g@example.com","key":"lk","user_id":"gu"}"#),
+    ("bare_no_mode_no_refresh", #"{"email":"nm@example.com","key":"lk","user_id":"nmu"}"#),
+    ("bare_client", #"{"email":"c@example.com","key":"ck","user_id":"cu","oidc_client_id":"my-client"}"#),
+    ("bare_oidc_mode", #"{"auth_mode":"OIDC","email":"o@example.com","key":"ck","user_id":"ou"}"#),
+    ("bare_issuer_only", #"{"email":"i@example.com","key":"ck","user_id":"iu","oidc_issuer":"https://other.x.ai"}"#),
+    ("camel", #"{"email":"camel@example.com","accessToken":"ac","refreshToken":"rc","principal_id":"cp"}"#),
+    ("snake_access", #"{"email":"sa@example.com","access_token":"asn","user_id":"sau"}"#),
+    ("array", #"[{"email":"one@example.com","key":"a1","refresh_token":"r1","user_id":"u1","principal_id":"p1"},{"email":"two@example.com","key":"a2","refresh_token":"r2","user_id":"u2","principal_id":"p2"}]"#),
+    ("array_dupes", #"[{"email":"one@example.com","key":"a1","user_id":"u1"},{"email":"one@example.com","key":"a1b","user_id":"u1"}]"#),
+    ("notes", "here is my grok auth:\n{\"email\":\"notes@example.com\",\"key\":\"nk\",\"user_id\":\"nu\",\"refresh_token\":\"nr\"}\nthanks"),
+    ("ndjson", "{\"email\":\"l1@example.com\",\"key\":\"k1\",\"user_id\":\"u1\"}\n{\"email\":\"l2@example.com\",\"key\":\"k2\",\"user_id\":\"u2\"}\nnot json\n"),
+    ("api_only", #"{"xai::api_key":{"auth_mode":"api_key","key":"xai-key"}}"#),
+    ("hello", #"{"hello":"world"}"#),
+    ("bare_token", "just-a-bare-token-without-identity-fields"),
+    ("token_only", #"{"key":"token-only-no-identity"}"#),
+    ("empty", "   "),
+    ("mixed_array", #"[{"hello":1},{"email":"m@example.com","key":"mk","user_id":"mu"},5,"x"]"#),
+    ("nested_authroot_in_array", "[" + oauth(#"{"key":"k","user_id":"na"}"#) + "]"),
+    ("unicode_slash", #"{"email":"é@example.com","key":"a/b","user_id":"uni","team_name":"日本"}"#),
+]
+var pasteRows: [[String: Any]] = []
+for (name, text) in pastes {
+    let payloads = GrokAccountImporter().parsePayloads(from: text)
+    pasteRows.append(["name": name, "text": text, "payloads": payloads.map(str)])
+}
+try write("account_swift_paste.json", pasteRows)
+
+// 4. OAuth auth document.
+var oauthRows: [[String: Any]] = []
+func bundle(_ access: String, _ refresh: String, _ expires: Int?, _ email: String?, _ subject: String?) -> GrokOAuthLogin.TokenBundle {
+    .init(accessToken: access, refreshToken: refresh, idToken: nil, tokenType: nil, expiresIn: expires, email: email, subject: subject,
+          tokenEndpoint: URL(string: "https://auth.x.ai/oauth2/token")!)
+}
+let bundles: [(String, GrokOAuthLogin.TokenBundle)] = [
+    ("full", bundle("acc", "ref", 3600, "Device@Example.com", "sub-1")),
+    ("email_only", bundle("acc", "ref", 3600, "Mail@Example.com", nil)),
+    ("subject_only", bundle("acc", "", nil, nil, "sub-2")),
+    ("no_refresh_zero_expiry", bundle("acc", "", 0, "z@example.com", "sub-3")),
+    ("padded", bundle("acc", "ref", nil, "  pad@example.com ", " sub-4 ")),
+    ("none", bundle("acc", "ref", nil, nil, nil)),
+    ("blank", bundle("acc", "ref", nil, "   ", "  ")),
+]
+for (name, b) in bundles {
+    do {
+        let d = try GrokOAuthLogin.makeAuthDocumentData(tokens: b, now: fixedNow)
+        oauthRows.append(["name": name, "out": str(d), "stableID": try GrokAuthDocument.parse(d).stableID])
+    } catch { oauthRows.append(["name": name, "error": "\(error)"]) }
+}
+try write("account_swift_oauth.json", oauthRows)
+
+// 5. Store sequence: index, credentials, pack, preview ids.
+func cred(_ email: String, _ user: String, access: String = "tok-access", refresh: String = "tok-refresh", team: String? = nil, expires: String = "2099-08-01T12:00:00Z") -> Data {
+    var body: [String: Any] = ["auth_mode": "oidc", "create_time": "2026-07-30T12:00:00Z", "email": email, "expires_at": expires,
+        "key": access, "oidc_client_id": "desktop-client", "oidc_issuer": "https://auth.x.ai", "principal_id": "principal-\(user)",
+        "principal_type": "User", "refresh_token": refresh, "user_id": user, "x_extra": ["keep": "me/too", "n": 1]]
+    if let team { body["team_id"] = team; body["team_name"] = "Team \(team)" }
+    return try! JSONSerialization.data(withJSONObject: ["https://auth.x.ai::desktop-client": body], options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
+}
+let store = GrokAccountStore(rootURL: tmp.appendingPathComponent("accounts"), officialHomeURL: tmp.appendingPathComponent("official"))
+let t0 = Date(timeIntervalSince1970: 1_785_499_200.1235)
+let c1 = cred("Zed@example.com", "user-z")
+let c2 = cred("alpha@example.com", "user-a", team: "T-9")
+let c3 = Data(#"{"https://accounts.x.ai/sign-in":{"auth_mode":"grok","email":"legacy@example.com","key":"lk","user_id":"user-l"}}"#.utf8)
+let a1 = try store.upsertCredentialData(c1, makeCurrent: true, now: t0)
+let a2 = try store.upsertCredentialData(c2, makeCurrent: false, now: t0.addingTimeInterval(60))
+let a3 = try store.upsertCredentialData(c3, makeCurrent: false, now: t0.addingTimeInterval(120))
+// Rotation of a1 (same identity) keeps id/sort/created.
+let c1b = cred("Zed@example.com", "user-z", access: "tok-access-2", refresh: "tok-refresh-2")
+_ = try store.upsertCredentialData(c1b, makeCurrent: false, now: t0.addingTimeInterval(180))
+var m2 = try store.loadIndex().account(id: a2.id)!
+m2.alias = "Alpha / \u{00e9}"
+m2 = m2.applying(snapshot: GrokQuotaSnapshot(
+    plan: "SuperGrok", includedUsagePercent: 42.25,
+    period: GrokQuotaPeriod(kind: .weekly, startsAt: Date(timeIntervalSince1970: 1_785_000_000), resetsAt: Date(timeIntervalSince1970: 1_785_600_000.5)),
+    includedLimitCents: 10_000, includedUsedCents: 4_225, prepaidBalanceCents: 500, onDemandEnabled: false,
+    onDemandUsedCents: nil, onDemandLimitCents: nil,
+    productUsage: [GrokProductUsage(product: "GrokBuild", usagePercent: 12.5)],
+    isUnifiedBillingUser: true, source: .current, updatedAt: Date(timeIntervalSince1970: 1_785_499_500.25)))
+try store.updateMetadata(m2)
+var m3 = try store.loadIndex().account(id: a3.id)!
+m3 = m3.applying(error: "authentication_required", requiresReauth: true)
+try store.updateMetadata(m3)
+try store.reorder(ids: [a3.id, a1.id])
+try store.setCurrentAccountID(a2.id, lastUsedAt: t0.addingTimeInterval(300))
+let storeIndex = try String(contentsOf: store.indexURL, encoding: .utf8)
+let exp = try GrokAccountExporter(store: store, appVersion: "0.0.87").export(accountIDs: [a1.id, a2.id, a3.id, "missing"], now: Date(timeIntervalSince1970: 1_785_500_000.5))
+let packData = try AccountTransferCodec.encode(exp.pack)
+let ordered = try store.loadIndex().orderedAccounts().map(\.id)
+let preview = GrokAccountTransferImporter(store: store).previewFiles(at: [])
+var packFile = tmp.appendingPathComponent("pack.json")
+try packData.write(to: packFile)
+let previewPack = GrokAccountTransferImporter(store: store).previewFiles(at: [packFile])
+// Preview against an empty store: ids and conflicts.
+let emptyStore = GrokAccountStore(rootURL: tmp.appendingPathComponent("accounts2"), officialHomeURL: tmp.appendingPathComponent("official2"))
+let previewEmpty = GrokAccountTransferImporter(store: emptyStore).previewFiles(at: [packFile])
+func describe(_ p: GrokAccountImportPreview) -> [String: Any] {
+    ["failures": p.failures, "sourceIsPack": p.sourceIsPack,
+     "items": p.items.map { item -> [String: Any] in
+        var conflict = "willAdd"; var existing = ""
+        if case let .willUpdate(name) = item.preview.conflict { conflict = "willUpdate"; existing = name }
+        return ["id": item.preview.id, "displayName": item.preview.displayName, "detail": item.preview.detail ?? "",
+                "conflict": conflict, "existing": existing, "alias": item.alias ?? "", "credential": str(item.credentialData)] }]
+}
+// Paste text file preview.
+let pasteFile = tmp.appendingPathComponent("paste.txt")
+try Data("{\"email\":\"p1@example.com\",\"key\":\"k1\",\"user_id\":\"u1\"}\n{\"email\":\"p2@example.com\",\"key\":\"k2\",\"user_id\":\"u2\"}".utf8).write(to: pasteFile)
+let previewPaste = GrokAccountTransferImporter(store: emptyStore).previewFiles(at: [pasteFile])
+let missingPreview = GrokAccountTransferImporter(store: emptyStore).previewFiles(at: [])
+var credentials: [String: String] = [:]
+for id in [a1.id, a2.id, a3.id] { credentials[id] = str(try store.loadCredentialData(id: id)) }
+try write("account_swift_store.json", [
+    "ids": [a1.id, a2.id, a3.id], "index": storeIndex, "credentials": credentials, "ordered": ordered,
+    "pack": str(packData), "exportedCount": exp.exportedCount, "failures": exp.failures,
+    "previewWithStore": describe(previewPack), "previewEmptyStore": describe(previewEmpty),
+    "previewPaste": describe(previewPaste), "previewNone": describe(missingPreview),
+    "sources": [str(c1), str(c2), str(c3), str(c1b)],
+])
+// JSONEncoder layout of an empty index and an empty-array quota.
+let emptyStore2 = GrokAccountStore(rootURL: tmp.appendingPathComponent("accounts3"), officialHomeURL: tmp.appendingPathComponent("official3"))
+try emptyStore2.saveIndex(GrokAccountIndex())
+let emptyIndexText = try String(contentsOf: emptyStore2.indexURL, encoding: .utf8)
+var q = GrokQuotaSnapshot(plan: nil, includedUsagePercent: 0.1, period: nil, prepaidBalanceCents: nil, onDemandEnabled: nil,
+    onDemandUsedCents: nil, onDemandLimitCents: nil, productUsage: [], source: .legacyFlat, updatedAt: Date(timeIntervalSince1970: 1_785_499_200))
+let one = try emptyStore2.upsertCredentialData(cred("q@example.com", "user-q"), makeCurrent: true, now: t0)
+try emptyStore2.updateMetadata(one.applying(snapshot: q))
+let quotaIndexText = try String(contentsOf: emptyStore2.indexURL, encoding: .utf8)
+try write("account_swift_index_layout.json", ["empty": emptyIndexText, "quota": quotaIndexText])
+// Store sanitization + official home resolution.
+var sanitize: [[String: String]] = []
+for id in ["grok-abc", "a/b c", "..", "", "日本-1", "x.y_z", "é"] {
+    sanitize.append(["id": id, "dir": store.accountDirectory(id: id).lastPathComponent])
+}
+let home = URL(fileURLWithPath: "/Users/example", isDirectory: true)
+var homes: [[String: String]] = []
+for env in ["/Volumes/iso", "~", "~/alt", "", "rel/path", "/a/../b"] {
+    homes.append(["env": env, "home": GrokAccountStore.resolveOfficialHome(environment: env.isEmpty ? [:] : ["GROK_HOME": env], homeDirectory: home).path])
+}
+try write("account_swift_paths.json", ["sanitize": sanitize, "homes": homes])
+print("ok")

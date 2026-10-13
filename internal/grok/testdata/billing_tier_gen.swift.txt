@@ -1,0 +1,30 @@
+import Foundation
+import QuosparrCore
+// usage: tier <in.json> <out.json>; in = JSON array of {kind:"jwt"|"raw"|"claim", v:string|number}
+let args = CommandLine.arguments
+let input = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: args[1]))) as! [[String: Any]]
+var out: [Any] = []
+for item in input {
+    let kind = item["kind"] as! String
+    switch kind {
+    case "payload":
+        // v = raw payload JSON text; builds a token with base64url (no padding) of it
+        let text = item["v"] as! String
+        let b64 = Data(text.utf8).base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")
+        let token = "h." + b64 + ".s"
+        let c = GrokSubscriptionTier.jwtTierClaim(from: token)
+        out.append(["claim": c.map { String($0) } ?? NSNull(), "name": GrokSubscriptionTier.displayName(fromAccessToken: token) ?? NSNull()] as [String: Any])
+    case "token":
+        let token = item["v"] as! String
+        let c = GrokSubscriptionTier.jwtTierClaim(from: token)
+        out.append(["claim": c.map { String($0) } ?? NSNull(), "name": GrokSubscriptionTier.displayName(fromAccessToken: token) ?? NSNull()] as [String: Any])
+    case "raw":
+        let s = item["v"] as? String
+        let t = GrokSubscriptionTier.resolve(s)
+        let d = GrokSubscriptionTier.displayName(from: s)
+        out.append(["tier": t.displayName, "name": d ?? NSNull()] as [String: Any])
+    default:
+        out.append(NSNull())
+    }
+}
+try JSONSerialization.data(withJSONObject: out).write(to: URL(fileURLWithPath: args[2]))

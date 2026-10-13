@@ -3,42 +3,42 @@
 import PackageDescription
 
 let package = Package(
-    name: "CodexRunway",
+    name: "Quosparr",
     defaultLocalization: "en",
     platforms: [
         .macOS(.v12),
     ],
     products: [
-        .executable(name: "CodexRunway", targets: ["CodexRunway"]),
-        .executable(name: "CodexRunwayCostBenchmark", targets: ["CodexRunwayCostBenchmark"]),
-        .library(name: "CodexRunwayCore", targets: ["CodexRunwayCore"]),
+        .executable(name: "Quosparr", targets: ["Quosparr"]),
+        .executable(name: "QuosparrCostBenchmark", targets: ["QuosparrCostBenchmark"]),
+        .library(name: "QuosparrCore", targets: ["QuosparrCore"]),
     ],
     dependencies: [
         .package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.9.3"),
     ],
     targets: [
         .target(
-            name: "CodexRunwayCore",
+            name: "QuosparrCore",
             linkerSettings: [
                 .linkedLibrary("sqlite3"),
             ]),
         .target(
-            name: "CodexRunwayWidget",
-            dependencies: ["CodexRunwayCore"],
+            name: "QuosparrWidget",
+            dependencies: ["QuosparrCore"],
             resources: [.process("Resources")]),
         .executableTarget(
-            name: "CodexRunway",
+            name: "Quosparr",
             dependencies: [
-                "CodexRunwayCore",
+                "QuosparrCore",
                 .product(name: "Sparkle", package: "Sparkle"),
             ]),
         .executableTarget(
-            name: "CodexRunwayCostBenchmark",
-            dependencies: ["CodexRunwayCore"]),
+            name: "QuosparrCostBenchmark",
+            dependencies: ["QuosparrCore"]),
         .testTarget(
-            name: "CodexRunwayCoreTests",
-            dependencies: ["CodexRunwayCore"]),
+            name: "QuosparrCoreTests",
+            dependencies: ["QuosparrCore"]),
         .testTarget(
-            name: "CodexRunwayTests",
-            dependencies: ["CodexRunway", "CodexRunwayCore", "CodexRunwayWidget"]),
+            name: "QuosparrTests",
+            dependencies: ["Quosparr", "QuosparrCore", "QuosparrWidget"]),
     ])

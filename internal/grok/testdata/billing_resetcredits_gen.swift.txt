@@ -1,0 +1,25 @@
+import Foundation
+import QuosparrCore
+// usage: rc in.json out.json ; in = array of hex strings
+let args = CommandLine.arguments
+let input = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: args[1]))) as! [String]
+let now = Date(timeIntervalSince1970: 1_786_601_000)
+func unhex(_ s: String) -> Data {
+    var d = Data(); var i = s.startIndex
+    while i < s.endIndex { let j = s.index(i, offsetBy: 2); d.append(UInt8(s[i..<j], radix: 16)!); i = j }
+    return d
+}
+func ts(_ d: Date?) -> Any { d.map { String(format: "%.9f", $0.timeIntervalSince1970) as Any } ?? NSNull() }
+var out: [Any] = []
+for h in input {
+    do {
+        let s = try GrokResetCreditsSnapshot.decode(from: unhex(h), now: now)
+        let toks: [Any] = s.tokens.map { [$0.tokenID, ts($0.validityStart), ts($0.validityEnd), $0.isAvailable(now: now)] as [Any] }
+        let m = s.asResetCreditsSnapshot()
+        let credits: [Any] = m.credits.map { [$0.id, $0.status, ts($0.createdAt), ts($0.expiresAt), String(format: "%.6f", $0.remainingSeconds)] as [Any] }
+        out.append(["n": s.availableCount, "t": toks, "c": credits, "u": ts(s.updatedAt)] as [String: Any])
+    } catch {
+        out.append(["err": String(describing: error)])
+    }
+}
+try JSONSerialization.data(withJSONObject: out).write(to: URL(fileURLWithPath: args[2]))

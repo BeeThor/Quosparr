@@ -1,0 +1,18 @@
+import Foundation
+import QuosparrCore
+// usage: pricing in.json out.json ; in = [{m: model, i, c, o}]
+let args = CommandLine.arguments
+let input = try JSONSerialization.jsonObject(with: Data(contentsOf: URL(fileURLWithPath: args[1]))) as! [[String: Any]]
+var out: [Any] = []
+for item in input {
+    let m = item["m"] as! String
+    let i = item["i"] as! Int, c = item["c"] as! Int, o = item["o"] as! Int
+    let p = GrokPricingTable.price(for: m)
+    let cost = GrokPricingTable.cost(model: m, inputTokens: i, cachedInputTokens: c, outputTokens: o)
+    func d(_ x: Decimal?) -> Any { x.map { "\($0)" as Any } ?? NSNull() }
+    out.append([
+        "price": p.map { [d($0.inputPerMillion), d($0.cachedInputPerMillion), d($0.outputPerMillion), d($0.longContextInputPerMillion), d($0.longContextCachedInputPerMillion), d($0.longContextOutputPerMillion), $0.longContextThresholdTokens] as [Any] } ?? NSNull(),
+        "cost": d(cost),
+    ] as [String: Any])
+}
+try JSONSerialization.data(withJSONObject: out).write(to: URL(fileURLWithPath: args[2]))

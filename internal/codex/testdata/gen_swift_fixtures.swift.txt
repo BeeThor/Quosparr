@@ -1,0 +1,102 @@
+import Foundation
+
+// Deterministic fixture generator for internal/codex/testdata. Fake tokens only.
+let out = URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: true)
+try FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
+let tmp = FileManager.default.temporaryDirectory.appendingPathComponent("cxgen-\(UUID().uuidString)", isDirectory: true)
+defer { try? FileManager.default.removeItem(at: tmp) }
+
+func b64url(_ d: Data) -> String {
+    d.base64EncodedString().replacingOccurrences(of: "+", with: "-")
+        .replacingOccurrences(of: "/", with: "_").replacingOccurrences(of: "=", with: "")
+}
+func jwt(_ payload: [String: Any]) -> String {
+    let data = try! JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys])
+    return [Data(#"{"alg":"none"}"#.utf8), data, Data()].map(b64url).joined(separator: ".")
+}
+func sample(accountId: String, email: String, refresh: String, plan: String = "plus",
+            userId: String? = nil, subject: String? = nil, org: String? = nil, exp: Int = 4_100_000_000) -> CodexAuth {
+    var claims: [String: Any] = ["chatgpt_account_id": accountId, "chatgpt_plan_type": plan,
+                                 "chatgpt_subscription_active_until": "2099-01-02T03:04:05+00:00"]
+    if let userId { claims["chatgpt_user_id"] = userId }
+    if let org { claims["organizations"] = [["id": "org-\(accountId)", "is_default": true, "title": org]] }
+    var payload: [String: Any] = ["email": email, "https://api.openai.com/auth": claims]
+    if let subject { payload["sub"] = subject }
+    return CodexAuth(authMode: "chatgpt", tokens: .init(
+        idToken: jwt(payload), accessToken: jwt(["exp": exp, "sub": "s-" + accountId]),
+        refreshToken: refresh, accountId: accountId), lastRefresh: "2026-06-29T00:00:00Z", planType: plan)
+}
+func write(_ name: String, _ data: Data) throws { try data.write(to: out.appendingPathComponent(name)) }
+
+// 1. Account IDs and match keys.
+struct Case { var name: String; var auth: CodexAuth }
+let apiAuth = CodexAuth.apiKey(apiKey: "sk-test-key-1234567890")
+let cases: [Case] = [
+    Case(name: "user_workspace", auth: sample(accountId: "acct-a", email: "a@example.com", refresh: "refresh-a-token-value-padding", userId: "user-Aa1")),
+    Case(name: "subject_workspace", auth: sample(accountId: "acct-b", email: "b@example.com", refresh: "refresh-b-token-value-padding", subject: "sub-b")),
+    Case(name: "email_workspace", auth: sample(accountId: "acct-c", email: "C@Example.com", refresh: "refresh-c-token-value-padding")),
+    Case(name: "unicode_email", auth: sample(accountId: "acct-ü-日本", email: "ü@example.com", refresh: "refresh-d-token-value-padding", userId: "user-é")),
+    Case(name: "org_fallback", auth: CodexAuth(authMode: "chatgpt", tokens: .init(
+        idToken: jwt(["https://api.openai.com/auth": ["chatgpt_user_id": "u-org", "organizations": [["id": "org-1", "is_default": true, "title": "WS"]]]]),
+        accessToken: jwt(["exp": 4_100_000_000]), refreshToken: "refresh-org-token-value-padding", accountId: nil), lastRefresh: nil)),
+    Case(name: "api_key", auth: apiAuth),
+]
+var ids: [[String: String]] = []
+for c in cases {
+    let acct = ManagedAccount.make(auth: c.auth, now: Date(timeIntervalSince1970: 1_700_000_000))
+    ids.append(["name": c.name, "matchKey": AccountIdentity.matchKey(for: c.auth), "id": AccountIdentity.managedAccountId(for: c.auth),
+                "displayName": acct.displayName, "accountId": acct.accountId ?? "", "email": acct.email ?? "", "planType": acct.planType ?? "",
+                "userId": acct.userId ?? "", "subjectId": acct.subjectId ?? "", "workspaceName": acct.workspaceName ?? "",
+                "idToken": c.auth.tokens.idToken ?? "", "accessToken": c.auth.tokens.accessToken, "refreshToken": c.auth.tokens.refreshToken,
+                "tokenAccountId": c.auth.tokens.accountId ?? "", "apiKey": c.auth.openAIAPIKey ?? "", "authMode": c.auth.authMode ?? ""])
+}
+for s in ["", "a", "hello", "日本語", "rt-refresh-token-value"] { ids.append(["name": "hash", "input": s, "hash": AccountIdentity.stableHash(s)]) }
+try write("swift_ids.json", JSONSerialization.data(withJSONObject: ids, options: [.prettyPrinted, .sortedKeys]))
+
+// 2. Store: index, credentials, official auth, pack.
+let store = AccountStore(rootURL: tmp.appendingPathComponent("accounts"), officialAuthURL: tmp.appendingPathComponent("official/auth.json"))
+let t0 = Date(timeIntervalSince1970: 1_700_000_000.123456)
+let a1 = try store.upsert(auth: cases[0].auth, makeActive: true, alias: "Alpha / one", note: "n\u{00e9}te \"quoted\"", now: t0)
+let a2 = try store.upsert(auth: cases[1].auth, now: t0.addingTimeInterval(60))
+let a3 = try store.upsert(auth: apiAuth, now: t0.addingTimeInterval(120))
+var m2 = try store.loadIndex().account(id: a2.id)!
+m2.cachedQuota = CachedAccountQuota(plan: "plus", primaryUsedPercent: 42, primaryResetsAt: Date(timeIntervalSince1970: 1_700_018_000.5),
+    primaryWindowMinutes: 300, secondaryUsedPercent: 7, secondaryResetsAt: Date(timeIntervalSince1970: 1_700_600_000),
+    secondaryWindowMinutes: 10_080,
+    additionalMeters: [CachedQuotaMeterRow(id: "additional-0-Spark", windowMinutes: 300, name: "Spark", usedPercent: 11, resetsAt: nil)],
+    updatedAt: Date(timeIntervalSince1970: 1_700_000_500.25))
+m2.lastQuotaAt = Date(timeIntervalSince1970: 1_700_000_500.25)
+m2.lastError = "boom"
+m2.requiresReauth = true
+m2.subscriptionExpiresAt = Date(timeIntervalSince1970: 4_000_000_000)
+m2.workspaceName = "WS \u{65e5}\u{672c}"
+try store.updateMetadata(m2)
+try store.saveOfficialAuth(cases[0].auth)
+try write("swift_index.json", Data(contentsOf: store.indexURL))
+try write("swift_cred_oauth.json", store.loadCredentialData(id: a1.id))
+try write("swift_cred_apikey.json", store.loadCredentialData(id: a3.id))
+try write("swift_official_auth.json", Data(contentsOf: store.officialAuthURL))
+try write("swift_account_ids.json", JSONSerialization.data(withJSONObject: [a1.id, a2.id, a3.id]))
+
+let exp = try AccountExporter(store: store, appVersion: "0.0.87").export(accountIDs: [a1.id, a2.id, a3.id], now: Date(timeIntervalSince1970: 1_700_000_000.5))
+try write("swift_pack.json", AccountTransferCodec.encode(exp.pack))
+let grokPack = AccountTransferPack(provider: .grok, exportedAt: Date(timeIntervalSince1970: 1_700_000_000), accounts: [
+    AccountTransferEntry(id: "g1", alias: "G", displayName: "Grok A", email: "g@x.ai", credential: Data(#"{"k":{"a":1,"b":"x/y"}}"#.utf8))])
+try write("swift_pack_grok.json", AccountTransferCodec.encode(grokPack))
+
+// 3. Dates: how Swift rounds sub-millisecond values.
+let f = ISO8601DateFormatter(); f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+var dates: [[String: Any]] = []
+for ts in [1_700_000_000.0, 1_700_000_000.1234, 1_700_000_000.1235, 1_700_000_000.9996, 1_700_000_000.0004, 1_700_000_000.123456, 0.0, -1.5] {
+    dates.append(["ts": ts, "text": f.string(from: Date(timeIntervalSince1970: ts))])
+}
+try write("swift_dates.json", JSONSerialization.data(withJSONObject: dates, options: [.prettyPrinted, .sortedKeys]))
+
+// 4. Privacy mask.
+var masks: [[String: String]] = []
+for s in ["example@qq.com", "maxwmm1999@outlook.com", "  example@qq.com  ", "user@mail.qq.com", "a@qq.com", "user@localhost", "alice", "张三", "a", "", "   ",
+          "example@qq.com: missing", "see example@qq.com.", "no address here", "e***@***.com", "@x.com", "a@", "a@b.", "x@y@z.com", "foo bar@baz.org tail", "mail me (a@b.co), or <c@d.io>;", "e\u{0301}x@y.com", "👨‍👩‍👧 family", "@"] {
+    masks.append(["in": s, "mask": AccountPrivacyMask.mask(s), "emails": AccountPrivacyMask.maskEmails(in: s)])
+}
+try write("swift_mask.json", JSONSerialization.data(withJSONObject: masks, options: [.prettyPrinted, .sortedKeys]))
+print("ok")

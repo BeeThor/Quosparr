@@ -2,8 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, v1]
   pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -13,7 +20,7 @@ jobs:
       - name: Swift version
         run: swift --version
       - name: Test Swift
-        run: swift test
+        run: bash Scripts/test-swift.sh
 
   build:
     runs-on: macos-26
@@ -27,9 +34,134 @@ jobs:
         env:
           EXPECTED_MACOS_SDK_MAJOR: "26"
           INCLUDE_WIDGET: "1"
-          RUNWAY_BUNDLE_ID: com.github.codex-runway.dev
-          RUNWAY_APP_GROUP_ID: group.com.github.codex-runway.dev
+          RUNWAY_BUNDLE_ID: com.quosparr.app.dev
+          RUNWAY_APP_GROUP_ID: group.com.quosparr.app.dev
           RUNWAY_WIDGET_STORAGE_MODE: local
         run: ARCH=${{ matrix.arch }} bash Scripts/package-app.sh
       - name: Verify embedded widget ${{ matrix.arch }}
-        run: bash Scripts/verify-packaged-app.sh dist/CodexRunway.app ${{ matrix.arch }} local
+        run: bash Scripts/verify-packaged-app.sh dist/Quosparr.app ${{ matrix.arch }} local
+
+  go-checks:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Vet and race tests without desktop interaction
+        run: |
+          go vet ./...
+          go test -race -count=1 ./...
+      - name: Compile all six targets
+        run: |
+          for target in darwin/arm64 darwin/amd64 windows/amd64 windows/arm64 linux/amd64 linux/arm64; do
+            GOOS="${target%/*}" GOARCH="${target#*/}" CGO_ENABLED=0 go build ./...
+          done
+      - name: Check release helpers
+        run: |
+          python3 Scripts/Tests/test-v1-release.py
+          python3 Scripts/Tests/test-v1-homebrew.py
+          python3 Scripts/Tests/test-v1-platform.py
+          python3 Scripts/Tests/test-workflow-drafts.py
+
+  go-native-tests:
+    needs: go-checks
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+            arch: amd64
+          - os: windows-11-arm
+            platform: windows
+            arch: arm64
+          - os: ubuntu-latest
+            platform: linux
+            arch: amd64
+          - os: ubuntu-24.04-arm
+            platform: linux
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Install NSIS compiler
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install nsis --no-progress --yes
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $nsisDirectory = Join-Path ${env:ProgramFiles(x86)} 'NSIS'
+          if (-not (Test-Path "$nsisDirectory\makensis.exe")) { throw 'NSIS compiler missing' }
+          $nsisDirectory >> $env:GITHUB_PATH
+      - name: Install Linux desktop build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libayatana-appindicator3-dev
+      - name: Test without desktop interaction
+        shell: bash
+        run: |
+          go vet ./...
+          go test -count=1 -timeout=5m ./...
+      - name: Build and verify development installer
+        shell: bash
+        env:
+          V1_DEVELOPMENT_PACKAGE: "1"
+          PLATFORM: ${{ matrix.platform }}
+          ARCH: ${{ matrix.arch }}
+        run: |
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            python3() { python "$@"; }
+            export -f python3
+          fi
+          export V1_BUILD_DIR="$PWD/build/v1-native"
+          bash Scripts/package-v1-platform.sh "$PLATFORM/$ARCH"
+      - name: Exercise native Windows installer and bundled SQLite
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./Scripts/verify-v1-windows-native.ps1 -Stage "build/v1-native/windows-${{ matrix.arch }}" -Arch "${{ matrix.arch }}"
+      - name: Exercise native Linux package and bundled SQLite
+        if: runner.os == 'Linux'
+        run: bash Scripts/verify-v1-linux-native.sh "build/v1-native/linux-${{ matrix.arch }}" "${{ matrix.arch }}"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: v1-development-${{ matrix.platform }}-${{ matrix.arch }}
+          path: |
+            build/v1-native/${{ matrix.platform }}-${{ matrix.arch }}/*.tar.gz
+            build/v1-native/${{ matrix.platform }}-${{ matrix.arch }}/*Setup*.exe
+            build/v1-native/${{ matrix.platform }}-${{ matrix.arch }}/*.deb
+          if-no-files-found: error
+          retention-days: 7
+
+  go-package-macos:
+    needs: go-checks
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Package and verify development apps
+        env:
+          V1_DEVELOPMENT_PACKAGE: "1"
+        run: |
+          # One runner builds both architectures, without launching either app
+          for arch in arm64 x86_64; do
+            export V1_BUILD_DIR="$RUNNER_TEMP/v1-development-$arch"
+            ARCH="$arch" bash Scripts/package-v1-app.sh
+            goarch="$arch"; [[ "$arch" != x86_64 ]] || goarch=amd64
+            bash Scripts/verify-v1-app.sh "$V1_BUILD_DIR/darwin-$goarch/Quosparr.app" "$arch" "$V1_BUILD_DIR/config/mygo.json"
+          done
+      - uses: actions/upload-artifact@v7
+        with:
+          name: v1-development-macos
+          path: |
+            ${{ runner.temp }}/v1-development-arm64/Quosparr-macos-arm64-dev.zip
+            ${{ runner.temp }}/v1-development-x86_64/Quosparr-macos-x86_64-dev.zip
+          if-no-files-found: error
+          retention-days: 7
