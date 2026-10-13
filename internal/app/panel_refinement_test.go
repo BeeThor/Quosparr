@@ -2,7 +2,6 @@ package app
 
 import (
 	"bytes"
-	"image/color"
 	"image/png"
 	"testing"
 	"time"
@@ -74,13 +73,22 @@ func TestPanelReactionFloatIsSmallAndNeutral(t *testing.T) {
 		if !ok || r.H > 13 {
 			t.Fatalf("floating text too large: %v", r)
 		}
+		ink := ui.RGBA(0, 0, 0, 0.5)
+		if dark {
+			ink = ui.RGBA(255, 255, 255, 0.55)
+		}
+		// ClearType can add colored edge pixels to neutral text. Compare to
+		// the same native renderer's known gray, at the same subpixel origin.
+		reference := ui.NewTester(func(c *ui.Context) {
+			applyTheme(c)
+			ui.Text(c, "+1").Absolute().Left(r.X).Top(r.Y).FontSize(9).FontWeight(500).TextColor(ink)
+		}, 180, 100)
+		reference.SetDark(dark)
 		img := tt.Image()
 		for y := int(r.Y); y < int(r.Y+r.H); y++ {
 			for x := int(r.X); x < int(r.X+r.W); x++ {
-				p := color.NRGBAModel.Convert(img.At(x, y)).(color.NRGBA)
-				// The gray glyph is translucent over a slightly tinted dark surface.
-				if absChannel(p.R, p.G) > 2 || absChannel(p.G, p.B) > 2 {
-					t.Fatalf("delta is not neutral gray in dark=%v: %v", dark, p)
+				if got, want := img.RGBAAt(x, y), reference.Image().RGBAAt(x, y); got != want {
+					t.Fatalf("delta is not neutral gray in dark=%v at (%d,%d): got %v, want %v", dark, x, y, got, want)
 				}
 			}
 		}
