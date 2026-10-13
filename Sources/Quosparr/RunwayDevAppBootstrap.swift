@@ -21,7 +21,7 @@ enum RunwayDevAppBootstrap {
     ) throws -> Bool {
         let script = sourceRoot
             .appendingPathComponent("Scripts", isDirectory: true)
-            .appendingPathComponent("run-dev-app.sh", isDirectory: false)
+            .appendingPathComponent("run-swift-dev-app.sh", isDirectory: false)
         let disabled = environment["QUOSPARR_DISABLE_DEV_APP"] == "1"
         guard shouldRelaunch(
             bundleURL: bundle.bundleURL,

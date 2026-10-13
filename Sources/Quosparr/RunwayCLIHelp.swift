@@ -3,7 +3,7 @@ import Foundation
 enum RunwayCLIHelp {
     static let text = """
     Usage: swift run Quosparr -- [options]
-           Scripts/run-dev-app.sh [options]
+           Scripts/run-swift-dev-app.sh [options]
 
     Options:
       -h, --help

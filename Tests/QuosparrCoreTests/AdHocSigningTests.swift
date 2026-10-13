@@ -27,7 +27,7 @@ struct AdHocSigningTests {
         let package = try String(contentsOf: repositoryRoot
             .appendingPathComponent("Scripts/package-app.sh"), encoding: .utf8)
         let dev = try String(contentsOf: repositoryRoot
-            .appendingPathComponent("Scripts/run-dev-app.sh"), encoding: .utf8)
+            .appendingPathComponent("Scripts/run-swift-dev-app.sh"), encoding: .utf8)
         let verify = try String(contentsOf: repositoryRoot
             .appendingPathComponent("Scripts/verify-packaged-app.sh"), encoding: .utf8)
         for script in [package, dev] {
@@ -41,9 +41,9 @@ struct AdHocSigningTests {
         #expect(verify.contains("NSAppDataUsageDescription"))
     }
 
-    @Test("run-dev-app.sh --help lists Quosparr flags without launching")
+    @Test("run-swift-dev-app.sh --help lists Quosparr flags without launching")
     func runDevAppHelp() throws {
-        let script = repositoryRoot.appendingPathComponent("Scripts/run-dev-app.sh")
+        let script = repositoryRoot.appendingPathComponent("Scripts/run-swift-dev-app.sh")
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/bash")
         process.arguments = [script.path, "-h"]

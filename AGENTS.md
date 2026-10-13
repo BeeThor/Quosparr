@@ -54,6 +54,7 @@ go vet ./...
 go build ./...
 go test -race -count=1 ./internal/...
 go run . --self-check
+bash Scripts/run-dev-app.sh
 V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 bash Scripts/test-swift.sh
 swift run Quosparr --self-check
@@ -134,7 +135,7 @@ V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 
 - Go 自检不请求网络、不解析凭据，只报告版本 / 平台、自有目录权限与可写性、锁状态、Codex auth 与会话索引是否存在；已有自有目录会创建并移除临时写入探针
 - 脱敏认证摘要、token 有效性、会话 dry-run 摘要、Grok CLI 版本、Grok 认证状态与身份仍明确列为 `not ported yet`，不能描述为 Swift 完整诊断
-- Go 桌面开发入口为 `go run .`，默认沿用临时 HOME 与独立偏好域；系统集成与升级验收使用一次性 VM，非隔离 Dev 运行仅在用户明确要求时执行
+- Go 桌面开发入口为 `bash Scripts/run-dev-app.sh`：以正式身份 `com.quosparr.app` 构建开发包（禁用更新器，`--widget` 时含 Widget）并在前台使用真实 HOME、数据与偏好运行，需先退出已安装实例；`mygo dev` 的 `.dev` 身份与正式应用冲突且无数据，不作为开发入口；隔离运行使用临时 HOME 加 `QUOSPARR_PREFS_DOMAIN=<测试域> go run .`；Swift 兼容应用使用 `Scripts/run-swift-dev-app.sh`；系统集成与升级验收使用一次性 VM
 - macOS 开发包输出到 `build/v1-<arch>/darwin-<goarch>/Quosparr.app` 和 `Quosparr-macos-<arch>-dev.zip`，目前保留正式 bundle 身份；正式打包默认 `V1_DEVELOPMENT_PACKAGE=0`，签名私钥通过发布环境提供
 - Widget 要求 macOS 14+，保留四类组件、供应商选择和深链，Windows / Linux 不提供 WidgetKit；现有桌面组件的升级接续仍需实际验收
 - Widget 快照为 schema 1，位于 `~/.quosparr/widget-snapshot.json`，权限 `0600`，只含非密钥派生数据，不含邮箱、账号 ID、token、完整认证 JSON 或事件原文；主程序是唯一写入者，组件只读

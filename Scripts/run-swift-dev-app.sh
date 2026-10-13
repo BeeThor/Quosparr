@@ -5,9 +5,10 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 usage() {
   cat <<'EOF'
-Usage: Scripts/run-dev-app.sh [options]
+Usage: Scripts/run-swift-dev-app.sh [options]
 
-Build and launch Quosparr Dev (widgets on macOS 14+).
+Build and launch the Swift compatibility app as Quosparr Dev (widgets on macOS 14+).
+For the Go (mygo) app use Scripts/run-dev-app.sh.
 Same as: swift run Quosparr -- [options]
 
 Options:
@@ -42,10 +43,10 @@ Environment:
       Skip wrapping into Quosparr-dev.app (raw swift run process).
 
 Examples:
-  Scripts/run-dev-app.sh
-  Scripts/run-dev-app.sh --dev-tier-badges
-  Scripts/run-dev-app.sh --self-check
-  Scripts/run-dev-app.sh --mock-reset-today=scheduled
+  Scripts/run-swift-dev-app.sh
+  Scripts/run-swift-dev-app.sh --dev-tier-badges
+  Scripts/run-swift-dev-app.sh --self-check
+  Scripts/run-swift-dev-app.sh --mock-reset-today=scheduled
   swift run Quosparr -- --dev-tier-badges
 EOF
 }
