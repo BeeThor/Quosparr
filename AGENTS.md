@@ -13,7 +13,7 @@ Quosparr 是一个原生 macOS 状态栏应用，用 Swift 编写，用于读取
 - 默认不引入第三方依赖；标准库和系统框架能解决的问题不要加包。在线更新功能批准使用 Sparkle。
 - 不创建 Xcode project，除非用户明确要求。
 - 状态栏应用必须保持 `LSUIElement=true`，不要显示 Dock 图标。
-- Go 版本和依赖版本以 `go.mod` 为准，首轮固定 Go 1.27.1、mygo v0.4.1；不将框架升级与迁移改动混在一起
+- Go 版本和依赖版本以 `go.mod` 为准，当前固定 Go 1.27.1、mygo v0.4.8；不将框架升级与迁移改动混在一起
 - mygo/ui 只负责原生界面与框架服务，不引入 WebView 前端；业务核心不能依赖 UI
 - purego 仅用于必要的平台 API、SQLite 和 Swift 桥接边界，按平台拆分并检查 ABI、资源生命周期与错误传播；不用它增加业务抽象
 - macOS Go 主应用使用 mygo 更新器，不嵌入 Sparkle 运行库；保留 Sparkle 公钥与 Quosparr Swift 的独立 ZIP / appcast，旧身份 appcast 仅提供手动下载链接，不做跨 bundle ID 自动安装
@@ -123,7 +123,7 @@ Quosparr v1 面向 macOS、Windows、Linux，主程序使用 Go + mygo/ui 原生
 
 ### 开发运行与 Widget
 
-使用 `go.mod` 固定的 Go 1.27.1 和 mygo v0.4.1，默认隔离运行示例：
+使用 `go.mod` 固定的 Go 1.27.1 和 mygo v0.4.8，默认隔离运行示例：
 
 ```bash
 QUOSPARR_TEST_HOME="$(mktemp -d)"

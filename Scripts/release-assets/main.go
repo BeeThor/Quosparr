@@ -1,4 +1,4 @@
-// release-assets signs final, post-processed archives using mygo v0.4.1's
+// release-assets signs final, post-processed archives using mygo v0.4.8's
 // Ed25519-over-SHA256 protocol; the private key is read only from the environment.
 package main
 
