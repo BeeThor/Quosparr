@@ -191,6 +191,10 @@ func run(command app.Command) int {
 		log.Println("updater:", err)
 	}
 	if upd != nil && !dev {
+		// Each launch checks once (when checks are on), then hourly.
+		if err := app.ForgetLastUpdateCheck(mg); err != nil {
+			log.Println("updater state:", err)
+		}
 		upd.Reapply(settings)
 	}
 	notifier := app.NewNotifier()

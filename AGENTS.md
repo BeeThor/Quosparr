@@ -103,7 +103,7 @@ Quosparr v1 面向 macOS、Windows、Linux，主程序使用 Go + mygo/ui 原生
 
 ### 更新与 Swift 用户迁移
 
-- 三端使用 mygo 原生更新器检查、下载、验签、安装和重启，自动检查遵循保存的偏好，默认不自动下载安装；开发包禁用更新器
+- 三端使用 mygo 原生更新器检查、下载、验签、安装和重启，自动检查遵循保存的偏好，开启时每次启动后检查一次、运行期间每小时检查一次（失败后 1 小时重试），默认不自动下载安装；开发包禁用更新器
 - 当前 Actions 只生成 Release 草稿，正式公开发布、latest 提升、固定 `v1-beta` 频道更新和 Homebrew 阶段均暂停；Beta 候选标签为 `beta-v<version>`，草稿标记 prerelease 且 `latest=false`
 - 恢复 Beta 分发后使用独立的 `v1-beta` 频道与不可变候选 Release，二者均为 prerelease 且 `latest=false`，不改生产 latest；稳定版标签 `v<version>` 必须匹配 `mygo.json` 的版本
 - 新身份是 `com.quosparr.app`、`quosparr://` 和 `~/.quosparr`，旧用户需退出旧应用后手动安装；旧 Sparkle feed 只提供下载页入口，Quosparr Swift 构建使用独立 feed，不能跨 bundle ID 自动安装
