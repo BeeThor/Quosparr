@@ -122,9 +122,10 @@ func renderCodexAccounts(c *ui.Context, u *settingsUI, f *accountForm, rt *liveA
 		ui.Text(c, l.Text(l10n.KeyAccountsEmpty)).FontSize(12).TextColor(c.Theme().TextMuted)
 	}
 	priv := u.s.Prefs().AccountPrivacyModeEnabled
-	for _, acc := range rows {
+	accountRows(c, len(rows), func(i int) {
+		acc := rows[i]
 		renderCodexSettingsRow(c, u, f, rt, acc, view.ActiveID, priv)
-	}
+	})
 }
 
 func renderGrokAccounts(c *ui.Context, u *settingsUI, f *accountForm, rt *liveApp) {
@@ -165,15 +166,16 @@ func renderGrokAccounts(c *ui.Context, u *settingsUI, f *accountForm, rt *liveAp
 		ui.Text(c, l.Text(l10n.KeyGrokAccountsEmpty)).FontSize(12).TextColor(c.Theme().TextMuted)
 	}
 	priv := u.s.Prefs().AccountPrivacyModeEnabled
-	for _, acc := range rows {
+	accountRows(c, len(rows), func(i int) {
+		acc := rows[i]
 		renderGrokAccountRow(c, u, f, rt, acc, view.ActiveID, priv)
-	}
+	})
 }
 
 func accountToolbar(c *ui.Context, u *settingsUI, f *accountForm, title string, menu func(*ui.Menu), export, refresh func() string) {
 	l := u.L()
-	ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-		ui.Text(c, title).FontSize(16).FontWeight(600).Grow(1).Basis(0).SingleLine()
+	ui.Row(c).Gap(8).Padding(0, 0, 0, 12).AlignItems(ui.Center).Children(func() {
+		ui.Text(c, title).FontSize(13).FontWeight(600).Grow(1).Basis(0).SingleLine()
 		if f.busy {
 			ui.Spinner(c).Size(14, 14)
 			if f.cancel != nil && PillButton(c, nil, l.Text(l10n.KeyCancel), false).Clicked() {
@@ -191,6 +193,21 @@ func accountToolbar(c *ui.Context, u *settingsUI, f *accountForm, title string, 
 	if f.status != "" {
 		ui.Text(c, f.status).FontSize(12).TextColor(c.Theme().TextMuted)
 	}
+}
+
+// accountRows is the box holding the account rows, with hairlines between.
+func accountRows(c *ui.Context, n int, row func(i int)) {
+	if n == 0 {
+		return
+	}
+	Panel(c).Children(func() {
+		for i := range n {
+			if i > 0 {
+				ui.Box(c).Height(1).Background(pal(c.Theme()).Line)
+			}
+			row(i)
+		}
+	})
 }
 
 func renderCodexRow(c *ui.Context, u *settingsUI, f *accountForm, rt *liveApp, acc codex.ManagedAccount, priv bool) {
@@ -234,7 +251,6 @@ func renderCodexSettingsRow(c *ui.Context, u *settingsUI, f *accountForm, rt *li
 			}
 		}).Disabled(f.busy || rt == nil)
 	})
-	ui.Box(c).Height(1).Background(pal(c.Theme()).Line)
 }
 
 func renderGrokAccountRow(c *ui.Context, u *settingsUI, f *accountForm, rt *liveApp, acc codex.ManagedAccount, current string, priv bool) {
@@ -270,7 +286,6 @@ func renderGrokAccountRow(c *ui.Context, u *settingsUI, f *accountForm, rt *live
 			}
 		}).Disabled(f.busy || rt == nil)
 	})
-	ui.Box(c).Height(1).Background(pal(c.Theme()).Line)
 }
 
 func maskAccount(on bool, value string) string {

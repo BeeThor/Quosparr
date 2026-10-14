@@ -435,6 +435,7 @@ func (a *App) OpenSettings() {
 		MinHeight:            settingsMinHeight,
 		TitleBarStyle:        mygo.TitleBarHidden,
 		TrafficLightPosition: &mygo.Point{X: 18, Y: 20},
+		Vibrancy:             settingsVibrancy(),
 		Content:              ui.View(a.setUI.view),
 	})
 	// Restore keeps the saved dimensions, so enlarge older small settings windows.

@@ -145,6 +145,18 @@ func readWindowMode(r *reader, key string) WindowMode {
 	return WindowModeAuto
 }
 
+// readThemeColor decodes the Go-only theme color. The Swift app never
+// rejects a key it does not know, so a value of any other form is the brand
+// color, not an error.
+func readThemeColor(r *reader, key string) string {
+	raw, ok := r.take(key)
+	var s string
+	if !ok || json.Unmarshal(raw, &s) != nil {
+		return ""
+	}
+	return NormalizeThemeColor(s)
+}
+
 // readModules decodes the module order. Unknown module names are dropped (a
 // newer app may know more modules); a non-array, or a non-string element, is
 // an error.

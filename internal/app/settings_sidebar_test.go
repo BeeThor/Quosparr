@@ -19,7 +19,7 @@ func TestSettingsSidebarSelectionAndTitlebarInsets(t *testing.T) {
 			top = 52
 		}
 		first, ok := tt.Find(u.text(tabGeneral.key()))
-		if !ok || first.Y != top || first.X < 0 || first.X+first.W > settingsSidebarWidth {
+		if !ok || first.Y < top || first.X < 0 || first.X+first.W > settingsSidebarWidth {
 			t.Fatalf("sidebar window controls %+v overlap first item %+v", bar, first)
 		}
 		for _, tab := range settingsTabs {

@@ -20,7 +20,7 @@ func (u *settingsUI) displayPage(c *ui.Context) {
 
 func (u *settingsUI) privacyGroup(c *ui.Context) {
 	s, l := u.s, u.L()
-	settingsGroup(c, icEye, TintTeal, tx(l, xPrivacyDisplaySection), "", nil, func(row rowFunc) {
+	settingsGroup(c, tx(l, xPrivacyDisplaySection), "", nil, func(row rowFunc) {
 		row(l.Text(l10n.KeyAccountPrivacyMode), tx(l, xPrivacyDisplayDescription), func() {
 			if v, ok := toggle(c, "account-privacy", l.Text(l10n.KeyAccountPrivacyMode), s.Prefs().AccountPrivacyModeEnabled, s.ReadOnly()); ok {
 				s.SetAccountPrivacyMode(v)
@@ -40,7 +40,7 @@ func (u *settingsUI) appearanceGroup(c *ui.Context) {
 		}
 		return tx(l, xMacOnly)
 	}
-	settingsGroup(c, icPalette, TintBlue, l.Text(l10n.KeyDisplayAppearanceSection), "", nil, func(row rowFunc) {
+	settingsGroup(c, l.Text(l10n.KeyDisplayAppearanceSection), "", nil, func(row rowFunc) {
 		row(tx(l, xProvider), tx(l, xProviderDescription), func() {
 			providers := store.Providers()
 			selected := max(0, slices.Index(providers, p.SelectedProvider))
@@ -54,6 +54,7 @@ func (u *settingsUI) appearanceGroup(c *ui.Context) {
 				s.SetAppearance(v)
 			}
 		})
+		row(tx(l, xThemeColor), u.themeColorName(p.ThemeColor), func() { u.themeColorControl(c, ro) })
 		detail := l.Text(l10n.KeyMainPanelBackgroundDescription)
 		if !sys.PanelBackground {
 			detail = macNote(false)
@@ -123,21 +124,14 @@ func (u *settingsUI) statusBarRows(c *ui.Context, row rowFunc, p store.Preferenc
 
 func (u *settingsUI) modulesGroup(c *ui.Context) {
 	s, l := u.s, u.L()
-	t := c.Theme()
 	p := s.Prefs()
 	ro := s.ReadOnly()
 	atDefault := slices.Equal(p.MainPanelModuleOrder, store.Modules())
-	Panel(c).Children(func() {
-		ui.Row(c).Gap(10).AlignItems(ui.Center).Padding(0, 0, 8, 0).Children(func() {
-			Tile(c, icLayers, TintPurple, 30, false)
-			ui.Column(c).Grow(1).Basis(0).Gap(1).Children(func() {
-				ui.Text(c, l.Text(l10n.KeyMainPanelModules)).FontSize(17).FontWeight(600).TextColor(TintPurple.Text(t))
-				ui.Text(c, l.Text(l10n.KeyMainPanelModulesDescription)).FontSize(11).TextColor(t.TextMuted)
-			})
-			if IconButton(c, icUndo, l.Text(l10n.KeyRestoreDefaultOrder), ro || atDefault).Clicked() {
-				s.ResetMainPanelModuleOrder()
-			}
-		})
+	settingsSection(c, l.Text(l10n.KeyMainPanelModules), l.Text(l10n.KeyMainPanelModulesDescription), func() {
+		if IconButton(c, icUndo, l.Text(l10n.KeyRestoreDefaultOrder), ro || atDefault).Clicked() {
+			s.ResetMainPanelModuleOrder()
+		}
+	}, func() {
 		for i, m := range p.MainPanelModuleOrder {
 			u.moduleCard(c, p, m, i, len(p.MainPanelModuleOrder))
 		}
@@ -159,7 +153,7 @@ func (u *settingsUI) moduleCard(c *ui.Context, p store.Preferences, m store.Modu
 		if index > 0 {
 			ui.Box(c).Height(1).Background(pal(t).Line)
 		}
-		ui.Column(c).Gap(10).Padding(14, 0).Children(func() {
+		ui.Column(c).Gap(10).Padding(10, 0).Children(func() {
 			ui.Row(c).Gap(10).AlignItems(ui.Start).Children(func() {
 				ui.Row(c).Size(30, 26).Shrink(0).AlignItems(ui.Center).Justify(ui.Center).Children(func() {
 					ui.Icon(c, info.icon).Size(16, 16).TextColor(t.TextMuted)
@@ -170,7 +164,7 @@ func (u *settingsUI) moduleCard(c *ui.Context, p store.Preferences, m store.Modu
 						col = t.TextMuted
 					}
 					ui.Row(c).Height(26).AlignItems(ui.Center).Children(func() {
-						ui.Text(c, l.Text(info.title)).FontSize(13).FontWeight(600).TextColor(col).Grow(1).Basis(0).SingleLine().Tooltip(l.Text(info.title))
+						ui.Text(c, l.Text(info.title)).FontSize(13).TextColor(col).Grow(1).Basis(0).SingleLine().Tooltip(l.Text(info.title))
 					})
 					ui.Text(c, l.Text(info.subtitle)).FontSize(11).TextColor(t.TextMuted)
 					ui.Text(c, applies).FontSize(10).TextColor(t.TextMuted).SingleLine()
@@ -206,7 +200,7 @@ func (u *settingsUI) moduleConfig(c *ui.Context, m store.Module, p store.Prefere
 	line := func(title, detail string, control func()) {
 		ui.Row(c).Gap(12).AlignItems(ui.Center).Children(func() {
 			ui.Column(c).Grow(1).Basis(0).Gap(1).Children(func() {
-				ui.Text(c, title).FontSize(12).FontWeight(500)
+				ui.Text(c, title).FontSize(12)
 				if detail != "" {
 					ui.Text(c, detail).FontSize(11).TextColor(t.TextMuted)
 				}
@@ -258,7 +252,7 @@ func (u *settingsUI) notificationsGroup(c *ui.Context) {
 	s, l := u.s, u.L()
 	p := s.Prefs()
 	ro := s.ReadOnly()
-	settingsGroup(c, icBell, TintRed, l.Text(l10n.KeyNotificationSettings), "", nil, func(row rowFunc) {
+	settingsGroup(c, l.Text(l10n.KeyNotificationSettings), "", nil, func(row rowFunc) {
 		row(l.Text(l10n.KeyQuotaAlerts), l.Text(l10n.KeyQuotaAlertsDescription), func() {
 			if v, ok := toggle(c, "alert-quota", l.Text(l10n.KeyQuotaAlerts), p.QuotaAlertsEnabled, ro); ok {
 				s.SetQuotaAlerts(v)
@@ -276,7 +270,7 @@ func (u *settingsUI) notificationsGroup(c *ui.Context) {
 		})
 		row(l.Text(l10n.KeyTestNotification), l.Text(l10n.KeyTestNotificationSubtitle), func() {
 			test := u.opts.Actions.TestNotification
-			if PillButton(c, icBell, l.Text(l10n.KeyTestNotification), test == nil).Clicked() {
+			if PillButton(c, nil, l.Text(l10n.KeyTestNotification), test == nil).Clicked() {
 				u.showNotice(l.Text(l10n.KeyTestNotification), test())
 			}
 		})

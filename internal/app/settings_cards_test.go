@@ -63,22 +63,22 @@ func TestSettingsNetworkActionsStayInsideCard(t *testing.T) {
 						tt := networkCardTester(u, width, dark)
 						for _, key := range []l10n.Key{l10n.KeyNetworkProxyTest, l10n.KeyNetworkProxySave, l10n.KeyNetworkProxySaved} {
 							r, ok := tt.Find(u.text(key))
-							if !ok || r.Y+r.H > 624 || r.X+r.W > float32(width-settingsSidebarWidth-32) {
+							if !ok || r.Y+r.H > 624 || r.X+r.W > float32(width-settingsSidebarWidth-28) {
 								t.Fatalf("network action %s is missing or out of bounds: %+v", key, r)
 							}
-							// The left card padding must extend through the entire action row.
-							assertCardPixel(t, tt.Image(), 24, int(r.Y+r.H/2), pal(buildTheme(dark)).Card)
+							// The left box padding must extend through the entire action row.
+							assertCardPixel(t, tt.Image(), 22, int(r.Y+r.H/2), pal(buildTheme(dark)).Card)
 						}
 						assertProxyFields(t, tt, u, tc.mode != store.ProxyModeSystem, tc.auth)
 						if tc.mode != store.ProxyModeSystem {
 							host, _ := tt.Find(u.text(l10n.KeyNetworkProxyHost))
 							save, _ := tt.Find(u.text(l10n.KeyNetworkProxySave))
 							// Find returns the row label first, so use the fixed form inset for the right edge.
-							if host.X != 32 || save.X+save.W != float32(width-settingsSidebarWidth-32) {
-								t.Fatal("proxy form and actions do not share the card insets")
+							if host.X != 28 || save.X+save.W != float32(width-settingsSidebarWidth-28) {
+								t.Fatal("proxy form and actions do not share the box insets")
 							}
 						}
-						assertCardHeaderTint(t, tt, u.text(l10n.KeyNetworkProxy), TintTeal, dark)
+						assertSectionTitle(t, tt, u.text(l10n.KeyNetworkProxy), dark)
 					})
 				}
 			}
@@ -122,30 +122,32 @@ func TestSettingsNetworkBusyActionsRemainDisabled(t *testing.T) {
 	}
 }
 
-func TestSettingsCardsUseTintedHeaders(t *testing.T) {
+func TestSettingsSectionTitlesSitAboveBoxes(t *testing.T) {
 	for _, dark := range []bool{false, true} {
 		u := cardSettingsUI(t, store.LanguageEnglish)
 		u.draft.Mode = store.ProxyModeSystem
 		for _, page := range []struct {
-			view  func(*ui.Context)
-			keys  []l10n.Key
-			tints []Tint
+			view func(*ui.Context)
+			keys []l10n.Key
 		}{
-			{u.generalPage, []l10n.Key{l10n.KeyGeneral, l10n.KeyNetworkProxy}, []Tint{TintBlue, TintTeal}},
-			{u.appearanceGroup, []l10n.Key{l10n.KeyDisplayAppearanceSection}, []Tint{TintBlue}},
-			{u.modulesGroup, []l10n.Key{l10n.KeyMainPanelModules}, []Tint{TintPurple}},
-			{u.notificationsGroup, []l10n.Key{l10n.KeyNotificationSettings}, []Tint{TintRed}},
-			{u.advancedPage, []l10n.Key{l10n.KeyAdvanced}, []Tint{TintOrange}},
-			{u.aboutPage, []l10n.Key{l10n.KeyAbout}, []Tint{TintIndigo}},
+			{u.generalPage, []l10n.Key{l10n.KeyNetworkProxy}},
+			{u.appearanceGroup, []l10n.Key{l10n.KeyDisplayAppearanceSection}},
+			{u.modulesGroup, []l10n.Key{l10n.KeyMainPanelModules}},
+			{u.notificationsGroup, []l10n.Key{l10n.KeyNotificationSettings}},
 		} {
 			tt := ui.NewTester(func(c *ui.Context) {
 				applyTheme(c)
 				ui.Column(c).Fill().Padding(16).Gap(14).Children(func() { page.view(c) })
 			}, settingsMinWidth-settingsSidebarWidth, 1800)
 			tt.SetDark(dark)
-			for i, key := range page.keys {
-				assertCardHeaderTint(t, tt, u.text(key), page.tints[i], dark)
+			for _, key := range page.keys {
+				assertSectionTitle(t, tt, u.text(key), dark)
 			}
+		}
+		// The first section of a page is untitled: the page header names it.
+		tt := ui.NewTester(func(c *ui.Context) { applyTheme(c); u.advancedPage(c) }, 600, 600)
+		if hasExact(tt, u.text(l10n.KeyAdvanced)) {
+			t.Fatal("advanced box repeats the page title")
 		}
 	}
 }
@@ -165,22 +167,30 @@ func TestSettingsPageHeadingsKeepNormalTextColor(t *testing.T) {
 	}
 }
 
-func assertCardHeaderTint(t *testing.T, tt *ui.Tester, title string, tint Tint, dark bool) {
+// assertSectionTitle checks that a section title is plain text on the
+// page, with its box below it.
+func assertSectionTitle(t *testing.T, tt *ui.Tester, title string, dark bool) {
 	t.Helper()
 	r, ok := tt.Find(title)
 	if !ok {
-		t.Fatalf("missing card title %q", title)
+		t.Fatalf("missing section title %q", title)
 	}
-	want := tint.Text(buildTheme(dark))
+	theme := buildTheme(dark)
 	img := tt.Image()
-	if countHeaderColor(img, r, want) < 3 {
-		t.Fatalf("card title %q has no tint-colored text", title)
+	if countHeaderColor(img, r, theme.Text) < 3 {
+		t.Fatalf("section title %q does not use normal text color", title)
 	}
-	card := pal(buildTheme(dark)).Card
-	// A 30px icon tile occupies the 40px before the title, with a visible pale background.
-	if img.RGBAAt(int(r.X)-36, int(r.Y+r.H/2)) == (color.RGBA{R: card.R, G: card.G, B: card.B, A: 255}) {
-		t.Fatalf("card title %q has no tinted icon tile", title)
+	bg := theme.Background
+	if img.RGBAAt(int(r.X)-6, int(r.Y+r.H/2)) != (color.RGBA{R: bg.R, G: bg.G, B: bg.B, A: 255}) {
+		t.Fatalf("section title %q is not on the page background", title)
 	}
+	card := pal(theme).Card
+	for y := int(r.Y + r.H); y < int(r.Y+r.H)+60; y++ {
+		if img.RGBAAt(int(r.X)-6, y) == (color.RGBA{R: card.R, G: card.G, B: card.B, A: 255}) {
+			return
+		}
+	}
+	t.Fatalf("section title %q has no box below it", title)
 }
 
 func countHeaderColor(img *image.RGBA, r ui.Rect, want ui.Color) int {

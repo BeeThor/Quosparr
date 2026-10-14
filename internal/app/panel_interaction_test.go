@@ -164,7 +164,7 @@ func TestAccountMenuOpensEditorAndCancelClearsSensitiveDraft(t *testing.T) {
 func TestPanelBackgroundOnlyUsesAvailableMaterial(t *testing.T) {
 	var got ui.Color
 	style := store.PanelBackgroundTranslucent
-	tt := ui.NewTester(func(c *ui.Context) { got = applyPanelTheme(c, style).Background; ui.Box(c).Fill().Background(got) }, 100, 100)
+	tt := ui.NewTester(func(c *ui.Context) { got = applyPanelTheme(c, style, "").Background; ui.Box(c).Fill().Background(got) }, 100, 100)
 	tt.SetVibrancy(true)
 	if got != ui.Transparent {
 		t.Fatal("translucent material was painted opaque")
@@ -287,7 +287,7 @@ func TestChartHoverTipInkStaysOpaqueOverMaterial(t *testing.T) {
 	const detail = "Oct 12 · 1.2M tokens"
 	var fill ui.Color
 	tt := ui.NewTester(func(c *ui.Context) {
-		th := applyPanelTheme(c, store.PanelBackgroundTranslucent)
+		th := applyPanelTheme(c, store.PanelBackgroundTranslucent, "")
 		fill, _ = inverseColors(th)
 		ui.Column(c).Fill().AlignItems(ui.Center).Justify(ui.Center).Children(func() {
 			chartHoverTip(c, ui.Box(c).Size(12, 12).Background(th.Accent), detail)

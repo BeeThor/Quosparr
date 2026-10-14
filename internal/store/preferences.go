@@ -16,6 +16,7 @@ import (
 	"maps"
 	"math"
 	"slices"
+	"strings"
 )
 
 // Defaults and limits shared with the Swift app.
@@ -82,6 +83,10 @@ type Preferences struct {
 	RateLimitResetTodayAlertsEnabled          bool                   `json:"rateLimitResetTodayAlertsEnabled"`
 	ExportsStatusJSON                         bool                   `json:"exportsStatusJSON"`
 	AccountPrivacyModeEnabled                 bool                   `json:"accountPrivacyModeEnabled"`
+	// ThemeColor is the accent of the app's windows as "#RRGGBB", or empty
+	// for the brand brown. Only the Go app knows the key, so it is omitted
+	// while empty and an unreadable value falls back to the brand.
+	ThemeColor string `json:"themeColor,omitempty"`
 
 	// extra holds keys this version does not know, written back unchanged so
 	// that older and newer apps sharing the domain do not erase each other's
@@ -145,6 +150,21 @@ func (p *Preferences) Normalize() {
 	p.MainPanelModuleOrder = NormalizeModuleOrder(p.MainPanelModuleOrder)
 	p.RateLimitResetTodayRefreshIntervalSeconds =
 		ClampRateLimitResetTodayRefreshInterval(p.RateLimitResetTodayRefreshIntervalSeconds)
+	p.ThemeColor = NormalizeThemeColor(p.ThemeColor)
+}
+
+// NormalizeThemeColor returns color as an upper-case "#RRGGBB", or empty
+// when it is not one.
+func NormalizeThemeColor(color string) string {
+	if len(color) != 7 || color[0] != '#' {
+		return ""
+	}
+	for _, r := range color[1:] {
+		if !strings.ContainsRune("0123456789abcdefABCDEF", r) {
+			return ""
+		}
+	}
+	return strings.ToUpper(color)
 }
 
 // ClampWidgetRefreshInterval limits the widget refresh interval to 60...1800 s.

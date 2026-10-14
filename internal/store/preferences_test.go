@@ -91,8 +91,8 @@ func TestThirtyFourFieldsAllDifferFromDefaults(t *testing.T) {
 	typ := d.Type()
 	count := 0
 	for i := 0; i < typ.NumField(); i++ {
-		if typ.Field(i).Tag.Get("json") == "" {
-			continue // the unexported extra map
+		if typ.Field(i).Tag.Get("json") == "" || typ.Field(i).Name == "ThemeColor" {
+			continue // the unexported extra map, and the key only Go writes
 		}
 		count++
 		if reflect.DeepEqual(d.Field(i).Interface(), a.Field(i).Interface()) {
@@ -584,4 +584,37 @@ func TestEncodedFloatFormat(t *testing.T) {
 func jsonInt(key string, v int) string {
 	b, _ := json.Marshal(map[string]int{key: v})
 	return string(b)
+}
+
+func TestThemeColorIsGoOnlyAndLenient(t *testing.T) {
+	enc, err := EncodePreferences(DefaultPreferences())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(enc), "themeColor") {
+		t.Errorf("the brand color is written: %s", enc)
+	}
+	for raw, want := range map[string]string{
+		`"#007aff"`: "#007AFF",
+		`"#B3582D"`: "#B3582D",
+		`"blue"`:    "",
+		`"#12345"`:  "",
+		`"#GGGGGG"`: "",
+		`12`:        "",
+		`null`:      "",
+	} {
+		got := mustDecode(t, `{"themeColor":`+raw+`}`)
+		if got.ThemeColor != want {
+			t.Errorf("themeColor %s decoded to %q, want %q", raw, got.ThemeColor, want)
+		}
+	}
+	p := DefaultPreferences()
+	p.ThemeColor = "#62ba46"
+	enc, err = EncodePreferences(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := mustDecode(t, string(enc)); got.ThemeColor != "#62BA46" {
+		t.Errorf("round trip = %q", got.ThemeColor)
+	}
 }

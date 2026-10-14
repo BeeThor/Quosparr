@@ -35,12 +35,38 @@ const (
 	xPanelPlaceholder          textKey = "panelPlaceholder"
 	xNotAvailableYet           textKey = "notAvailableYet"
 	xProxyLocalSaveWarning     textKey = "proxyPasswordNotStored"
+	xThemeColor                textKey = "themeColor"
+	xColorBrown                textKey = "themeColorBrown"
+	xColorBlue                 textKey = "themeColorBlue"
+	xColorPurple               textKey = "themeColorPurple"
+	xColorPink                 textKey = "themeColorPink"
+	xColorRed                  textKey = "themeColorRed"
+	xColorOrange               textKey = "themeColorOrange"
+	xColorYellow               textKey = "themeColorYellow"
+	xColorGreen                textKey = "themeColorGreen"
+	xColorGraphite             textKey = "themeColorGraphite"
+	xColorCustom               textKey = "themeColorCustom"
 )
 
 // extraTexts is indexed by textKey, then by position in l10n.Languages():
 // English, Simplified Chinese, Traditional Chinese, Korean, Japanese,
 // Russian, French.
 var extraTexts = map[textKey][7]string{
+	xThemeColor: {
+		"Theme color", "主题颜色", "主題顏色", "테마 색상", "テーマカラー", "Цвет темы", "Couleur du thème",
+	},
+	xColorBrown: {
+		"Brown (default)", "棕色（默认）", "棕色（預設）", "갈색(기본)", "ブラウン（デフォルト）", "Коричневый (по умолчанию)", "Brun (par défaut)",
+	},
+	xColorBlue:     {"Blue", "蓝色", "藍色", "파란색", "ブルー", "Синий", "Bleu"},
+	xColorPurple:   {"Purple", "紫色", "紫色", "보라색", "パープル", "Фиолетовый", "Violet"},
+	xColorPink:     {"Pink", "粉色", "粉紅色", "분홍색", "ピンク", "Розовый", "Rose"},
+	xColorRed:      {"Red", "红色", "紅色", "빨간색", "レッド", "Красный", "Rouge"},
+	xColorOrange:   {"Orange", "橙色", "橙色", "주황색", "オレンジ", "Оранжевый", "Orange"},
+	xColorYellow:   {"Yellow", "黄色", "黃色", "노란색", "イエロー", "Жёлтый", "Jaune"},
+	xColorGreen:    {"Green", "绿色", "綠色", "초록색", "グリーン", "Зелёный", "Vert"},
+	xColorGraphite: {"Graphite", "石墨色", "石墨色", "그래파이트", "グラファイト", "Графит", "Graphite"},
+	xColorCustom:   {"Custom", "自定义", "自訂", "사용자 지정", "カスタム", "Свой цвет", "Personnalisée"},
 	xAccountCount: {
 		"%@ accounts", "%@ 个账号", "%@ 個帳號", "계정 %@개", "%@ アカウント", "Аккаунтов: %@", "%@ comptes",
 	},

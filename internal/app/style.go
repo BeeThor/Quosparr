@@ -1,6 +1,8 @@
 package app
 
 import (
+	"math"
+
 	"github.com/egoist/mygo/ui"
 	"github.com/licoy/quosparr/internal/store"
 )
@@ -67,15 +69,15 @@ type palette struct {
 
 var palettes = [2]palette{
 	{
-		Card:    ui.Hex("#F4F4F6"),
-		Sidebar: ui.Hex("#F5F5F7"),
+		Card:    ui.Hex("#F5F5F7"),
+		Sidebar: ui.Hex("#EDEDF0"),
 		Inset:   ui.Hex("#FFFFFF"),
 		Line:    ui.RGBA(0, 0, 0, 0.07),
 		Hover:   ui.RGBA(0, 0, 0, 0.05),
 	},
 	{
-		Card:    ui.Hex("#262628"),
-		Sidebar: ui.Hex("#202022"),
+		Card:    ui.Hex("#232325"),
+		Sidebar: ui.Hex("#28282A"),
 		Inset:   ui.Hex("#303033"),
 		Line:    ui.RGBA(255, 255, 255, 0.08),
 		Hover:   ui.RGBA(255, 255, 255, 0.06),
@@ -89,29 +91,90 @@ func pal(t *ui.Theme) palette {
 	return palettes[0]
 }
 
-// brandInk keeps the brown accent readable when it is used as foreground on
-// dark cards. Filled controls continue to use the exact theme accent.
+// brandInk keeps the accent readable when it is used as foreground on
+// cards: lighter on dark ones, and darker where a light theme color would
+// fade on white. Filled controls continue to use the exact theme accent.
 func brandInk(t *ui.Theme, color ui.Color) ui.Color {
+	toward, bg := ui.RGB(0, 0, 0), pal(t).Inset
 	if t.Dark {
-		return color.Mix(ui.RGB(255, 255, 255), 0.4)
+		color, toward = color.Mix(ui.RGB(255, 255, 255), 0.4), ui.RGB(255, 255, 255)
+	}
+	for i := 0; i < 10 && contrastRatio(color, bg) < 4.5; i++ {
+		color = color.Mix(toward, 0.1)
 	}
 	return color
 }
 
-var themes [2]*ui.Theme
+type themeKey struct {
+	dark  bool
+	color string
+}
 
-// applyTheme makes the frame use the app's theme in the system's (or the
-// chosen) appearance. Views call it first.
-func applyTheme(c *ui.Context) *ui.Theme {
-	i := 0
-	if c.Theme().Dark {
-		i = 1
+// themes caches the built themes; a custom color dragged across the picker
+// builds many, so the cache starts over once it holds more than a few.
+var themes = map[themeKey]*ui.Theme{}
+
+// applyTheme makes the frame use the app's theme in the brand color.
+func applyTheme(c *ui.Context) *ui.Theme { return applyThemeColor(c, "") }
+
+// applyThemeColor makes the frame use the app's theme in the system's (or
+// the chosen) appearance, with the theme color the user chose
+// (store.Preferences.ThemeColor, empty for the brand). Views call it first.
+func applyThemeColor(c *ui.Context, color string) *ui.Theme {
+	k := themeKey{c.Theme().Dark, color}
+	t := themes[k]
+	if t == nil {
+		if len(themes) >= 16 {
+			clear(themes)
+		}
+		t = buildThemeColor(k.dark, color)
+		themes[k] = t
 	}
-	if themes[i] == nil {
-		themes[i] = buildTheme(i == 1)
+	c.SetTheme(t)
+	return t
+}
+
+// buildThemeColor is the theme with the accent color, "#RRGGBB" or empty for
+// the brand brown.
+func buildThemeColor(dark bool, color string) *ui.Theme {
+	t := buildTheme(dark)
+	if color == "" {
+		return t
 	}
-	c.SetTheme(themes[i])
-	return themes[i]
+	accent := ui.Hex(color)
+	t.Accent = accent
+	t.AccentHover = accent.Mix(ui.RGB(255, 255, 255), 0.06)
+	t.AccentPressed = accent.Mix(ui.RGB(0, 0, 0), 0.15)
+	// White text stays on all but the light colors, as on the system's.
+	t.AccentText = ui.RGB(255, 255, 255)
+	if contrastRatio(accent, t.AccentText) < 3 {
+		t.AccentText = ui.Hex("#1D1D1F")
+	}
+	t.Selection, t.Focus = accent.Alpha(0.25), accent.Alpha(0.5)
+	if dark {
+		t.Selection, t.Focus = accent.Alpha(0.4), accent.Alpha(0.6)
+	}
+	return t
+}
+
+// contrastRatio is the WCAG contrast of two opaque colors.
+func contrastRatio(a, b ui.Color) float64 {
+	la, lb := relativeLuminance(a), relativeLuminance(b)
+	if la < lb {
+		la, lb = lb, la
+	}
+	return (la + 0.05) / (lb + 0.05)
+}
+
+func relativeLuminance(c ui.Color) float64 {
+	linear := func(v uint8) float64 {
+		n := float64(v) / 255
+		if n <= 0.04045 {
+			return n / 12.92
+		}
+		return math.Pow((n+0.055)/1.055, 2.4)
+	}
+	return 0.2126*linear(c.R) + 0.7152*linear(c.G) + 0.0722*linear(c.B)
 }
 
 func buildTheme(dark bool) *ui.Theme {
@@ -173,9 +236,11 @@ func Tile(c *ui.Context, icon *ui.SVG, k Tint, size float32, solid bool) ui.Elem
 	})
 }
 
-// Panel is a card of the settings window.
+// Panel is a grouped box of the settings window, as System Settings draws
+// its form sections: a faint fill and hairline, with rows 12 DIPs inside.
 func Panel(c *ui.Context) ui.Element {
-	return ui.Column(c).Padding(16).Gap(0).Radius(10).Background(pal(c.Theme()).Card)
+	p := pal(c.Theme())
+	return ui.Column(c).Padding(3, 11).Gap(0).Radius(12).Background(p.Card).BorderWidth(1).BorderColor(p.Line)
 }
 
 // PillButton is a capsule button with an optional icon. A disabled one
@@ -262,8 +327,8 @@ func inverseColors(t *ui.Theme) (fill, text ui.Color) {
 }
 
 // applyPanelTheme shows native material only when the host actually provides it.
-func applyPanelTheme(c *ui.Context, style store.PanelBackground) *ui.Theme {
-	t := applyTheme(c)
+func applyPanelTheme(c *ui.Context, style store.PanelBackground, color string) *ui.Theme {
+	t := applyThemeColor(c, color)
 	if style == store.PanelBackgroundTranslucent && c.Vibrancy() {
 		material := *t
 		// Tooltips draw the inverse colours, which fall back to Text on

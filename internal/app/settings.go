@@ -323,6 +323,12 @@ func (s *Settings) SetAppearance(v store.Appearance) bool {
 	return s.Update(func(p *store.Preferences) { p.Appearance = v })
 }
 
+// SetThemeColor selects the accent of the app's windows, "#RRGGBB" or empty
+// for the brand brown; it takes effect at once.
+func (s *Settings) SetThemeColor(v string) bool {
+	return s.Update(func(p *store.Preferences) { p.ThemeColor = v })
+}
+
 // SetPanelBackground selects the main panel background.
 func (s *Settings) SetPanelBackground(v store.PanelBackground) bool {
 	return s.Update(func(p *store.Preferences) { p.MainPanelBackgroundStyle = v })

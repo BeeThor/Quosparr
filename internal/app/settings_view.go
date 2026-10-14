@@ -110,6 +110,9 @@ type settingsUI struct {
 	proxyMsg      string
 	proxyMsgErr   bool
 
+	pickingColor bool
+	customColor  ui.Color
+
 	confirmRepair bool
 	noticeTitle   string
 	notice        string
@@ -135,7 +138,7 @@ func (u *settingsUI) text(k l10n.Key) string { return u.L().Text(k) }
 
 // view builds one frame of the settings window.
 func (u *settingsUI) view(c *ui.Context) {
-	applyTheme(c)
+	applyThemeColor(c, u.s.prefs.ThemeColor)
 	if !u.draftReady {
 		u.draft, u.draftReady = NewProxyDraft(u.s.Proxy()), true
 	}
@@ -144,7 +147,7 @@ func (u *settingsUI) view(c *ui.Context) {
 }
 
 func (u *settingsUI) pageContent(c *ui.Context) {
-	ui.Scroll(c.Key("page-" + fmt.Sprint(int(u.tab)))).Grow(1).Basis(0).Padding(16).Gap(14).Children(func() {
+	ui.Scroll(c.Key("page-"+fmt.Sprint(int(u.tab)))).Grow(1).Basis(0).Padding(4, 24, 24, 24).Gap(22).Children(func() {
 		if u.s.ReadOnly() {
 			u.readOnlyBanner(c)
 		}
@@ -155,7 +158,8 @@ func (u *settingsUI) pageContent(c *ui.Context) {
 		case tabGeneral:
 			u.generalPage(c)
 		case tabAccounts:
-			u.accountsPage(c)
+			// The toolbar titles the box of accounts under it.
+			ui.Column(c).Gap(10).Children(func() { u.accountsPage(c) })
 		case tabDisplay:
 			u.displayPage(c)
 		case tabAdvanced:
@@ -222,7 +226,7 @@ func (u *settingsUI) generalPage(c *ui.Context) {
 	p := s.Prefs()
 	ro := s.ReadOnly()
 	sys := s.System()
-	settingsGroup(c, icGear, TintBlue, u.text(l10n.KeyGeneral), "", nil, func(row rowFunc) {
+	settingsGroup(c, "", "", nil, func(row rowFunc) {
 		row(l.Text(l10n.KeyLanguage), "", func() {
 			langs := store.Languages()
 			if v, ok := choose(c, "language", l.Text(l10n.KeyLanguage), p.Language, langs, func(v store.Language) string {
@@ -244,7 +248,7 @@ func (u *settingsUI) generalPage(c *ui.Context) {
 			if s.LoginPending() {
 				ui.Spinner(c).Size(14, 14)
 			}
-			if s.LoginStatus() == LoginRequiresApproval && PillButton(c, icGear, l.Text(l10n.KeyOpenLoginItemsSettings), false).Clicked() {
+			if s.LoginStatus() == LoginRequiresApproval && PillButton(c, nil, l.Text(l10n.KeyOpenLoginItemsSettings), false).Clicked() {
 				c.OpenURL(loginItemsSettingsURL)
 			}
 			if v, ok := toggle(c, "login", l.Text(l10n.KeyLaunchAtLogin), s.LoginSwitch(), ro || !s.LoginAvailable() || s.LoginPending()); ok {
@@ -268,7 +272,7 @@ func (u *settingsUI) generalPage(c *ui.Context) {
 			}
 		})
 		row(l.Text(l10n.KeyCodexFolder), "~/.codex", func() {
-			if PillButton(c, icFolder, l.Text(l10n.KeyCodexFolder), u.opts.Actions.OpenFolder == nil).Clicked() {
+			if PillButton(c, nil, l.Text(l10n.KeyCodexFolder), u.opts.Actions.OpenFolder == nil).Clicked() {
 				u.opts.Actions.OpenFolder(codexDir())
 			}
 		})
@@ -302,7 +306,7 @@ func (u *settingsUI) proxyGroup(c *ui.Context) {
 	s, l := u.s, u.L()
 	t := c.Theme()
 	busy := u.proxyTask.Running || u.testTask.Running
-	settingsGroup(c, icNetwork, TintTeal, l.Text(l10n.KeyNetworkProxy), "", nil, func(row rowFunc) {
+	settingsGroup(c, l.Text(l10n.KeyNetworkProxy), "", nil, func(row rowFunc) {
 		if err := s.ProxyError(); err != nil {
 			row("", "", func() {
 				ui.Column(c).Grow(1).Basis(0).Gap(3).Children(func() {
@@ -390,7 +394,7 @@ func (u *settingsUI) proxyActions(c *ui.Context, busy bool) {
 				u.testProxy()
 			}
 		}
-		if PillButton(c, icCheck, l.Text(l10n.KeyNetworkProxySave), busy).Clicked() {
+		if PillButton(c, nil, l.Text(l10n.KeyNetworkProxySave), busy).Clicked() {
 			u.saveProxy()
 		}
 	})
@@ -473,9 +477,9 @@ func (u *settingsUI) advancedPage(c *ui.Context) {
 	s, l := u.s, u.L()
 	p := s.Prefs()
 	a := u.opts.Actions
-	settingsGroup(c, icSliders, TintOrange, l.Text(l10n.KeyAdvanced), "", nil, func(row rowFunc) {
+	settingsGroup(c, "", "", nil, func(row rowFunc) {
 		row(l.Text(l10n.KeyRefresh), l.Text(l10n.KeyQuota), func() {
-			if PillButton(c, icRefresh, l.Text(l10n.KeyRefresh), a.Refresh == nil).Clicked() {
+			if PillButton(c, nil, l.Text(l10n.KeyRefresh), a.Refresh == nil).Clicked() {
 				a.Refresh()
 			}
 		})
@@ -483,7 +487,7 @@ func (u *settingsUI) advancedPage(c *ui.Context) {
 			if u.selfCheckTask.Running {
 				ui.Spinner(c).Size(14, 14)
 			}
-			if PillButton(c, icSelfCheck, l.Text(l10n.KeySelfCheck), a.SelfCheck == nil || u.selfCheckTask.Running).Clicked() {
+			if PillButton(c, nil, l.Text(l10n.KeySelfCheck), a.SelfCheck == nil || u.selfCheckTask.Running).Clicked() {
 				var report string
 				runTask(&u.selfCheckTask, u.post, func() error {
 					report = a.SelfCheck()
@@ -497,7 +501,7 @@ func (u *settingsUI) advancedPage(c *ui.Context) {
 			}
 		})
 		row(l.Text(l10n.KeyRepairIndex), l.Text(l10n.KeyBackup), func() {
-			if PillButton(c, icRepair, l.Text(l10n.KeyRepair), a.RepairIndex == nil).Clicked() {
+			if PillButton(c, nil, l.Text(l10n.KeyRepair), a.RepairIndex == nil).Clicked() {
 				u.confirmRepair = true
 			}
 		})
@@ -511,32 +515,33 @@ func (u *settingsUI) aboutPage(c *ui.Context) {
 	p := s.Prefs()
 	t := c.Theme()
 	a := u.opts.Actions
-	ui.Row(c).Justify(ui.Center).Padding(4, 0).Children(func() {
+	Panel(c).Padding(20, 12).Gap(4).AlignItems(ui.Center).Children(func() {
 		if bm := appIconBitmap(); bm != nil {
-			ui.Image(c, bm).Size(96, 96).Label("Quosparr")
+			ui.Image(c, bm).Size(72, 72).Label("Quosparr")
 		}
+		ui.Text(c, "Quosparr").FontSize(20).FontWeight(700).SingleLine()
+		ui.Text(c, l.Text(l10n.KeyVersion)+" "+valueOr(u.opts.Version, "dev")).FontSize(12).TextColor(t.TextMuted).SingleLine()
 	})
-	settingsGroup(c, icInfo, TintIndigo, l.Text(l10n.KeyAbout), "", nil, func(row rowFunc) {
-		row(l.Text(l10n.KeyVersion), valueOr(u.opts.Version, "dev"), func() {
-			ui.Text(c, "Quosparr").FontSize(13).TextColor(t.TextMuted)
-		})
-		row(l.Text(l10n.KeyAutomaticallyCheckForUpdates), l.Text(l10n.KeyCheckForUpdates), func() {
+	settingsGroup(c, "", "", nil, func(row rowFunc) {
+		row(l.Text(l10n.KeyAutomaticallyCheckForUpdates), "", func() {
 			if v, ok := toggle(c, "auto-update", l.Text(l10n.KeyAutomaticallyCheckForUpdates), p.AutomaticallyChecksForUpdates, s.ReadOnly()); ok {
 				s.SetAutomaticUpdateChecks(v)
 			}
 		})
-		row(l.Text(l10n.KeyCheckForUpdates), l.Text(l10n.KeyVersion), func() {
-			if PillButton(c, icDownload, l.Text(l10n.KeyCheckForUpdates), a.CheckForUpdates == nil).Clicked() {
+		row(l.Text(l10n.KeyCheckForUpdates), "", func() {
+			if PillButton(c, nil, l.Text(l10n.KeyCheckForUpdates), a.CheckForUpdates == nil).Clicked() {
 				a.CheckForUpdates()
 			}
 		})
+	})
+	settingsGroup(c, "", "", nil, func(row rowFunc) {
 		row("GitHub", "github.com/Licoy/Quosparr", func() {
-			if PillButton(c, icGithub, l.Text(l10n.KeyOpenGithub), false).Clicked() {
+			if PillButton(c, nil, l.Text(l10n.KeyOpenGithub), false).Clicked() {
 				c.OpenURL(githubURL)
 			}
 		})
 		row(l.Text(l10n.KeyFeedbackIssue), "GitHub Issues", func() {
-			if PillButton(c, icBug, l.Text(l10n.KeyFeedbackIssue), false).Clicked() {
+			if PillButton(c, nil, l.Text(l10n.KeyFeedbackIssue), false).Clicked() {
 				c.OpenURL(feedbackURL)
 			}
 		})

@@ -71,6 +71,7 @@ func readPreferences(r *reader) Preferences {
 	p.RateLimitResetTodayAlertsEnabled = r.bool("rateLimitResetTodayAlertsEnabled", p.RateLimitResetTodayAlertsEnabled)
 	p.ExportsStatusJSON = r.bool("exportsStatusJSON", p.ExportsStatusJSON)
 	p.AccountPrivacyModeEnabled = r.bool("accountPrivacyModeEnabled", p.AccountPrivacyModeEnabled)
+	p.ThemeColor = readThemeColor(r, "themeColor")
 	return p
 }
 
