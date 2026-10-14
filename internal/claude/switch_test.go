@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -60,12 +61,15 @@ func TestSwitchReplacesOAuthAndAccount(t *testing.T) {
 	if !strings.Contains(string(cfg), `"keep"`) || !strings.Contains(string(cfg), "acct-b") || strings.Contains(string(cfg), "acct-a") {
 		t.Fatalf("oauthAccount %s", cfg)
 	}
-	info, err := os.Stat(claudeJSON)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if info.Mode().Perm() != 0o644 {
-		t.Fatalf("mode %o", info.Mode().Perm())
+	// Windows has no POSIX mode bits to keep; Go reports 0666 there.
+	if runtime.GOOS != "windows" {
+		info, err := os.Stat(claudeJSON)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if info.Mode().Perm() != 0o644 {
+			t.Fatalf("mode %o", info.Mode().Perm())
+		}
 	}
 	idx, err := store.LoadIndex()
 	if err != nil {
