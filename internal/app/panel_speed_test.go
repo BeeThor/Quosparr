@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"path/filepath"
 	"testing"
@@ -436,7 +437,10 @@ func TestPanelSpeedAttributionShortensOnlyTheTitle(t *testing.T) {
 			if latest.X < basis.X+basis.W || age.X < latest.X+latest.W || age.X+age.W > panelWidth-16+0.5 {
 				t.Fatalf("attribution parts overlap or overflow: basis=%+v latest=%+v age=%+v", basis, latest, age)
 			}
-			if basis.Y != latest.Y || latest.Y != age.Y {
+			// Fallback fonts can give the shortened title a slightly different
+			// line height, so compare the centres of the parts.
+			mid := func(r ui.Rect) float64 { return float64(r.Y + r.H/2) }
+			if math.Abs(mid(basis)-mid(latest)) > 0.5 || math.Abs(mid(latest)-mid(age)) > 0.5 {
 				t.Fatalf("attribution wraps: basis=%+v latest=%+v age=%+v", basis, latest, age)
 			}
 		})
