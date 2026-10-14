@@ -17,7 +17,12 @@ func panelHeader(c *ui.Context, a *App, l l10n.Localizer, prefs store.Preference
 	grokView := prefs.SelectedProvider == store.ProviderGrok
 	ui.Column(c).Padding(14, 16, 10, 16).Children(func() {
 		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-			ui.Text(c, "Quosparr").FontSize(fsTitle3).FontWeight(600).SingleLine()
+			ui.Row(c).Gap(6).AlignItems(ui.Center).Children(func() {
+				// Center on the cap height rather than the line box, which reserves
+				// room for descenders below the glyphs.
+				ui.Image(c, appIconBitmap()).Size(20, 20).Margin(2, 0, 0, 0)
+				ui.Text(c, "Quosparr").FontSize(fsTitle3).FontWeight(600).SingleLine()
+			})
 			providerMenu(c, a, l, prefs.SelectedProvider, acts.SelectProvider)
 			ui.Spacer(c).Grow(1)
 			panelHeaderButtons(c, a, l, prefs, acts, panelBusy(snap, grokView))
