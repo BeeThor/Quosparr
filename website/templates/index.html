@@ -73,10 +73,10 @@
 <meta property="og:title" content="{{.T.Meta.Title}}">
 <meta property="og:description" content="{{.T.Meta.Description}}">
 <meta property="og:url" content="{{.URL}}">
-<meta property="og:image" content="{{.Base}}/img/og.png">
+<meta property="og:image" content="{{.Base}}/img/og-{{.Locale.Code}}.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Quosparr">
+<meta property="og:image:alt" content="{{.T.Meta.Title}}">
 <meta property="og:locale" content="{{.Locale.OG}}">
 {{- range .Locales}}{{if ne .Code $.Locale.Code}}
 <meta property="og:locale:alternate" content="{{.OG}}">
@@ -84,7 +84,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{.T.Meta.Title}}">
 <meta name="twitter:description" content="{{.T.Meta.Description}}">
-<meta name="twitter:image" content="{{.Base}}/img/og.png">
+<meta name="twitter:image" content="{{.Base}}/img/og-{{.Locale.Code}}.png">
 {{template "head" .}}
 {{- if eq .Locale.Code "en"}}
 <script>(function(){if(location.pathname!=="/")return;try{if(localStorage.getItem("quosparr-lang"))return}catch(e){return}

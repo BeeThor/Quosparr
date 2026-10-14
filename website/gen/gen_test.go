@@ -107,11 +107,18 @@ func TestBuildWritesEveryLanguage(t *testing.T) {
 				t.Errorf("%s: missing %s", l.Code, want)
 			}
 		}
+		og := "img/og-" + l.Code + ".png"
+		if !strings.Contains(html, `content="https://quosparr.com/`+og+`"`) {
+			t.Errorf("%s: missing og:image %s", l.Code, og)
+		}
+		if _, err := os.Stat(filepath.Join(out, og)); err != nil {
+			t.Error(err)
+		}
 		if !strings.Contains(string(sitemap), "<loc>https://quosparr.com"+l.Path()+"</loc>") {
 			t.Errorf("sitemap misses %s", l.Path())
 		}
 	}
-	for _, name := range []string{"404.html", "robots.txt", "CNAME", ".nojekyll", "img/og.png", "img/shot-6.webp"} {
+	for _, name := range []string{"404.html", "robots.txt", "CNAME", ".nojekyll", "img/shot-6.webp"} {
 		if _, err := os.Stat(filepath.Join(out, name)); err != nil {
 			t.Error(err)
 		}

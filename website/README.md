@@ -7,6 +7,7 @@ Quosparr 官网的源码。`website/gen` 用 Go 标准库把模板和七种语�
 - `locales/<code>.json`：各语言文案，字段与 `gen/locale.go` 的 `Strings` 一一对应；缺字段、空字段、列表长度与英文不一致都会让构建失败
 - `templates/`：页面模板，`index.html` 渲染每种语言的首页，`404.html` 为未找到页面
 - `static/`：样式、脚本、站点图标与 OG 分享图；样式与脚本按内容哈希命名后输出
+- `static/img/og-<code>.png`：各语言 1200×630 分享图，使用思源宋体排入该语言的 `hero.etymology` 与 `hero.tagline`；修改这两项文案后需同步重新生成
 - `icons/`：从 Remix Icon v4.9.1 复制的 SVG，构建时内联，不依赖 CDN
 - 截图直接取自 `docs/images/*.webp`，供应商图标取自 `internal/app/assets/providers/`
 
