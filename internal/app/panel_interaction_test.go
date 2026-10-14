@@ -36,10 +36,7 @@ func TestPanelDetailNavigationAndProviderIsolation(t *testing.T) {
 	if a.panelState.detail != "" || !tt.HasText("Ada Lovelace") {
 		t.Fatal("back did not restore panel")
 	}
-	if err := tt.Click(l.Text(l10n.KeyProviderCodex)); err != nil {
-		t.Fatal(err)
-	}
-	if err := tt.ChooseMenuItem(l.Text(l10n.KeyProviderGrok)); err != nil {
+	if err := tt.Click(l.Text(l10n.KeyProviderGrok)); err != nil {
 		t.Fatal(err)
 	}
 	tt.Frame()

@@ -11,6 +11,12 @@ import (
 //go:embed assets/providers/codex-color.svg
 var codexProviderSVG []byte
 
+//go:embed assets/providers/codex.svg
+var codexMonoProviderSVG []byte
+
+//go:embed assets/providers/claude.svg
+var claudeMonoProviderSVG []byte
+
 //go:embed assets/providers/grok.svg
 var grokProviderSVG []byte
 
@@ -21,6 +27,9 @@ var (
 	codexProviderIcon  = ui.MustParseSVG(codexProviderSVG)
 	grokProviderIcon   = ui.MustParseSVG(grokProviderSVG)
 	claudeProviderIcon = ui.MustParseSVG(claudeProviderSVG)
+
+	codexMonoProviderIcon  = ui.MustParseSVG(codexMonoProviderSVG)
+	claudeMonoProviderIcon = ui.MustParseSVG(claudeMonoProviderSVG)
 )
 
 // ProviderIcon preserves the official logo's colors; monochrome SVGs inherit
@@ -35,6 +44,18 @@ func ProviderIcon(c *ui.Context, provider store.Provider, size float32) ui.Eleme
 		return ui.Image(c, claudeProviderIcon).Size(size, size)
 	default:
 		return ui.Icon(c, icPlug).Size(size, size).TextColor(c.Theme().TextMuted)
+	}
+}
+
+// ProviderMonoIcon is the monochrome logo, drawn in the text color.
+func ProviderMonoIcon(c *ui.Context, provider store.Provider, size float32) ui.Element {
+	switch provider {
+	case store.ProviderCodex:
+		return ui.Image(c, codexMonoProviderIcon).Size(size, size)
+	case store.ProviderClaude:
+		return ui.Image(c, claudeMonoProviderIcon).Size(size, size)
+	default:
+		return ProviderIcon(c, provider, size)
 	}
 }
 

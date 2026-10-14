@@ -191,3 +191,27 @@ func TestShortWindowTitlesMatchCodexWording(t *testing.T) {
 		t.Error("long title not shortened")
 	}
 }
+
+func TestShortestWindowMeterPrefersShortestStandardWindow(t *testing.T) {
+	weekly := testMeter("weekly", 10, WeeklyMinutes, SourceStandard)
+	five := testMeter("5h", 40, FiveHourMinutes, SourceStandard)
+	model := testMeter("model", 90, 60, SourceModelSpecific)
+	unknown := testMeter("unknown", 20, 0, SourceStandard)
+	cases := []struct {
+		in   []Meter
+		want string
+	}{
+		{[]Meter{weekly, five, model}, "5h"},
+		{[]Meter{unknown, weekly}, "weekly"},
+		{[]Meter{unknown}, "unknown"},
+		{[]Meter{model}, "model"},
+	}
+	for _, tc := range cases {
+		if m, ok := ShortestWindowMeter(tc.in); !ok || m.Title != tc.want {
+			t.Errorf("got %q, want %q", m.Title, tc.want)
+		}
+	}
+	if _, ok := ShortestWindowMeter(nil); ok {
+		t.Error("empty meters picked a meter")
+	}
+}

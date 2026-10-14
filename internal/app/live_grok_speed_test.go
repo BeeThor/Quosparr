@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/licoy/quosparr/internal/codex"
 	"github.com/licoy/quosparr/internal/grok"
 	"github.com/licoy/quosparr/internal/runway"
 	"github.com/licoy/quosparr/internal/speed"
@@ -147,6 +148,10 @@ func speedService(t *testing.T, provider store.Provider, grokProvider runway.Gro
 		Preferences: p,
 		Grok:        grokProvider,
 		Sources: runway.Sources{
+			// The provider strip also fetches the Codex quota; no one is signed in.
+			LoadValidAuth: func(context.Context, bool, *codex.Auth) (codex.Auth, error) {
+				return codex.Auth{}, &runway.AuthLoadError{}
+			},
 			ScanSpeed: func(context.Context, time.Time) (speed.Report, error) {
 				scans.Add(1)
 				return speed.Report{}, nil

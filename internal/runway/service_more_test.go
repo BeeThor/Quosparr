@@ -510,7 +510,9 @@ func (r *fakeResetToday) PendingAlerts(time.Time) []alerts.Alert {
 func (r *fakeResetToday) SetOnChange(fn func()) { r.mu.Lock(); r.onChange = fn; r.mu.Unlock() }
 func (r *fakeResetToday) count() int            { r.mu.Lock(); defer r.mu.Unlock(); return r.refresh }
 
-func TestGrokPanelRefreshSkipsCodexData(t *testing.T) {
+// The provider strip shows every provider's quota, so the Grok panel still
+// fetches the Codex quota, but not the Codex usage, cost or sessions.
+func TestGrokPanelRefreshFetchesOnlyCodexQuota(t *testing.T) {
 	f := newFake(t)
 	g := &fakeGrok{state: GrokState{Availability: GrokReady, Plan: "heavy"}}
 	s, _ := newService(t, f, func(o *Options) {
@@ -522,8 +524,11 @@ func TestGrokPanelRefreshSkipsCodexData(t *testing.T) {
 	if g.count() != 1 {
 		t.Errorf("grok refreshed %d times", g.count())
 	}
-	if f.count("quota") != 0 {
-		t.Error("Codex was fetched while only Grok is shown")
+	if f.count("quota") != 1 {
+		t.Errorf("Codex quota fetched %d times", f.count("quota"))
+	}
+	if f.count("scan") != 0 || f.count("credits") != 0 {
+		t.Error("Codex usage or credits were loaded while only Grok is shown")
 	}
 	if s.Snapshot().Grok.Plan != "heavy" || s.Snapshot().Provider != store.ProviderGrok {
 		t.Errorf("grok state missing: %+v", s.Snapshot().Grok)

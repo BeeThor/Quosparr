@@ -289,16 +289,11 @@ func (s *Service) providerWantedLocked(p store.Provider) bool {
 	return false
 }
 
-func (s *Service) needsGrokDataLocked() bool {
-	return s.providerWantedLocked(store.ProviderGrok) || s.widgetNeedsLocked()
-}
-
-func (s *Service) needsClaudeDataLocked() bool {
-	return s.providerWantedLocked(store.ProviderClaude) || s.widgetNeedsLocked()
-}
-
-func (s *Service) needsCodexDataLocked() bool {
-	return s.providerWantedLocked(store.ProviderCodex) || s.widgetNeedsLocked()
+// showsProviderLocked reports whether the panel, the status item or a widget
+// shows the provider in full. Every provider's quota refreshes for the
+// panel's provider strip, but only a shown provider reports its errors.
+func (s *Service) showsProviderLocked(p store.Provider) bool {
+	return s.providerWantedLocked(p) || s.widgetNeedsLocked()
 }
 
 func (s *Service) widgetNeedsLocked() bool {
@@ -372,21 +367,20 @@ func (s *Service) startFull(policy usage.RefreshPolicy, widgets bool) <-chan str
 		s.mu.Lock()
 		grokPanel := s.prefs.SelectedProvider == store.ProviderGrok
 		claudePanel := s.prefs.SelectedProvider == store.ProviderClaude
-		needsGrok := s.needsGrokDataLocked()
-		needsClaude := s.needsClaudeDataLocked()
-		needsCodex := s.needsCodexDataLocked()
+		showsGrok := s.showsProviderLocked(store.ProviderGrok)
+		showsClaude := s.showsProviderLocked(store.ProviderClaude)
 		fullWidgets := s.widgetReqs.Has(export.RequireTokenTrend) || s.widgetReqs.Has(export.RequireCost)
 		s.mu.Unlock()
-		if needsGrok && s.opts.Grok != nil {
-			if err := s.opts.Grok.Refresh(ctx); err != nil && ctx.Err() == nil {
+		if s.opts.Grok != nil {
+			if err := s.opts.Grok.Refresh(ctx); err != nil && ctx.Err() == nil && showsGrok {
 				s.mu.Lock()
 				s.lastErr = s.errTextLocked(err)
 				s.publishLocked()
 				s.mu.Unlock()
 			}
 		}
-		if needsClaude && s.opts.Claude != nil {
-			if err := s.opts.Claude.Refresh(ctx); err != nil && ctx.Err() == nil {
+		if s.opts.Claude != nil {
+			if err := s.opts.Claude.Refresh(ctx); err != nil && ctx.Err() == nil && showsClaude {
 				s.mu.Lock()
 				s.lastErr = s.errTextLocked(err)
 				s.publishLocked()
@@ -395,7 +389,7 @@ func (s *Service) startFull(policy usage.RefreshPolicy, widgets bool) <-chan str
 		}
 		if (!grokPanel && !claudePanel) || fullWidgets {
 			s.refreshNow(ctx, policy)
-		} else if needsCodex {
+		} else {
 			s.refreshQuotaNow(ctx)
 		}
 		cancel()
@@ -815,20 +809,11 @@ func (s *Service) applyEstimateLocked(q codexapi.QuotaSnapshot, daily usage.Summ
 // RefreshQuota refreshes the quota alone.
 func (s *Service) RefreshQuota() <-chan struct{} {
 	s.mu.Lock()
-	grokPanel := s.prefs.SelectedProvider == store.ProviderGrok
-	claudePanel := s.prefs.SelectedProvider == store.ProviderClaude
-	needsGrok := s.needsGrokDataLocked()
-	needsClaude := s.needsClaudeDataLocked()
-	needsCodex := s.needsCodexDataLocked()
 	busy := s.allBusy
 	s.mu.Unlock()
-	if needsGrok {
-		s.refreshGrok()
-	}
-	if needsClaude {
-		s.refreshClaude()
-	}
-	if busy || ((grokPanel || claudePanel) && !needsCodex) {
+	s.refreshGrok()
+	s.refreshClaude()
+	if busy {
 		return closedChan()
 	}
 	return s.runAccountScoped(s.refreshQuotaNow)

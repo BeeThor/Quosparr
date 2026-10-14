@@ -122,10 +122,7 @@ func TestPanelClickRoutesStayImmediate(t *testing.T) {
 	if a.panelState.detail != "" {
 		t.Fatal("back did not restore summary")
 	}
-	click(a.L().Text(l10n.KeyProviderCodex))
-	if err := tt.ChooseMenuItem(a.L().Text(l10n.KeyProviderGrok)); err != nil {
-		t.Fatal(err)
-	}
+	click(a.L().Text(l10n.KeyProviderGrok))
 	if selected != store.ProviderGrok || a.panelState.provider != store.ProviderGrok {
 		t.Fatal("provider was not applied")
 	}

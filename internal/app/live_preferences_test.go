@@ -88,12 +88,20 @@ func TestLiveRefreshUsesLatestUIProvider(t *testing.T) {
 	e := newEnv(t, nil)
 	p := quietLivePreferences()
 	e.s.prefs = p
+	// The provider strip refreshes the Codex quota for every provider, so the
+	// Codex-only reset credits tell the two dispatches apart.
 	var codexLoads atomic.Int32
 	g := newGrokBridge(nil, p, nil)
-	svc := runway.New(runway.Options{Preferences: p, Grok: g, Sources: runway.Sources{LoadValidAuth: func(context.Context, bool, *codex.Auth) (codex.Auth, error) {
-		codexLoads.Add(1)
-		return codex.Auth{}, errors.New("unexpected Codex refresh")
-	}}})
+	svc := runway.New(runway.Options{Preferences: p, Grok: g, Sources: runway.Sources{
+		LoadValidAuth: func(context.Context, bool, *codex.Auth) (codex.Auth, error) { return codex.Auth{}, nil },
+		FetchQuota: func(context.Context, codexapi.Auth) (codexapi.QuotaSnapshot, error) {
+			return codexapi.QuotaSnapshot{}, errors.New("offline")
+		},
+		FetchResetCredits: func(context.Context, codexapi.Auth) (codexapi.ResetCreditsSnapshot, error) {
+			codexLoads.Add(1)
+			return codexapi.ResetCreditsSnapshot{}, errors.New("unexpected Codex refresh")
+		},
+	}})
 	defer svc.Close()
 	rt := &liveApp{svc: svc, grok: g, reset: newResetBridge(e.s, p, nil)}
 	e.s.OnChange(func() { rt.pushPreferences(e.s) })
@@ -101,7 +109,7 @@ func TestLiveRefreshUsesLatestUIProvider(t *testing.T) {
 	// follow the UI's Grok selection rather than the service's old Codex value.
 	g.mu.Lock()
 	e.s.SetSelectedProvider(store.ProviderGrok)
-	rt.panelActions(e.s).RefreshSection(runway.SectionQuota)
+	rt.panelActions(e.s).RefreshSection(runway.SectionResetCredits)
 	g.mu.Unlock()
 	rt.preferenceWork.idle.Wait()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)

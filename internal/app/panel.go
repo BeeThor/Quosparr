@@ -80,8 +80,11 @@ func (a *App) panelMainPage(c *ui.Context, l l10n.Localizer, prefs store.Prefere
 // selected provider above the footer.
 func panelStatusLines(c *ui.Context, l l10n.Localizer, prefs store.Preferences, snap runway.Snapshot) {
 	message, failure := snap.Accounts.Message, snap.Codex.LastError
-	if prefs.SelectedProvider == store.ProviderGrok {
+	switch prefs.SelectedProvider {
+	case store.ProviderGrok:
 		message, failure = snap.Grok.Accounts.Message, snap.Grok.LastError
+	case store.ProviderClaude:
+		message, failure = snap.Claude.Accounts.Message, snap.Claude.LastError
 	}
 	if message == "" && failure == "" {
 		return

@@ -116,9 +116,14 @@ func TestProviderChangeCancelsOldRefreshThenLoadsNewProvider(t *testing.T) {
 	f := newFake(t)
 	gate := newGate()
 	g := &fakeGrok{}
+	var calls atomic.Int32
 	f.quotaFn = func(ctx context.Context, _ codexapi.Auth) (codexapi.QuotaSnapshot, error) {
-		gate.waitCtx(ctx)
-		return f.quota("late", 99), nil
+		// Only the first fetch blocks; the provider strip refetches Codex.
+		if calls.Add(1) == 1 {
+			gate.waitCtx(ctx)
+			return f.quota("late", 99), nil
+		}
+		return f.quota("fresh", 50), nil
 	}
 	s, _ := newService(t, f, func(o *Options) { o.Grok = g })
 	done := s.Refresh(usage.RefreshForce)
@@ -128,7 +133,8 @@ func TestProviderChangeCancelsOldRefreshThenLoadsNewProvider(t *testing.T) {
 	s.SetPreferences(p)
 	wait(t, done)
 	settle(t, s)
-	if g.count() != 1 {
+	// Both refreshes load Grok for the provider strip.
+	if g.count() != 2 {
 		t.Fatalf("new provider not loaded: %d", g.count())
 	}
 	if q := s.Snapshot().Codex.Quota; q != nil && q.Plan == "late" {

@@ -105,6 +105,28 @@ func PrimaryStandardMeter(meters []Meter, preferred []int) (Meter, bool) {
 	return standard[0], true
 }
 
+// ShortestWindowMeter picks the standard meter with the shortest known
+// window, else the first standard meter, else the first meter.
+func ShortestWindowMeter(meters []Meter) (Meter, bool) {
+	var picked *Meter
+	for i := range meters {
+		m := &meters[i]
+		if m.Source != SourceStandard {
+			continue
+		}
+		if picked == nil || m.WindowMinutes > 0 && (picked.WindowMinutes <= 0 || m.WindowMinutes < picked.WindowMinutes) {
+			picked = m
+		}
+	}
+	if picked != nil {
+		return *picked, true
+	}
+	if len(meters) == 0 {
+		return Meter{}, false
+	}
+	return meters[0], true
+}
+
 // WithShortTitle retitles a meter with the short window name.
 func WithShortTitle(lc l10n.Localizer, m Meter) Meter {
 	m.Title = ShortWindowTitle(lc, m.WindowMinutes)
