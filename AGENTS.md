@@ -69,6 +69,7 @@ V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 - 价格表必须带版本日期；未知模型不要估算为精确费用。
 - 根目录 `README*.md` 已按 v1 Quosparr 重写：语言切换位于左上角首行，名称、小号斜体的名称由来概述（加粗 **Quo**ta + **Sparr**ow 取字部分）与简介水平居中，不单设名称由来章节，不嵌入视频；安装部分按全新安装说明，旧版升级说明放在 `docs/upgrade-from-codexrunway*.md` 七种语言并由首页链接；七种语言保持相同结构与事实，修改任一语言时同步其余六种；`README_EN.md` 仅作跳转
 - 新版本的资产和清单准备完成不代表已公开发布或已通过真机验收
+- 官网 `quosparr.com` 源码在 `website/`，由 `go run ./website/gen` 预渲染七种语言静态页，`.github/workflows/website.yml` 部署到 GitHub Pages；文案在 `website/locales/*.json`，七种语言字段与列表长度必须一致，图标只用 `website/icons/` 中的 Remix Icon SVG，下载链接取自最新正式 Release
 - 隔离验收按 `docs/v1-acceptance-checklist.md` 与 `docs/v1-isolated-update-proxy.md` 执行，未修改且未重签的历史应用须保留真实 Sparkle 归档验签；不得改生产源或关闭 TLS 校验
 
 ## v1 分支说明（从 README 迁入）

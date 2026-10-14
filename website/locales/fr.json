@@ -1,0 +1,104 @@
+{
+  "meta": {
+    "title": "Quosparr : quotas Codex, Claude Code et Grok dans la barre de menus",
+    "description": "Quosparr est une application native et gratuite de barre de menus et de zone de notification pour macOS, Windows et Linux. Elle affiche les quotas d’abonnement Codex, Claude Code et Grok, les reset credits, le coût équivalent API et les sessions locales."
+  },
+  "nav": {
+    "features": "Fonctionnalités",
+    "screenshots": "Captures",
+    "privacy": "Confidentialité",
+    "download": "Télécharger"
+  },
+  "ui": {
+    "skip": "Aller au contenu",
+    "language": "Langue",
+    "themeSystem": "Thème : selon le système",
+    "themeLight": "Thème : clair",
+    "themeDark": "Thème : sombre"
+  },
+  "hero": {
+    "etymology": "Nom formé de <b>Quo</b>ta (quota) + <b>Sparr</b>ow (moineau)",
+    "tagline": "Un petit moineau perché dans votre barre de menus, qui veille sur vos quotas Codex, Claude et Grok.",
+    "description": "Une application native de barre de menus et de zone de notification pour macOS, Windows et Linux. Quotas d’abonnement, reset credits, coût équivalent API et sessions locales d’un coup d’œil, avec des comptes séparés pour chaque fournisseur.",
+    "download": "Télécharger",
+    "downloadFor": "Télécharger pour {os}",
+    "source": "Voir sur GitHub",
+    "license": "Gratuit et open source"
+  },
+  "features": {
+    "title": "Fonctionnalités",
+    "lead": "Codex, Claude Code et Grok ont chacun leur onglet. Quotas, coûts et comptes restent séparés par fournisseur.",
+    "codex": [
+      "Quota restant des fenêtres de 5 heures, hebdomadaire et supplémentaires, avec compte, offre et date d’expiration",
+      "Nombre de reset credits, état et date d’expiration",
+      "Estimation de l’allocation hebdomadaire comparée aux semaines précédentes, pour repérer une baisse de quota",
+      "Changement de compte, sessions récentes et réparation de l’index local des sessions"
+    ],
+    "claude": [
+      "Utilisation de l’abonnement Claude Code : fenêtres de 5 heures et de 7 jours, fenêtres hebdomadaires par modèle et usage supplémentaire",
+      "Tokens consommés, coût équivalent API, sessions récentes et vitesse de sortie d’après les journaux locaux",
+      "Import et changement de comptes d’abonnement ; les jetons MCP sont conservés lors du changement"
+    ],
+    "grok": [
+      "Quota inclus avec répartition Build / Imagine / Chat, solde prépayé et usage à la demande",
+      "Plusieurs comptes OAuth / SuperGrok avec connexion isolée et changement explicite",
+      "Sessions récentes issues des journaux locaux de Grok CLI"
+    ],
+    "commonTitle": "Pour tous les fournisseurs",
+    "common": [
+      { "title": "La barre de menus en un coup d’œil", "text": "Suivez l’onglet actif ou affichez jusqu’à deux fournisseurs dans la barre de menus." },
+      { "title": "Coût équivalent API", "text": "Aujourd’hui, ce cycle, le cycle précédent, ce mois-ci ou une période personnalisée, calculé à partir des journaux locaux." },
+      { "title": "Graphiques de tokens", "text": "Utilisation de l’année en carte de chaleur, courbe ou barres, par jour, par semaine ou en cumul." },
+      { "title": "Thèmes et langues", "text": "Apparence claire, sombre ou selon le système, en sept langues." },
+      { "title": "Mises à jour et widgets", "text": "Mises à jour intégrées et vérifiées par signature sur les trois plateformes, widgets de bureau sur macOS 14+." },
+      { "title": "Proxy réseau", "text": "Selon le système, HTTP ou SOCKS5. Les mots de passe du proxy restent dans le magasin d’identifiants du système." }
+    ]
+  },
+  "shots": {
+    "title": "Captures d’écran",
+    "note": "Les captures montrent la v1 sur macOS et Windows.",
+    "main": "Panneau principal",
+    "cost": "Coût équivalent API",
+    "estimate": "Estimation du quota d’abonnement",
+    "accounts": "Comptes fournisseurs",
+    "display": "Réglages d’affichage",
+    "windows": "Réglages sous Windows et panneau Grok"
+  },
+  "privacy": {
+    "title": "Confidentialité",
+    "lead": "Quosparr lit les fichiers locaux des CLI et ne contacte que les points d’accès des fournisseurs, des sources publiques d’état et de prix, et GitHub pour les mises à jour. Il n’y a pas de serveur Quosparr.",
+    "items": [
+      { "title": "Son propre dossier de données", "text": "Les données dérivées non secrètes sont dans ~/.quosparr. Aucun cache de l’application n’est écrit dans ~/.codex." },
+      { "title": "Les identifiants restent sur votre machine", "text": "Les copies des comptes gérés sont accessibles au seul propriétaire, et les index de comptes ne contiennent aucun token." },
+      { "title": "Aucun token dans les journaux", "text": "Les tokens et clés API n’apparaissent jamais dans les journaux, la sortie de l’autodiagnostic ou les modèles d’issue." },
+      { "title": "Coût calculé en local", "text": "Le coût équivalent API vient des journaux de session locaux. Le contenu des sessions n’est jamais envoyé." },
+      { "title": "Écritures prudentes", "text": "Les fichiers de connexion officiels ne changent qu’au rafraîchissement du token ou quand vous confirmez un changement. La réparation des sessions sauvegarde d’abord l’index." }
+    ]
+  },
+  "download": {
+    "title": "Télécharger",
+    "lead": "Choisissez le paquet adapté à votre système et à votre processeur. Chaque paquet embarque son runtime SQLite : le premier lancement ne télécharge rien de plus.",
+    "latest": "Dernière version",
+    "released": "publiée le",
+    "recommended": "Recommandé pour cet appareil",
+    "macReq": "macOS 12 ou ultérieur. Les widgets de bureau demandent macOS 14+.",
+    "macNote": "L’application est signée ad-hoc et n’est pas notariée. Si macOS ne peut pas vérifier le développeur, faites un clic droit sur Quosparr.app et choisissez Ouvrir, ou cliquez sur Ouvrir quand même dans Réglages Système → Confidentialité et sécurité.",
+    "macFix": "Si macOS indique que l’application est endommagée, placez-la dans Applications puis exécutez :",
+    "winReq": "Windows 10 ou 11",
+    "winNote": "S’installe pour l’utilisateur courant dans %LOCALAPPDATA%\\Programs\\Quosparr, sans droits d’administrateur.",
+    "linuxReq": "Nécessite GTK3, AppIndicator, un bureau avec zone de notification et une session Secret Service, comme GNOME Keyring ou KWallet.",
+    "linuxNote": "Installez le .deb avec votre gestionnaire de paquets, ou placez <code>install.sh</code> à côté du .tar.gz et lancez <code>sh install.sh</code> pour installer dans <code>~/.local</code>.",
+    "allReleases": "Toutes les versions",
+    "checksums": "Sommes de contrôle SHA256",
+    "upgrade": "Vous utilisiez CodexRunway ?",
+    "copy": "Copier",
+    "copied": "Copié"
+  },
+  "footer": {
+    "source": "Code source",
+    "releases": "Versions",
+    "issues": "Tickets",
+    "license": "Licence",
+    "disclaimer": "Quosparr est un projet indépendant, sans lien avec OpenAI, Anthropic ni xAI."
+  }
+}
