@@ -287,7 +287,9 @@ func TestPanelReactionPendingClickAllowsBack(t *testing.T) {
 			if queries.Load() != 1 || posts.Load() != 0 || !tt.HasText("5") || a.panelState.detail != "" {
 				t.Fatal("opening the main-page reaction should only read its current count")
 			}
-			timer := time.AfterFunc(time.Second, unblock)
+			// The post is released only after navigation would have finished; race
+			// runs get headroom so a slow runner is not taken for a blocked UI.
+			timer := time.AfterFunc(raceLatencyFactor*time.Second, unblock)
 			defer timer.Stop()
 			at := time.Now()
 			if err := tt.Click(a.L().Text(l10n.KeyRateLimitResetTodayReactionThank)); err != nil {

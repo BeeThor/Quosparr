@@ -142,7 +142,9 @@ func TestSettingsProxyTestClickReturnsBeforeCredentialRead(t *testing.T) {
 	if err := e.creds.Save(id, ProxyCredentials{Username: "test", Password: "fixture"}); err != nil {
 		t.Fatal(err)
 	}
-	creds := &delayedCredentials{CredentialStore: e.creds, delay: 200 * time.Millisecond}
+	// The credential delay stays above the event budget, so a blocking read
+	// still fails the check under race instrumentation.
+	creds := &delayedCredentials{CredentialStore: e.creds, delay: raceLatencyFactor * 200 * time.Millisecond}
 	e.s.creds = creds
 	var tested atomic.Bool
 	e.s.SetProxyHooks(ProxyHooks{Test: func(context.Context, store.NetworkProxyConfiguration, *ProxyCredentials, string) error {
@@ -158,10 +160,10 @@ func TestSettingsProxyTestClickReturnsBeforeCredentialRead(t *testing.T) {
 	tt.Key(0, ui.KeySpace)
 	elapsed := time.Since(start)
 	t.Logf("proxy-test event=%s loads=%d tested=%v", elapsed, creds.loads.Load(), tested.Load())
-	if elapsed > 100*time.Millisecond || tested.Load() {
+	if elapsed > raceLatencyFactor*100*time.Millisecond || tested.Load() {
 		t.Fatal("proxy-test event waits for saved credentials")
 	}
-	deadline := time.Now().Add(time.Second)
+	deadline := time.Now().Add(raceLatencyFactor * time.Second)
 	for !tested.Load() && time.Now().Before(deadline) {
 		time.Sleep(time.Millisecond)
 	}
