@@ -157,6 +157,17 @@ func readThemeColor(r *reader, key string) string {
 	return NormalizeThemeColor(s)
 }
 
+// readProxyTestURL decodes the Go-only test site leniently: anything but a
+// valid URL is the default.
+func readProxyTestURL(r *reader, key string) string {
+	raw, ok := r.take(key)
+	var s string
+	if !ok || json.Unmarshal(raw, &s) != nil {
+		return ""
+	}
+	return NormalizeProxyTestURL(s)
+}
+
 // readResetTimeFormat decodes the Go-only reset time format leniently, as
 // readThemeColor: anything but a known value is the relative countdown.
 func readResetTimeFormat(r *reader, key string) ResetTimeFormat {

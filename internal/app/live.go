@@ -7,7 +7,6 @@ import (
 	"math"
 	"net/http"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -119,10 +118,10 @@ func ApplySavedProxy(cfg store.NetworkProxyConfiguration, creds *ProxyCredential
 	return nil
 }
 
-// TestProxyDraft dials the update feed through a temporary context. The
+// TestProxyDraft fetches the test site through a temporary context. The
 // draft is not installed.
-func TestProxyDraft(ctx context.Context, cfg store.NetworkProxyConfiguration, creds *ProxyCredentials) error {
-	return probeProxy(ctx, cfg, netCredentials(creds), proxyTestURL())
+func TestProxyDraft(ctx context.Context, cfg store.NetworkProxyConfiguration, creds *ProxyCredentials, site string) error {
+	return probeProxy(ctx, cfg, netCredentials(creds), site)
 }
 
 func probeProxy(ctx context.Context, cfg store.NetworkProxyConfiguration, creds *netx.Credentials, rawURL string, opts ...netx.Option) error {
@@ -144,20 +143,12 @@ func probeProxy(ctx context.Context, cfg store.NetworkProxyConfiguration, creds 
 	}
 	defer resp.Body.Close()
 	_, _ = io.Copy(io.Discard, io.LimitReader(resp.Body, 1<<20))
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+	// Any answer from the site proves the route works, even a 404 from a
+	// custom page; a proxy that cannot reach it answers 407 or 5xx.
+	if resp.StatusCode == http.StatusProxyAuthRequired || resp.StatusCode >= 500 {
 		return netx.ErrConnectionFailed
 	}
 	return nil
-}
-
-func proxyTestURL() string {
-	arch := "x86_64"
-	if runtime.GOARCH == "arm64" {
-		arch = "arm64"
-	}
-	// Keep the existing public diagnostic endpoint usable before the first
-	// Quosparr release; this request does not install or parse an update.
-	return "https://github.com/Licoy/Quosparr/releases/latest/download/appcast-" + arch + ".xml"
 }
 
 func netCredentials(c *ProxyCredentials) *netx.Credentials {

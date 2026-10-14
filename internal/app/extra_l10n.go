@@ -50,6 +50,8 @@ const (
 	xResetTimeFormatHint       textKey = "quotaResetTimeFormatDescription"
 	xResetTimeRelative         textKey = "quotaResetTimeRelative"
 	xResetTimeExact            textKey = "quotaResetTimeExact"
+	xProxyTestURL              textKey = "networkProxyTestURL"
+	xProxyTestURLInvalid       textKey = "networkProxyTestURLInvalid"
 )
 
 // extraTexts is indexed by textKey, then by position in l10n.Languages():
@@ -85,6 +87,18 @@ var extraTexts = map[textKey][7]string{
 	},
 	xResetTimeRelative: {"Relative time", "相对时间", "相對時間", "상대 시간", "相対時間", "Относительное время", "Temps relatif"},
 	xResetTimeExact:    {"Exact time", "精准时间", "精準時間", "정확한 시간", "正確な時刻", "Точное время", "Heure exacte"},
+	xProxyTestURL: {
+		"Test site", "测试站点", "測試站點", "테스트 사이트", "テストサイト", "Тестовый сайт", "Site de test",
+	},
+	xProxyTestURLInvalid: {
+		"Enter an http or https address for the test site.",
+		"请输入 http 或 https 开头的测试站点地址",
+		"請輸入 http 或 https 開頭的測試站點位址",
+		"테스트 사이트에 http 또는 https 주소를 입력하세요.",
+		"テストサイトには http または https のアドレスを入力してください。",
+		"Введите адрес тестового сайта с http или https.",
+		"Saisissez une adresse http ou https pour le site de test.",
+	},
 	xAccountCount: {
 		"%@ accounts", "%@ 个账号", "%@ 個帳號", "계정 %@개", "%@ アカウント", "Аккаунтов: %@", "%@ comptes",
 	},

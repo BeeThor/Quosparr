@@ -405,6 +405,12 @@ func (s *Settings) SetQuotaEstimateWindowMode(v store.WindowMode) bool {
 	return s.Update(func(p *store.Preferences) { p.QuotaEstimateWindowMode = v })
 }
 
+// SetProxyTestURL saves the site "Test Connection" fetches; the default is
+// stored as empty.
+func (s *Settings) SetProxyTestURL(v string) bool {
+	return s.Update(func(p *store.Preferences) { p.ProxyTestURL = v })
+}
+
 // SetQuotaResetTimeFormat selects how the quota rows show the next reset.
 func (s *Settings) SetQuotaResetTimeFormat(v store.ResetTimeFormat) bool {
 	return s.Update(func(p *store.Preferences) { p.QuotaResetTimeFormat = v })

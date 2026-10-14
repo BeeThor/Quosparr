@@ -61,8 +61,9 @@ func (u *settingsUI) sidebar(c *ui.Context) {
 			if sidebarGroupStarts[tab] {
 				ui.Box(c).Height(10)
 			}
-			if u.sidebarItem(c, tab) {
+			if u.sidebarItem(c, tab) && u.tab != tab {
 				u.tab = tab
+				u.setProxyMsg("", false)
 			}
 		}
 	})

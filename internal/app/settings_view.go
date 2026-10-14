@@ -5,7 +5,9 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
@@ -21,6 +23,10 @@ const (
 	settingsMinHeight    = 560
 	settingsSidebarWidth = 240
 )
+
+// proxyMsgTime is how long a successful connection test stays shown; tests
+// shorten it.
+var proxyMsgTime = 3 * time.Second
 
 // Actions are the operations of other packages that the settings buttons
 // start. A nil one disables its button.
@@ -103,12 +109,16 @@ type settingsUI struct {
 
 	draft         ProxyDraft
 	draftReady    bool
+	testURL       string
+	loadedCreds   ProxyCredentials
 	proxyTask     Task
 	proxyResult   ProxySaveResult
 	testTask      Task
 	selfCheckTask Task
 	proxyMsg      string
 	proxyMsgErr   bool
+	proxyMsgGen   int
+	toast         string
 
 	pickingColor bool
 	customColor  ui.Color
@@ -141,9 +151,14 @@ func (u *settingsUI) view(c *ui.Context) {
 	applyThemeColor(c, u.s.prefs.ThemeColor)
 	if !u.draftReady {
 		u.draft, u.draftReady = NewProxyDraft(u.s.Proxy()), true
+		u.testURL = u.s.Prefs().ProxyTestTarget()
 	}
 	u.shell(c, u.pageContent)
 	u.dialogs(c)
+	if u.toast != "" {
+		c.Toast(u.toast)
+		u.toast = ""
+	}
 }
 
 func (u *settingsUI) pageContent(c *ui.Context) {
@@ -317,10 +332,17 @@ func (u *settingsUI) proxyGroup(c *ui.Context) {
 				return l.Text(l10n.KeyNetworkProxySystem)
 			}, busy); ok {
 				u.draft.Mode = v
+				u.setProxyMsg("", false)
 			}
 		})
 		if u.draft.Mode != store.ProxyModeSystem {
 			u.proxyFields(c, row, busy)
+		}
+		if s.proxyHooks.Test != nil {
+			row(tx(l, xProxyTestURL), "", func() {
+				ui.TextInput(c.Key("px-test-url"), &u.testURL).Width(230).Placeholder(store.DefaultProxyTestURL).
+					Label(tx(l, xProxyTestURL)).Disabled(busy).OnSubmit(u.testProxy)
+			})
 		}
 		u.proxyActions(c, busy)
 	})
@@ -365,11 +387,12 @@ func (u *settingsUI) proxyFields(c *ui.Context, row rowFunc, busy bool) {
 	}
 }
 
-// proxyActions is the final row inside the network card.
+// proxyActions is the final row inside the network card. The save button
+// shows unsaved changes in the warning color and is disabled without them.
 func (u *settingsUI) proxyActions(c *ui.Context, busy bool) {
 	l := u.L()
 	t := c.Theme()
-	ui.Row(c).Gap(8).AlignItems(ui.Center).Padding(8, 0, 0, 0).Children(func() {
+	ui.Row(c).Gap(8).AlignItems(ui.Center).Padding(2, 0, 8, 0).Children(func() {
 		col := t.Success
 		if u.proxyMsgErr {
 			col = t.Danger
@@ -384,13 +407,59 @@ func (u *settingsUI) proxyActions(c *ui.Context, busy bool) {
 				u.testProxy()
 			}
 		}
-		if PillButton(c, nil, l.Text(l10n.KeyNetworkProxySave), busy).Clicked() {
-			u.saveProxy()
+		save := l.Text(l10n.KeyNetworkProxySave)
+		if !busy && u.proxyUnsaved() {
+			if WarningPillButton(c, save).Clicked() {
+				u.saveProxy()
+			}
+		} else {
+			PillButton(c, nil, save, true)
 		}
 	})
 }
 
-func (u *settingsUI) setProxyMsg(msg string, isErr bool) { u.proxyMsg, u.proxyMsgErr = msg, isErr }
+// proxyUnsaved reports whether saving the draft would change anything: it
+// differs from the saved configuration and the credentials loaded into it,
+// or the saved configuration is unusable.
+func (u *settingsUI) proxyUnsaved() bool {
+	if u.s.ProxyError() != nil {
+		return true
+	}
+	base := NewProxyDraft(u.s.Proxy())
+	base.Username, base.Password = u.loadedCreds.Username, u.loadedCreds.Password
+	return proxyDraftKey(u.draft) != proxyDraftKey(base)
+}
+
+// proxyDraftKey drops the fields of a draft its mode ignores.
+func proxyDraftKey(d ProxyDraft) ProxyDraft {
+	if d.Mode == store.ProxyModeSystem {
+		return ProxyDraft{Mode: d.Mode}
+	}
+	d.Host, d.Port = strings.TrimSpace(d.Host), strings.TrimSpace(d.Port)
+	if !d.UsesAuth {
+		d.Username, d.Password, d.CredentialID = "", "", ""
+	}
+	return d
+}
+
+// setProxyMsg replaces the message beside the network buttons.
+func (u *settingsUI) setProxyMsg(msg string, isErr bool) {
+	u.proxyMsg, u.proxyMsgErr = msg, isErr
+	u.proxyMsgGen++
+}
+
+// flashProxyMsg shows a success message that clears itself after a while.
+func (u *settingsUI) flashProxyMsg(msg string) {
+	u.setProxyMsg(msg, false)
+	gen := u.proxyMsgGen
+	time.AfterFunc(proxyMsgTime, func() {
+		u.post(func() {
+			if u.proxyMsgGen == gen {
+				u.setProxyMsg("", false)
+			}
+		})
+	})
+}
 
 func (u *settingsUI) saveProxy() {
 	d, prev := u.draft, u.s.Proxy()
@@ -407,12 +476,12 @@ func (u *settingsUI) saveProxy() {
 		}
 		r := u.proxyResult
 		u.s.ProxySaved(r)
-		u.draft = NewProxyDraft(r.Config)
+		u.draft, u.loadedCreds = NewProxyDraft(r.Config), ProxyCredentials{}
 		if r.CleanupFailed {
 			u.setProxyMsg(l.Text(l10n.KeyNetworkProxyCleanupFailed), true)
 			return
 		}
-		u.setProxyMsg(l.Text(l10n.KeyNetworkProxySaved), false)
+		u.toast = l.Text(l10n.KeyNetworkProxySaved)
 	})
 }
 
@@ -429,11 +498,22 @@ func (u *settingsUI) loadCredentials() {
 			return
 		}
 		u.draft.Username, u.draft.Password = got.Username, got.Password
+		u.loadedCreds = got
 		u.setProxyMsg("", false)
 	})
 }
 
 func (u *settingsUI) testProxy() {
+	if u.proxyTask.Running || u.testTask.Running {
+		return
+	}
+	site, err := store.ParseProxyTestURL(u.testURL)
+	if err != nil {
+		u.setProxyMsg(tx(u.L(), xProxyTestURLInvalid), true)
+		return
+	}
+	u.testURL = site
+	u.s.SetProxyTestURL(site)
 	d := u.draft
 	u.setProxyMsg("", false)
 	runTask(&u.testTask, u.post, func() error {
@@ -445,13 +525,13 @@ func (u *settingsUI) testProxy() {
 		if err != nil {
 			return err
 		}
-		return u.s.proxyHooks.Test(context.Background(), cfg, creds)
+		return u.s.proxyHooks.Test(context.Background(), cfg, creds, site)
 	}, func(err error) {
 		if err != nil {
 			u.setProxyMsg(u.L().Text(proxyErrorKey(err)), true)
 			return
 		}
-		u.setProxyMsg(u.L().Text(l10n.KeyNetworkProxyTestSucceeded), false)
+		u.flashProxyMsg(u.L().Text(l10n.KeyNetworkProxyTestSucceeded))
 	})
 }
 

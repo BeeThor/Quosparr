@@ -246,14 +246,32 @@ func Panel(c *ui.Context) ui.Element {
 // PillButton is a capsule button with an optional icon. A disabled one
 // reports no clicks.
 func PillButton(c *ui.Context, icon *ui.SVG, label string, disabled bool) ui.Element {
+	return pillButton(c, icon, label, disabled, false)
+}
+
+// WarningPillButton is a PillButton filled with the warning color, for an
+// action that has work waiting, such as unsaved changes.
+func WarningPillButton(c *ui.Context, label string) ui.Element {
+	return pillButton(c, nil, label, false, true)
+}
+
+func pillButton(c *ui.Context, icon *ui.SVG, label string, disabled, warn bool) ui.Element {
 	t := c.Theme()
 	b := ui.ButtonBase(c).Label(label).Disabled(disabled).Padding(6, 12).Gap(6).Radius(6).AlignItems(ui.Center)
 	if label == "" {
 		b.Padding(6, 8) // an icon alone: name it with Label
 	}
-	bg := t.Text.Alpha(0.06)
+	bg, col := t.Text.Alpha(0.06), t.Text
+	if warn {
+		bg, col = t.Warning, ui.RGB(255, 255, 255)
+	}
 	switch {
 	case disabled:
+		col = t.TextMuted
+	case b.Pressed() && warn:
+		bg = t.Warning.Alpha(0.8)
+	case b.Hovered() && warn:
+		bg = t.Warning.Alpha(0.9)
 	case b.Pressed():
 		bg = t.Text.Alpha(0.14)
 	case b.Hovered():
@@ -261,10 +279,6 @@ func PillButton(c *ui.Context, icon *ui.SVG, label string, disabled bool) ui.Ele
 	}
 	b.Background(bg)
 	return b.Children(func() {
-		col := t.Text
-		if disabled {
-			col = t.TextMuted
-		}
 		if icon != nil {
 			ui.Icon(c, icon).FontSize(13).TextColor(col)
 		}

@@ -73,7 +73,7 @@ func TestSettingsSelfCheckUsesRedactedTemporaryHomeReport(t *testing.T) {
 func TestSettingsProxyTestCredentialFailureIsVisible(t *testing.T) {
 	e := newEnv(t, nil)
 	var tested atomic.Bool
-	e.s.SetProxyHooks(ProxyHooks{Test: func(context.Context, store.NetworkProxyConfiguration, *ProxyCredentials) error {
+	e.s.SetProxyHooks(ProxyHooks{Test: func(context.Context, store.NetworkProxyConfiguration, *ProxyCredentials, string) error {
 		tested.Store(true)
 		return nil
 	}})
@@ -86,6 +86,36 @@ func TestSettingsProxyTestCredentialFailureIsVisible(t *testing.T) {
 	awaitSettingsTask(t, e, &u.testTask)
 	if tested.Load() || !u.proxyMsgErr || u.testTask.Err == nil || u.proxyMsg != e.s.L().Text(l10n.KeyProxyCredentialsUnavailable) {
 		t.Fatal("credential read failure was hidden or network test still ran")
+	}
+}
+
+func TestSettingsProxyTestUsesAndSavesTheTestSite(t *testing.T) {
+	e := newEnv(t, nil)
+	var site atomic.Value
+	e.s.SetProxyHooks(ProxyHooks{Test: func(_ context.Context, _ store.NetworkProxyConfiguration, _ *ProxyCredentials, s string) error {
+		site.Store(s)
+		return nil
+	}})
+	u, tt := openSettingsView(t, e, tabGeneral)
+	tt.SetPreferences(ui.Preferences{ReduceMotion: true})
+	if u.testURL != store.DefaultProxyTestURL {
+		t.Fatalf("test site starts as %q", u.testURL)
+	}
+	u.testURL = "ftp://example.com"
+	u.testProxy()
+	if u.testTask.Running || site.Load() != nil || !u.proxyMsgErr || u.proxyMsg != tx(e.s.L(), xProxyTestURLInvalid) {
+		t.Fatal("an invalid test site was not rejected before the network test")
+	}
+	u.testURL = " example.com/ping "
+	tt.Frame()
+	focusSettingsAction(t, tt, e.s.L().Text(l10n.KeyNetworkProxyTest))
+	tt.Key(0, ui.KeySpace)
+	awaitSettingsTask(t, e, &u.testTask)
+	if got := site.Load(); got != "https://example.com/ping" || u.proxyMsgErr {
+		t.Fatalf("tested %v, message %q", got, u.proxyMsg)
+	}
+	if got := e.s.Prefs().ProxyTestURL; got != "https://example.com/ping" {
+		t.Fatalf("saved test site = %q", got)
 	}
 }
 
@@ -115,7 +145,7 @@ func TestSettingsProxyTestClickReturnsBeforeCredentialRead(t *testing.T) {
 	creds := &delayedCredentials{CredentialStore: e.creds, delay: 200 * time.Millisecond}
 	e.s.creds = creds
 	var tested atomic.Bool
-	e.s.SetProxyHooks(ProxyHooks{Test: func(context.Context, store.NetworkProxyConfiguration, *ProxyCredentials) error {
+	e.s.SetProxyHooks(ProxyHooks{Test: func(context.Context, store.NetworkProxyConfiguration, *ProxyCredentials, string) error {
 		tested.Store(true)
 		return nil
 	}})

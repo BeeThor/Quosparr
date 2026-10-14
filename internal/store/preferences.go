@@ -13,10 +13,13 @@ package store
 
 import (
 	"encoding/json"
+	"errors"
 	"maps"
 	"math"
+	"net/url"
 	"slices"
 	"strings"
+	"unicode"
 )
 
 // Defaults and limits shared with the Swift app.
@@ -31,6 +34,7 @@ const (
 	DefaultMainPanelHeight                           = 584.0
 	MinMainPanelHeight                               = 360.0
 	MaxMainPanelHeight                               = 900.0
+	DefaultProxyTestURL                              = "https://github.com"
 )
 
 // WidgetRefreshIntervalOptions are the intervals the settings UI offers for
@@ -90,6 +94,9 @@ type Preferences struct {
 	// QuotaResetTimeFormat is Go-only too: omitted for the relative countdown,
 	// and an unreadable value falls back to it.
 	QuotaResetTimeFormat ResetTimeFormat `json:"quotaResetTimeFormat,omitempty"`
+	// ProxyTestURL is Go-only as well: the site "Test Connection" fetches,
+	// omitted for DefaultProxyTestURL, and an unreadable value falls back to it.
+	ProxyTestURL string `json:"proxyTestURL,omitempty"`
 
 	// extra holds keys this version does not know, written back unchanged so
 	// that older and newer apps sharing the domain do not erase each other's
@@ -157,6 +164,47 @@ func (p *Preferences) Normalize() {
 	if !p.QuotaResetTimeFormat.Valid() {
 		p.QuotaResetTimeFormat = ResetTimeRelative
 	}
+	p.ProxyTestURL = NormalizeProxyTestURL(p.ProxyTestURL)
+}
+
+// ErrInvalidProxyTestURL rejects a test site that is not an http(s) URL with
+// a host.
+var ErrInvalidProxyTestURL = errors.New("invalid proxy test URL")
+
+// ParseProxyTestURL checks a test site typed by the user and returns it in
+// canonical form. A bare host gets "https://"; user info is refused so no
+// password ends up in the preferences.
+func ParseProxyTestURL(raw string) (string, error) {
+	s := strings.TrimSpace(raw)
+	if s == "" || len(s) > 2_048 || strings.ContainsFunc(s, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsControl(r) }) {
+		return "", ErrInvalidProxyTestURL
+	}
+	if !strings.Contains(s, "://") {
+		s = "https://" + s
+	}
+	u, err := url.Parse(s)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Hostname() == "" || u.User != nil {
+		return "", ErrInvalidProxyTestURL
+	}
+	return u.String(), nil
+}
+
+// NormalizeProxyTestURL returns the stored form of a test site: empty for
+// the default or an invalid value.
+func NormalizeProxyTestURL(raw string) string {
+	s, err := ParseProxyTestURL(raw)
+	if err != nil || s == DefaultProxyTestURL || s == DefaultProxyTestURL+"/" {
+		return ""
+	}
+	return s
+}
+
+// ProxyTestTarget is the site "Test Connection" fetches.
+func (p Preferences) ProxyTestTarget() string {
+	if p.ProxyTestURL == "" {
+		return DefaultProxyTestURL
+	}
+	return p.ProxyTestURL
 }
 
 // NormalizeThemeColor returns color as an upper-case "#RRGGBB", or empty

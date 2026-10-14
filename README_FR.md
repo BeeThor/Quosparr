@@ -122,7 +122,7 @@ L’instantané se trouve dans `~/.quosparr/widget-snapshot.json` avec les droit
 
 Dans **Panneau de configuration → Général → Réseau**, choisissez **Réglages système**, HTTP ou SOCKS5 ; les proxys personnalisés acceptent un nom d’utilisateur et un mot de passe. Le réglage couvre les requêtes Codex et Grok lancées par l’app, les opérations CLI, les flux publics de statut et de prix, ainsi que les mises à jour du logiciel. Le proxy système n’est pas modifié, et les pages de connexion du navigateur ainsi que les CLI externes déjà lancées gardent leurs propres réglages.
 
-Les changements ne s’appliquent qu’après **Enregistrer le proxy**. **Tester la connexion** récupère le flux public des mises à jour avec les réglages en cours de saisie, sans envoyer d’identifiants de compte ni enregistrer ces réglages. Les mots de passe du proxy sont stockés dans le trousseau macOS, le Gestionnaire d’informations d’identification Windows ou le Secret Service de Linux. Des réglages invalides, des identifiants indisponibles ou l’échec d’un proxy personnalisé ne provoquent jamais de repli sur une connexion directe.
+Les changements ne s’appliquent qu’après **Enregistrer le proxy**. **Tester la connexion** accède au site de test (par défaut `https://github.com`, personnalisable) avec les réglages en cours de saisie, sans envoyer d’identifiants de compte ni enregistrer ces réglages. Les mots de passe du proxy sont stockés dans le trousseau macOS, le Gestionnaire d’informations d’identification Windows ou le Secret Service de Linux. Des réglages invalides, des identifiants indisponibles ou l’échec d’un proxy personnalisé ne provoquent jamais de repli sur une connexion directe.
 
 ## Confidentialité
 

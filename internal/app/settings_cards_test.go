@@ -34,7 +34,7 @@ func cardSettingsUI(t *testing.T, language store.Language) *settingsUI {
 	}
 	e.s.prefs.Language = language
 	e.s.applyLocale()
-	e.s.SetProxyHooks(ProxyHooks{Test: func(context.Context, store.NetworkProxyConfiguration, *ProxyCredentials) error {
+	e.s.SetProxyHooks(ProxyHooks{Test: func(context.Context, store.NetworkProxyConfiguration, *ProxyCredentials, string) error {
 		panic("layout tests must never start a connection")
 	}})
 	u := newSettingsUI(e.s, SettingsOptions{Version: "1.0.0"})

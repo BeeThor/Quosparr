@@ -91,7 +91,7 @@ func TestThirtyFourFieldsAllDifferFromDefaults(t *testing.T) {
 	typ := d.Type()
 	count := 0
 	for i := 0; i < typ.NumField(); i++ {
-		if typ.Field(i).Tag.Get("json") == "" || typ.Field(i).Name == "ThemeColor" || typ.Field(i).Name == "QuotaResetTimeFormat" {
+		if typ.Field(i).Tag.Get("json") == "" || typ.Field(i).Name == "ThemeColor" || typ.Field(i).Name == "QuotaResetTimeFormat" || typ.Field(i).Name == "ProxyTestURL" {
 			continue // the unexported extra map, and the keys only Go writes
 		}
 		count++
@@ -652,5 +652,56 @@ func TestQuotaResetTimeFormatIsGoOnlyAndLenient(t *testing.T) {
 	}
 	if ResetTimeExact.Toggled() != ResetTimeRelative || ResetTimeRelative.Toggled() != ResetTimeExact {
 		t.Error("Toggled does not flip the format")
+	}
+}
+
+func TestProxyTestURLIsGoOnlyAndLenient(t *testing.T) {
+	enc, err := EncodePreferences(DefaultPreferences())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(enc), "proxyTestURL") {
+		t.Errorf("the default test site is written: %s", enc)
+	}
+	if got := DefaultPreferences().ProxyTestTarget(); got != DefaultProxyTestURL {
+		t.Errorf("default target = %q", got)
+	}
+	for raw, want := range map[string]string{
+		`"https://example.com/ping"`: "https://example.com/ping",
+		`"https://github.com"`:       "",
+		`"https://github.com/"`:      "",
+		`"ftp://example.com"`:        "",
+		`"https://u:p@example.com"`:  "",
+		`1`:                          "",
+		`null`:                       "",
+	} {
+		if got := mustDecode(t, `{"proxyTestURL":`+raw+`}`); got.ProxyTestURL != want {
+			t.Errorf("proxyTestURL %s decoded to %q, want %q", raw, got.ProxyTestURL, want)
+		}
+	}
+	p := DefaultPreferences()
+	p.ProxyTestURL = "http://192.168.1.2:8080/health"
+	if enc, err = EncodePreferences(p); err != nil {
+		t.Fatal(err)
+	}
+	if got := mustDecode(t, string(enc)); got.ProxyTestTarget() != p.ProxyTestURL {
+		t.Errorf("round trip = %q", got.ProxyTestURL)
+	}
+}
+
+func TestParseProxyTestURL(t *testing.T) {
+	for raw, want := range map[string]string{
+		" example.com ":            "https://example.com",
+		"http://example.com/a?b=c": "http://example.com/a?b=c",
+		"HTTPS://Example.com":      "https://Example.com",
+	} {
+		if got, err := ParseProxyTestURL(raw); err != nil || got != want {
+			t.Errorf("ParseProxyTestURL(%q) = %q, %v; want %q", raw, got, err, want)
+		}
+	}
+	for _, raw := range []string{"", "   ", "https://", "file:///etc/hosts", "https://a b.com", "https://user@example.com", "mailto:a@b.c"} {
+		if _, err := ParseProxyTestURL(raw); !errors.Is(err, ErrInvalidProxyTestURL) {
+			t.Errorf("ParseProxyTestURL(%q) err = %v", raw, err)
+		}
 	}
 }

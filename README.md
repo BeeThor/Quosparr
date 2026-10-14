@@ -122,7 +122,7 @@ The snapshot lives at `~/.quosparr/widget-snapshot.json` with `0600` permissions
 
 In **Control Panel → General → Network**, choose **Follow System**, HTTP, or SOCKS5; custom proxies support username and password. The setting covers app-initiated Codex and Grok requests, CLI operations, public status and pricing feeds, and software updates. The system proxy is not changed, and browser sign-in pages and already-running external CLIs keep their own settings.
 
-Changes apply only after **Save Proxy Settings**. **Test Connection** fetches the public update feed with the current draft, without sending account credentials or saving the draft. Proxy passwords are stored in the macOS Keychain, Windows Credential Manager, or Linux Secret Service. Invalid settings, unavailable credentials, or a failed custom proxy never fall back to a direct connection.
+Changes apply only after **Save Proxy Settings**. **Test Connection** fetches the test site (default `https://github.com`, customizable) with the current draft, without sending account credentials or saving the draft. Proxy passwords are stored in the macOS Keychain, Windows Credential Manager, or Linux Secret Service. Invalid settings, unavailable credentials, or a failed custom proxy never fall back to a direct connection.
 
 ## Privacy
 

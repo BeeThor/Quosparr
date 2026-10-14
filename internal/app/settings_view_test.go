@@ -2,6 +2,7 @@ package app
 
 import (
 	"testing"
+	"time"
 
 	"github.com/egoist/mygo/ui"
 	"github.com/licoy/quosparr/internal/l10n"
@@ -110,5 +111,70 @@ func TestSettingsViewExplainsUnsupportedPlatformSettings(t *testing.T) {
 	_, tt := openSettingsView(t, e, tabDisplay)
 	if !tt.HasText(tx(e.s.L(), xMacOnly)) {
 		t.Errorf("no note on the status bar styles; texts %q", tt.Texts())
+	}
+}
+
+func TestSettingsProxySaveButtonFollowsUnsavedChanges(t *testing.T) {
+	e := newEnv(t, nil)
+	u, tt := openSettingsView(t, e, tabGeneral)
+	tt.Frame()
+	l := e.s.L()
+	if u.proxyUnsaved() {
+		t.Fatal("an untouched draft counts as unsaved")
+	}
+	u.draft = ProxyDraft{Mode: store.ProxyModeSystem, Host: "leftover", Port: "1"}
+	if u.proxyUnsaved() {
+		t.Fatal("fields the system mode ignores count as unsaved")
+	}
+	u.draft = ProxyDraft{Mode: store.ProxyModeHTTP, Host: "127.0.0.1", Port: "8080"}
+	if !u.proxyUnsaved() {
+		t.Fatal("a new proxy mode is not unsaved")
+	}
+	u.setProxyMsg("stale", true)
+	tt.Frame()
+	if err := tt.Click(l.Text(l10n.KeyNetworkProxySave)); err != nil {
+		t.Fatal(err)
+	}
+	awaitSettingsTask(t, e, &u.proxyTask)
+	tt.Frame()
+	if u.proxyMsg != "" || u.toast != "" || !tt.HasText(l.Text(l10n.KeyNetworkProxySaved)) {
+		t.Fatalf("save success was not a toast: message %q", u.proxyMsg)
+	}
+	if u.proxyUnsaved() || e.s.Proxy().Mode != store.ProxyModeHTTP {
+		t.Fatal("the saved draft still counts as unsaved")
+	}
+}
+
+func TestSettingsProxyTestMessageClears(t *testing.T) {
+	old := proxyMsgTime
+	proxyMsgTime = 10 * time.Millisecond
+	t.Cleanup(func() { proxyMsgTime = old })
+	e := newEnv(t, nil)
+	u, tt := openSettingsView(t, e, tabGeneral)
+	tt.Frame()
+	u.flashProxyMsg("ok")
+	deadline := time.Now().Add(time.Second)
+	for u.proxyMsg != "" && time.Now().Before(deadline) {
+		e.q.drain()
+		time.Sleep(time.Millisecond)
+	}
+	if u.proxyMsg != "" {
+		t.Fatal("the test result did not clear itself")
+	}
+	u.setProxyMsg("failed", true)
+	tt.Frame()
+	if err := tt.Click(e.s.L().Text(l10n.KeyNetworkProxyHTTP)); err != nil {
+		t.Fatal(err)
+	}
+	if u.proxyMsg != "" {
+		t.Fatal("switching the proxy mode kept the test result")
+	}
+	u.setProxyMsg("failed", true)
+	tt.Frame()
+	if err := tt.Click(e.s.L().Text(tabAbout.key())); err != nil {
+		t.Fatal(err)
+	}
+	if u.proxyMsg != "" {
+		t.Fatal("switching the settings page kept the test result")
 	}
 }
