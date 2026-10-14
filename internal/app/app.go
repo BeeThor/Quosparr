@@ -298,6 +298,7 @@ func (a *App) OpenPanel() {
 		a.panel = mygo.NewFlyout(opts)
 	}()
 	panel := a.panel
+	a.syncPanelResizeEdge()
 	panel.OnShow(a.matchPanelAppearance)
 	panel.OnFocus(a.matchPanelAppearance)
 	a.panelOpened()
