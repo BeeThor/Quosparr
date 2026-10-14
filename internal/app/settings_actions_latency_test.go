@@ -32,7 +32,7 @@ func TestSettingsSelfCheckClickReturnsBeforeDiagnostics(t *testing.T) {
 	tt.Key(0, ui.KeySpace)
 	elapsed := time.Since(start)
 	t.Logf("self-check event=%s completed=%v", elapsed, completed.Load())
-	if elapsed > 100*time.Millisecond || completed.Load() || !u.selfCheckTask.Running || u.noticeOpen {
+	if elapsed > latencyBudget(100*time.Millisecond) || completed.Load() || !u.selfCheckTask.Running || u.noticeOpen {
 		t.Fatal("self-check event waits for diagnostics")
 	}
 	tt.Key(0, ui.KeySpace)
@@ -144,7 +144,7 @@ func TestSettingsProxyTestClickReturnsBeforeCredentialRead(t *testing.T) {
 	}
 	// The credential delay stays above the event budget, so a blocking read
 	// still fails the check under race instrumentation.
-	creds := &delayedCredentials{CredentialStore: e.creds, delay: raceLatencyFactor * 200 * time.Millisecond}
+	creds := &delayedCredentials{CredentialStore: e.creds, delay: latencyBudget(200 * time.Millisecond)}
 	e.s.creds = creds
 	var tested atomic.Bool
 	e.s.SetProxyHooks(ProxyHooks{Test: func(context.Context, store.NetworkProxyConfiguration, *ProxyCredentials, string) error {
@@ -160,10 +160,10 @@ func TestSettingsProxyTestClickReturnsBeforeCredentialRead(t *testing.T) {
 	tt.Key(0, ui.KeySpace)
 	elapsed := time.Since(start)
 	t.Logf("proxy-test event=%s loads=%d tested=%v", elapsed, creds.loads.Load(), tested.Load())
-	if elapsed > raceLatencyFactor*100*time.Millisecond || tested.Load() {
+	if elapsed > latencyBudget(100*time.Millisecond) || tested.Load() {
 		t.Fatal("proxy-test event waits for saved credentials")
 	}
-	deadline := time.Now().Add(raceLatencyFactor * time.Second)
+	deadline := time.Now().Add(latencyBudget(time.Second))
 	for !tested.Load() && time.Now().Before(deadline) {
 		time.Sleep(time.Millisecond)
 	}
@@ -217,7 +217,7 @@ func TestSettingsAutomaticUpdateClickReturnsBeforeUpdaterStateWrite(t *testing.T
 	tt.Key(0, ui.KeySpace)
 	elapsed := time.Since(start)
 	t.Logf("automatic-update event=%s state written=%v", elapsed, written.Load())
-	if elapsed > 100*time.Millisecond || written.Load() {
+	if elapsed > latencyBudget(100*time.Millisecond) || written.Load() {
 		t.Fatal("automatic-update event waits for updater state write")
 	}
 	deadline := time.Now().Add(time.Second)
@@ -254,7 +254,7 @@ func TestSettingsProxySaveAndLoadEventsStayResponsive(t *testing.T) {
 			tt.Key(0, ui.KeySpace)
 			elapsed := time.Since(start)
 			t.Logf("proxy %s event=%s", action, elapsed)
-			if elapsed > 100*time.Millisecond || !u.proxyTask.Running {
+			if elapsed > latencyBudget(100*time.Millisecond) || !u.proxyTask.Running {
 				t.Fatal("proxy save/load event waits for credential store")
 			}
 			awaitSettingsTask(t, e, &u.proxyTask)

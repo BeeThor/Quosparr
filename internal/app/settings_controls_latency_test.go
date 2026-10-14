@@ -96,7 +96,7 @@ func TestSettingsOtherControlEventLatency(t *testing.T) {
 			}
 			t.Logf("event=%s", elapsed)
 			// A language change reshapes the whole page in the new language.
-			if elapsed > raceLatencyFactor*100*time.Millisecond {
+			if elapsed > latencyBudget(100*time.Millisecond) {
 				t.Fatal("control event was slow")
 			}
 			if reflect.DeepEqual(before, e.s.Prefs()) {

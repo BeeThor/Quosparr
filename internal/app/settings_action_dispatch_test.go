@@ -49,7 +49,12 @@ func TestSettingsNotificationAndManualUpdateEventsStayResponsive(t *testing.T) {
 			tt.Key(0, ui.KeySpace)
 			elapsed := time.Since(start)
 			t.Logf("%s event=%s", action, elapsed)
-			if elapsed > 100*time.Millisecond {
+			select {
+			case <-done:
+				t.Fatal("event waits for system notification or updater eligibility check")
+			default:
+			}
+			if elapsed > latencyBudget(100*time.Millisecond) {
 				t.Fatal("event waits for system notification or updater eligibility check")
 			}
 			if action == "notification" && (!u.noticeOpen || u.notice != tx(e.s.L(), xNotifyRequested)) {

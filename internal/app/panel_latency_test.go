@@ -78,7 +78,7 @@ func TestPanelClickRoutesStayImmediate(t *testing.T) {
 		if err := tt.Click(key); err != nil {
 			t.Fatal(err)
 		}
-		if elapsed := time.Since(at); elapsed >= time.Second {
+		if elapsed := time.Since(at); elapsed >= latencyBudget(time.Second) {
 			t.Fatalf("click %q blocked for %s", key, elapsed)
 		}
 	}
@@ -289,7 +289,7 @@ func TestPanelReactionPendingClickAllowsBack(t *testing.T) {
 			}
 			// The post is released only after navigation would have finished; race
 			// runs get headroom so a slow runner is not taken for a blocked UI.
-			timer := time.AfterFunc(raceLatencyFactor*time.Second, unblock)
+			timer := time.AfterFunc(latencyBudget(time.Second), unblock)
 			defer timer.Stop()
 			at := time.Now()
 			if err := tt.Click(a.L().Text(l10n.KeyRateLimitResetTodayReactionThank)); err != nil {
