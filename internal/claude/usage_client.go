@@ -18,12 +18,18 @@ const (
 	usageVersion    = "2023-06-01"
 	usageMaxBody    = 2 << 20
 	usageTimeout    = 20 * time.Second
+	// fallbackCLIVersion is the User-Agent version when the local claude CLI
+	// version cannot be read. The identity string matches the CLI form
+	// claude-cli/<version> (external, cli).
+	fallbackCLIVersion = "2.1.299"
+	cliEntrypoint      = "cli"
 )
 
 // UsageClient calls the Claude Code OAuth usage and profile endpoints.
 // Requests go through netx unless HTTP is set (tests). TLS is not disabled.
 // The URL has no skip_spend query. Version is the claude CLI version used in
-// the User-Agent; an empty version is sent as "0".
+// the User-Agent claude-cli/<version> (external, cli). An empty version is
+// sent as 2.1.299.
 type UsageClient struct {
 	HTTP            *http.Client
 	Version         string
@@ -98,7 +104,7 @@ func (c *UsageClient) get(ctx context.Context, rawURL, accessToken string) ([]by
 
 func (c *UsageClient) version() string {
 	if c == nil {
-		return "0"
+		return ""
 	}
 	return c.Version
 }
@@ -110,13 +116,13 @@ func (c *UsageClient) client(ctx context.Context) (*http.Client, error) {
 	return netx.ClientFor(ctx, netx.WithoutCookies)
 }
 
-// UserAgent is the Claude Code client identity. An empty version becomes 0.
+// UserAgent is the Claude Code client identity. An empty version becomes 2.1.299.
 func UserAgent(version string) string {
 	version = strings.TrimSpace(version)
 	if version == "" {
-		version = "0"
+		version = fallbackCLIVersion
 	}
-	return "claude-code/" + version
+	return "claude-cli/" + version + " (external, " + cliEntrypoint + ")"
 }
 
 func applyUsageHeaders(h http.Header, accessToken, version string) {

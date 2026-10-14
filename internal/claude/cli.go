@@ -10,7 +10,7 @@ import (
 var cliVersionPattern = regexp.MustCompile(`\d+\.\d+\.\d+`)
 
 // ParseCLIVersion returns the first x.y.z in claude --version output.
-// An empty result means the User-Agent should use version 0.
+// An empty result means the User-Agent should use claude-cli/2.1.299 (external, cli).
 func ParseCLIVersion(output string) string {
 	return cliVersionPattern.FindString(output)
 }

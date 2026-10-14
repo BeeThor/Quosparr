@@ -76,9 +76,9 @@ func TestUsageClientHeadersAndStatus(t *testing.T) {
 		if r.URL.RawQuery != "" || strings.Contains(r.URL.RequestURI(), "skip_spend") {
 			sawQuery = true
 		}
-		wantUA := "claude-code/0"
+		wantUA := "claude-cli/2.1.299 (external, cli)"
 		if r.URL.Path == "/usage" {
-			wantUA = "claude-code/1.2.3"
+			wantUA = "claude-cli/1.2.3 (external, cli)"
 		}
 		if r.Header.Get("Authorization") != "Bearer test-access-token" ||
 			r.Header.Get("anthropic-beta") != "oauth-2025-04-20" ||
@@ -141,7 +141,7 @@ func TestUsageClientHeadersAndStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 	ua := UserAgent("")
-	if ua != "claude-code/0" {
+	if ua != "claude-cli/2.1.299 (external, cli)" {
 		t.Fatal(ua)
 	}
 }
