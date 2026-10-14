@@ -90,8 +90,12 @@ func TestSettingsOtherControlEventLatency(t *testing.T) {
 				elapsed = time.Since(start)
 			}
 			t.Logf("event=%s", elapsed)
-			if elapsed > 100*time.Millisecond || reflect.DeepEqual(before, e.s.Prefs()) {
-				t.Fatal("control event was slow or did not change actual preferences")
+			// A language change reshapes the whole page in the new language.
+			if elapsed > raceLatencyFactor*100*time.Millisecond {
+				t.Fatal("control event was slow")
+			}
+			if reflect.DeepEqual(before, e.s.Prefs()) {
+				t.Fatal("control event did not change actual preferences")
 			}
 			e.settle()
 			if !reflect.DeepEqual(e.stored(), e.s.Prefs()) {
