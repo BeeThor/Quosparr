@@ -158,5 +158,5 @@ V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 
 - 提交源代码、测试、依赖锁定文件、必要资源与 fixture；生成的 glyph Go 源文件、`internal/l10n/tables.go` 和兼容测试的 SQLite、JSONL、压缩样本属于源码或测试资产，不按扩展名批量删除
 - 构建目录、安装包输出、Python 字节码、IDE 用户状态、本地临时目录、发布说明生成结果及签名私钥不进入 Git；清理只针对确认可重新生成的本地文件
-- 推送 `main` / `v1` 触发普通 CI，开发打包无需发布 Secrets；版本标签触发签名打包与 Release（稳定版自动公开，Beta 为草稿），Release 不重跑测试而是等待同一提交的 CI 通过，需要 `MYGO_UPDATE_PRIVATE_KEY`、`SPARKLE_PUBLIC_KEY`、`SPARKLE_PRIVATE_KEY`，私钥必须匹配配置公钥
+- 推送 `main` / `v1` 触发普通 CI，开发打包无需发布 Secrets；只改动 `website/` 或 `website.yml` 的推送与 PR 不触发 CI，只由 `website.yml` 测试与部署官网；版本标签触发签名打包与 Release（稳定版自动公开，Beta 为草稿），Release 不重跑测试而是等待同一提交的 CI 通过（标签提交及其之前只改官网的提交跳过，等待最近一个 CI 覆盖的提交），需要 `MYGO_UPDATE_PRIVATE_KEY`、`SPARKLE_PUBLIC_KEY`、`SPARKLE_PRIVATE_KEY`，私钥必须匹配配置公钥
 - 本地测试通过不等于线上 Actions 已通过，推送后需核对 Windows / Linux 原生安装与 SQLite 验证、macOS 双架构打包的实际结果

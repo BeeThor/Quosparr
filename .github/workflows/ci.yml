@@ -1,9 +1,17 @@
 name: CI
 
+# Website-only changes are tested and deployed by website.yml; release.yml's
+# CI gate skips the same paths when it looks for the run to wait on
 on:
   push:
     branches: [main, v1]
+    paths-ignore:
+      - website/**
+      - .github/workflows/website.yml
   pull_request:
+    paths-ignore:
+      - website/**
+      - .github/workflows/website.yml
 
 permissions:
   contents: read

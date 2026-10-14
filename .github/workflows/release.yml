@@ -103,24 +103,38 @@ jobs:
       actions: read
       contents: read
     steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 50
       - name: Wait for CI on the tagged commit
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          api="repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&event=push"
+          # CI skips website-only pushes, so the tagged commit may have no run:
+          # walk back over website-only commits to the one CI last covered
+          chain=("$GITHUB_SHA")
+          while [[ ${#chain[@]} -lt 50 ]]; do
+            sha="${chain[${#chain[@]}-1]}"
+            git diff --name-only "$sha^" "$sha" 2>/dev/null | grep -qvE '^(website/|\.github/workflows/website\.yml$)' && break
+            parent="$(git rev-parse --verify --quiet "$sha^")" || break
+            chain+=("$parent")
+          done
           for attempt in $(seq 1 220); do
-            runs="$(gh api "$api" --jq '[.workflow_runs[] | {status, conclusion, html_url}]')"
+            for sha in "${chain[@]}"; do
+              runs="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$sha&event=push" --jq '[.workflow_runs[] | {status, conclusion, html_url}]')"
+              jq -e 'length > 0' <<<"$runs" >/dev/null && break
+            done
             if jq -e 'any(.[]; .conclusion == "success")' <<<"$runs" >/dev/null; then
-              echo "CI passed for $GITHUB_SHA"
+              echo "CI passed for $sha"
               exit 0
             fi
             if jq -e 'length > 0 and all(.[]; .status == "completed")' <<<"$runs" >/dev/null; then
               jq -r '.[] | "CI \(.conclusion): \(.html_url)"' <<<"$runs"
-              echo "::error::CI did not pass for $GITHUB_SHA; re-run its failed jobs, then re-run this workflow"
+              echo "::error::CI did not pass for $sha; re-run its failed jobs, then re-run this workflow"
               exit 1
             fi
             if [[ "$attempt" -ge 20 ]] && jq -e 'length == 0' <<<"$runs" >/dev/null; then
-              echo "::error::No CI push run for $GITHUB_SHA; push the commit to main before tagging"
+              echo "::error::No CI push run for $GITHUB_SHA or the commit before its website-only changes; push the commit to main before tagging"
               exit 1
             fi
             sleep 30
