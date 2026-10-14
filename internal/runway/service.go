@@ -12,6 +12,7 @@ import (
 	"github.com/licoy/quosparr/internal/export"
 	"github.com/licoy/quosparr/internal/l10n"
 	"github.com/licoy/quosparr/internal/sessions"
+	"github.com/licoy/quosparr/internal/speed"
 	"github.com/licoy/quosparr/internal/store"
 	"github.com/licoy/quosparr/internal/usage"
 )
@@ -143,6 +144,9 @@ type Service struct {
 	recentAt     time.Time
 	recentErr    string
 	recentSet    bool
+	speed        *speed.Report
+	speedAt      time.Time
+	speedErr     string
 
 	index          codex.AccountIndex
 	indexLoaded    bool
@@ -456,6 +460,7 @@ func (s *Service) SetPreferences(p store.Preferences) {
 	}
 	reportOn := codexSelected && p.ShowsSessionRepairSummary && !old.ShowsSessionRepairSummary
 	recentOn := codexSelected && p.ShowsRecentSessions && !old.ShowsRecentSessions
+	speedOn := p.ShowsSpeedAnalysis && !old.ShowsSpeedAnalysis
 	if p.ExportsStatusJSON && !old.ExportsStatusJSON {
 		s.exportStatusLocked()
 	}
@@ -466,7 +471,7 @@ func (s *Service) SetPreferences(p store.Preferences) {
 			s.cancelAccountScoped()
 			s.beginFullRefresh(usage.RefreshForce)
 		})
-	} else if p.SelectedProvider == store.ProviderGrok && (rangeChanged && p.ShowsCostSummary || costOn || heatOn || (!old.ShowsRecentSessions && p.ShowsRecentSessions)) {
+	} else if p.SelectedProvider == store.ProviderGrok && (rangeChanged && p.ShowsCostSummary || costOn || heatOn || (!old.ShowsRecentSessions && p.ShowsRecentSessions) || speedOn) {
 		s.refreshGrok()
 	}
 	if reportOn {
@@ -474,6 +479,9 @@ func (s *Service) SetPreferences(p store.Preferences) {
 	}
 	if recentOn {
 		s.RefreshRecentSessions(true)
+	}
+	if codexSelected && !providerChanged && speedOn {
+		s.RefreshSpeed(true)
 	}
 	if wantEstimate && !providerChanged {
 		s.RefreshQuotaEstimate()

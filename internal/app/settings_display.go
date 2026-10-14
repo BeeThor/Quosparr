@@ -143,6 +143,7 @@ func (u *settingsUI) moduleCard(c *ui.Context, p store.Preferences, m store.Modu
 	t := c.Theme()
 	ro := s.ReadOnly()
 	info := moduleInfoOf(m)
+	title, subtitle := moduleTexts(l, m)
 	shown := ModuleShown(p, m)
 	key := string(m)
 	applies := l.Text(l10n.KeyModuleAppliesCodex)
@@ -164,9 +165,9 @@ func (u *settingsUI) moduleCard(c *ui.Context, p store.Preferences, m store.Modu
 						col = t.TextMuted
 					}
 					ui.Row(c).Height(26).AlignItems(ui.Center).Children(func() {
-						ui.Text(c, l.Text(info.title)).FontSize(13).TextColor(col).Grow(1).Basis(0).SingleLine().Tooltip(l.Text(info.title))
+						ui.Text(c, title).FontSize(13).TextColor(col).Grow(1).Basis(0).SingleLine().Tooltip(title)
 					})
-					ui.Text(c, l.Text(info.subtitle)).FontSize(11).TextColor(t.TextMuted)
+					ui.Text(c, subtitle).FontSize(11).TextColor(t.TextMuted)
 					ui.Text(c, applies).FontSize(10).TextColor(t.TextMuted).SingleLine()
 				})
 				ui.Row(c).Width(110).Shrink(0).Gap(8).AlignItems(ui.Center).Justify(ui.End).Children(func() {

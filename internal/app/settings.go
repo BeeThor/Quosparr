@@ -433,6 +433,8 @@ func moduleShown(p *store.Preferences, m store.Module) *bool {
 		return &p.ShowsQuotaSummary
 	case store.ModuleTokenUsage:
 		return &p.ShowsTokenUsageHeatmap
+	case store.ModuleSpeedAnalysis:
+		return &p.ShowsSpeedAnalysis
 	case store.ModuleRateLimitResetToday:
 		return &p.ShowsRateLimitResetToday
 	case store.ModuleQuotaEstimate:

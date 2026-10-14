@@ -8,6 +8,7 @@ import (
 	"github.com/licoy/quosparr/internal/codexapi"
 	"github.com/licoy/quosparr/internal/export"
 	"github.com/licoy/quosparr/internal/sessions"
+	"github.com/licoy/quosparr/internal/speed"
 	"github.com/licoy/quosparr/internal/usage"
 )
 
@@ -49,11 +50,13 @@ type GrokState struct {
 	LastError  string
 	Refreshing bool
 	// Widget is the ready-made widget provider block, nil when Grok is unused.
-	Widget             *export.ProviderSnapshot
-	Detail             any
-	Cost               *usage.Summary
-	Heatmap            HeatmapData
-	RecentSessions     []sessions.Item
+	Widget         *export.ProviderSnapshot
+	Detail         any
+	Cost           *usage.Summary
+	Heatmap        HeatmapData
+	RecentSessions []sessions.Item
+	// Speed is the model speed of the recent Grok sessions, nil until read.
+	Speed              *speed.Report
 	ResetCredits       *codexapi.ResetCreditsSnapshot
 	ResetCreditSummary *ResetCreditSummary
 }

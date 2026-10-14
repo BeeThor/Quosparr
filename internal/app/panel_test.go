@@ -28,7 +28,9 @@ func newPanel(t *testing.T, mutate func(*store.Preferences), snap runway.Snapsho
 	a.snap = snap
 	a.snapMu.Unlock()
 	a.SetPanelActions(acts)
-	return a, ui.NewTester(a.panelView, panelWidth, 860)
+	// Tall enough that every module of the default panel is on screen, so a
+	// click on a card row never lands on the footer below the fold.
+	return a, ui.NewTester(a.panelView, panelWidth, 940)
 }
 
 func panelFixture() runway.Snapshot {

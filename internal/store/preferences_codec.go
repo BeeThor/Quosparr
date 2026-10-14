@@ -1,6 +1,10 @@
 package store
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"slices"
+)
 
 // DecodePreferences reads the stored "runway.preferences" JSON with the Swift
 // decoder's rules:
@@ -74,6 +78,7 @@ func readPreferences(r *reader) Preferences {
 	p.ThemeColor = readThemeColor(r, "themeColor")
 	p.QuotaResetTimeFormat = readResetTimeFormat(r, "quotaResetTimeFormat")
 	p.ProxyTestURL = readProxyTestURL(r, "proxyTestURL")
+	p.ShowsSpeedAnalysis = r.bool("showsSpeedAnalysis", p.ShowsSpeedAnalysis)
 	return p
 }
 
@@ -117,5 +122,43 @@ func EncodePreferences(p Preferences) ([]byte, error) {
 	if err := p.Validate(); err != nil {
 		return nil, err
 	}
-	return encodeFields(p, p.extra)
+	return encodeFields(p, p.extra, p.omitGoOnlyDefaults)
+}
+
+// omitGoOnlyDefaults keeps what only this app knows out of the document while
+// it is at its default, so a settings document nobody changed is byte for byte
+// the one the Swift app wrote: showsSpeedAnalysis is written only when off, and
+// the speedAnalysis module only where reading would not put it back anyway.
+func (p Preferences) omitGoOnlyDefaults(m fields) {
+	if p.ShowsSpeedAnalysis {
+		delete(m, "showsSpeedAnalysis")
+	}
+	order := wireModuleOrder(p.MainPanelModuleOrder)
+	if len(order) == len(p.MainPanelModuleOrder) {
+		return
+	}
+	if raw, err := json.Marshal(order); err == nil {
+		m["mainPanelModuleOrder"] = raw
+	}
+}
+
+// goOnlyModules are the modules the Swift app has no case for.
+var goOnlyModules = []Module{ModuleSpeedAnalysis}
+
+// wireModuleOrder is the order as written: a Go-only module that
+// NormalizeModuleOrder would put at its place again is left out, so the Swift
+// app, which drops module names it does not know, still sees the order it
+// wrote. A module the user moved elsewhere stays in.
+func wireModuleOrder(order []Module) []Module {
+	for _, m := range goOnlyModules {
+		at := slices.Index(order, m)
+		if at < 0 {
+			continue
+		}
+		rest := slices.Delete(slices.Clone(order), at, at+1)
+		if slices.Equal(NormalizeModuleOrder(rest), order) {
+			order = rest
+		}
+	}
+	return order
 }

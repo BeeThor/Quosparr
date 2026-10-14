@@ -97,6 +97,9 @@ type Preferences struct {
 	// ProxyTestURL is Go-only as well: the site "Test Connection" fetches,
 	// omitted for DefaultProxyTestURL, and an unreadable value falls back to it.
 	ProxyTestURL string `json:"proxyTestURL,omitempty"`
+	// ShowsSpeedAnalysis is Go-only: the speed analysis module, on by default
+	// and written only when turned off.
+	ShowsSpeedAnalysis bool `json:"showsSpeedAnalysis"`
 
 	// extra holds keys this version does not know, written back unchanged so
 	// that older and newer apps sharing the domain do not erase each other's
@@ -132,6 +135,7 @@ func DefaultPreferences() Preferences {
 		ShowsRateLimitResetToday:                  true,
 		ShowsModelSpecificQuotaUsage:              false,
 		ShowsTokenUsageHeatmap:                    true,
+		ShowsSpeedAnalysis:                        true,
 		TokenUsageChartStyle:                      ChartStyleHeatmap,
 		RateLimitResetTodayRefreshIntervalSeconds: DefaultRateLimitResetTodayRefreshIntervalSeconds,
 		AutomaticallyChecksForUpdates:             true,

@@ -246,6 +246,7 @@ type Module string
 const (
 	ModuleQuota               Module = "quota"
 	ModuleTokenUsage          Module = "tokenUsage"
+	ModuleSpeedAnalysis       Module = "speedAnalysis"
 	ModuleRateLimitResetToday Module = "rateLimitResetToday"
 	ModuleQuotaEstimate       Module = "quotaEstimate"
 	ModuleResetCredits        Module = "resetCredits"
@@ -257,7 +258,7 @@ const (
 // Modules returns every Module in the default panel order.
 func Modules() []Module {
 	return []Module{
-		ModuleQuota, ModuleTokenUsage, ModuleRateLimitResetToday, ModuleQuotaEstimate,
+		ModuleQuota, ModuleTokenUsage, ModuleSpeedAnalysis, ModuleRateLimitResetToday, ModuleQuotaEstimate,
 		ModuleResetCredits, ModuleAPICost, ModuleSessionRepair, ModuleRecentSessions,
 	}
 }

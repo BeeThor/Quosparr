@@ -26,6 +26,7 @@ import (
 	"github.com/licoy/quosparr/internal/resettoday"
 	"github.com/licoy/quosparr/internal/resettoday/runwayfmt"
 	"github.com/licoy/quosparr/internal/runway"
+	"github.com/licoy/quosparr/internal/speed"
 	"github.com/licoy/quosparr/internal/sqliteruntime"
 	"github.com/licoy/quosparr/internal/store"
 	"github.com/licoy/quosparr/internal/usage"
@@ -359,7 +360,7 @@ func refreshSection(s *runway.Service, sec runway.Section) {
 		case runway.SectionQuotaEstimate, runway.SectionSessionRepair:
 			// A queued Codex-only section can outlive a provider switch.
 			return
-		case runway.SectionQuota, runway.SectionResetCredits, runway.SectionAPICost, runway.SectionTokenHeatmap, runway.SectionRecentSessions:
+		case runway.SectionQuota, runway.SectionResetCredits, runway.SectionAPICost, runway.SectionTokenHeatmap, runway.SectionRecentSessions, runway.SectionSpeed:
 			s.Refresh(usage.RefreshForce)
 			return
 		}
@@ -381,6 +382,8 @@ func refreshSection(s *runway.Service, sec runway.Section) {
 		s.RefreshSessionReport(true)
 	case runway.SectionRecentSessions:
 		s.RefreshRecentSessions(true)
+	case runway.SectionSpeed:
+		s.RefreshSpeed(true)
 	}
 }
 
@@ -623,6 +626,7 @@ type grokBridge struct {
 	local      *grok.SessionUsageSummary
 	localRange store.CostRange
 	localErr   error
+	speed      *speed.Report
 	generation uint64
 	refreshMu  sync.Mutex
 }
@@ -671,8 +675,12 @@ func (g *grokBridge) SetOnChange(fn func()) {
 func (g *grokBridge) setPreferences(p store.Preferences, langs []string) {
 	g.mu.Lock()
 	rangeChanged := g.prefs.APICostSummaryRange != p.APICostSummaryRange
-	if rangeChanged || g.prefs.ShowsRecentSessions != p.ShowsRecentSessions {
+	speedChanged := g.prefs.ShowsSpeedAnalysis != p.ShowsSpeedAnalysis
+	if rangeChanged || g.prefs.ShowsRecentSessions != p.ShowsRecentSessions || speedChanged {
 		g.generation++
+	}
+	if speedChanged && !p.ShowsSpeedAnalysis {
+		g.speed = nil
 	}
 	if rangeChanged {
 		g.state.Cost = nil
@@ -694,6 +702,9 @@ func (g *grokBridge) reload(notify bool) {
 	g.mu.Lock()
 	g.relabelLocked(&next)
 	applyGrokLocal(&next, g.local)
+	if g.prefs.ShowsSpeedAnalysis {
+		next.Speed = g.speed
+	}
 	if g.localRange != g.prefs.APICostSummaryRange {
 		next.Cost = nil
 	}

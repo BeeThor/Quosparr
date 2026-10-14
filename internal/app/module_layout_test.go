@@ -70,9 +70,10 @@ func TestModuleLayoutColumnsAndConfiguration(t *testing.T) {
 					defer e.settle()
 					for _, dark := range []bool{false, true} {
 						tt.SetDark(dark)
-						info, l := moduleInfoOf(module), u.L()
-						title := moduleLayoutRect(t, tt, l.Text(info.title))
-						detail := moduleLayoutRect(t, tt, l.Text(info.subtitle))
+						l := u.L()
+						titleText, detailText := moduleTexts(l, module)
+						title := moduleLayoutRect(t, tt, titleText)
+						detail := moduleLayoutRect(t, tt, detailText)
 						stateKey := l10n.KeyModuleHidden
 						if ModuleShown(e.s.Prefs(), module) {
 							stateKey = l10n.KeyModuleVisible

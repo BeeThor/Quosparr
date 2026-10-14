@@ -52,6 +52,21 @@ const (
 	xResetTimeExact            textKey = "quotaResetTimeExact"
 	xProxyTestURL              textKey = "networkProxyTestURL"
 	xProxyTestURLInvalid       textKey = "networkProxyTestURLInvalid"
+	xSpeedTitle                textKey = "speedAnalysis"
+	xSpeedModuleDescription    textKey = "speedAnalysisDescription"
+	xSpeedInfoTTFT             textKey = "speedAnalysisInfoTTFT"
+	xSpeedInfoOutput           textKey = "speedAnalysisInfoOutput"
+	xSpeedInfoSource           textKey = "speedAnalysisInfoSource"
+	xSpeedTTFT                 textKey = "speedAnalysisTTFT"
+	xSpeedOutput               textKey = "speedAnalysisOutput"
+	xSpeedModel                textKey = "speedAnalysisModel"
+	xSpeedCalls                textKey = "speedAnalysisCalls"
+	xSpeedByModel              textKey = "speedAnalysisByModel"
+	xSpeedBasis                textKey = "speedAnalysisBasis"
+	xSpeedBasisOne             textKey = "speedAnalysisBasisOne"
+	xSpeedLatest               textKey = "speedAnalysisLatest"
+	xSpeedEmpty                textKey = "speedAnalysisEmpty"
+	xSpeedRange                textKey = "speedAnalysisRange"
 )
 
 // extraTexts is indexed by textKey, then by position in l10n.Languages():
@@ -98,6 +113,71 @@ var extraTexts = map[textKey][7]string{
 		"テストサイトには http または https のアドレスを入力してください。",
 		"Введите адрес тестового сайта с http или https.",
 		"Saisissez une adresse http ou https pour le site de test.",
+	},
+	xSpeedTitle: {
+		"Speed analysis", "速率分析", "速率分析", "속도 분석", "速度分析", "Анализ скорости", "Analyse de vitesse",
+	},
+	xSpeedModuleDescription: {
+		"First-token latency and output speed by model and reasoning effort, from recent local sessions.",
+		"按模型与思考等级统计最近本机会话的首字延迟与输出速率。",
+		"按模型與思考等級統計最近本機工作階段的首字延遲與輸出速率。",
+		"최근 로컬 세션에서 모델과 추론 수준별 첫 토큰 지연과 출력 속도를 집계합니다.",
+		"直近のローカル セッションから、モデルと推論レベルごとの最初のトークンまでの遅延と出力速度を集計します。",
+		"Задержка до первого токена и скорость вывода по моделям и уровню рассуждения в недавних локальных сессиях.",
+		"Latence du premier jeton et vitesse de sortie par modèle et niveau de raisonnement, d’après les sessions locales récentes.",
+	},
+	xSpeedInfoTTFT: {
+		"TTFT (time to first token) is the wait from sending a request until the first streamed output arrives.",
+		"首字延迟（TTFT）：从发出请求到收到第一段流式输出的等待时间。",
+		"首字延遲（TTFT）：從送出請求到收到第一段串流輸出的等待時間。",
+		"TTFT(첫 토큰 지연)는 요청을 보낸 뒤 첫 스트리밍 출력이 도착할 때까지의 대기 시간입니다.",
+		"TTFT（最初のトークンまでの時間）は、リクエスト送信から最初のストリーミング出力が届くまでの待ち時間です。",
+		"TTFT (время до первого токена) — ожидание от отправки запроса до первого потокового вывода.",
+		"TTFT (délai avant le premier jeton) : attente entre l’envoi de la requête et l’arrivée de la première sortie en flux.",
+	},
+	xSpeedInfoOutput: {
+		"Output speed is the output tokens (reasoning included) divided by the time they took to stream.",
+		"输出速率：输出 token（含思考）除以流式输出所用的时间。",
+		"輸出速率：輸出 token（含思考）除以串流輸出所用的時間。",
+		"출력 속도는 출력 토큰(추론 포함)을 스트리밍에 걸린 시간으로 나눈 값입니다.",
+		"出力速度は、出力トークン（推論を含む）をストリーミングにかかった時間で割った値です。",
+		"Скорость вывода — число выходных токенов (с рассуждением), делённое на время потоковой передачи.",
+		"Vitesse de sortie : jetons de sortie (raisonnement inclus) divisés par la durée du flux.",
+	},
+	xSpeedInfoSource: {
+		"Measured from timestamps in the local CLI logs, so network latency and queueing are included. Results are grouped by model and reasoning effort; for Grok the effort is set per session.",
+		"根据本机 CLI 日志中的时间戳测得，包含网络延迟与排队时间。按模型与思考等级分组；Grok 的思考等级以会话为单位。",
+		"根據本機 CLI 記錄中的時間戳記測得，包含網路延遲與排隊時間。按模型與思考等級分組；Grok 的思考等級以工作階段為單位。",
+		"로컬 CLI 로그의 타임스탬프로 측정하므로 네트워크 지연과 대기 시간이 포함됩니다. 모델과 추론 수준별로 묶으며, Grok의 추론 수준은 세션 단위입니다.",
+		"ローカル CLI ログのタイムスタンプから計測するため、ネットワーク遅延や待機時間を含みます。モデルと推論レベルごとに集計し、Grok の推論レベルはセッション単位です。",
+		"Измерено по меткам времени в локальных логах CLI, поэтому включает сетевые задержки и очередь. Группировка по модели и уровню рассуждения; у Grok уровень задаётся на сессию.",
+		"Mesuré d’après les horodatages des journaux CLI locaux : latence réseau et file d’attente comprises. Regroupé par modèle et niveau de raisonnement ; pour Grok, le niveau est défini par session.",
+	},
+	xSpeedTTFT:   {"TTFT", "首字", "首字", "첫 토큰", "TTFT", "TTFT", "TTFT"},
+	xSpeedOutput: {"Output", "输出", "輸出", "출력", "出力", "Вывод", "Sortie"},
+	xSpeedModel:  {"Model", "模型", "模型", "모델", "モデル", "Модель", "Modèle"},
+	xSpeedCalls:  {"Calls", "次数", "次數", "횟수", "回数", "Вызовы", "Appels"},
+	xSpeedByModel: {
+		"By model and reasoning effort", "按模型与思考等级", "按模型與思考等級", "모델 및 추론 수준별", "モデルと推論レベル別",
+		"По модели и уровню рассуждения", "Par modèle et niveau de raisonnement",
+	},
+	xSpeedBasis: {
+		"Based on the latest %@ sessions", "基于最近 %@ 个会话", "基於最近 %@ 個工作階段", "최근 세션 %@개 기준",
+		"直近 %@ 件のセッションに基づく", "По последним сессиям: %@", "Sur les %@ dernières sessions",
+	},
+	xSpeedBasisOne: {
+		"Based on the latest session", "基于最近 1 个会话", "基於最近 1 個工作階段", "최근 세션 1개 기준",
+		"直近 1 件のセッションに基づく", "По последней сессии", "Sur la dernière session",
+	},
+	xSpeedLatest: {"Latest: %@", "最新：%@", "最新：%@", "최신: %@", "最新: %@", "Последняя: %@", "Dernière : %@"},
+	xSpeedEmpty: {
+		"No speed data in recent sessions.", "最近的会话中暂无速率数据。", "最近的工作階段中暫無速率資料。",
+		"최근 세션에 속도 데이터가 없습니다.", "直近のセッションに速度データがありません。",
+		"В недавних сессиях нет данных о скорости.", "Aucune donnée de vitesse dans les sessions récentes.",
+	},
+	xSpeedRange: {
+		"Samples from %@ to %@", "样本时间：%@ 至 %@", "樣本時間：%@ 至 %@", "표본 기간: %@ ~ %@",
+		"サンプル期間: %@ ～ %@", "Период выборки: %@ — %@", "Échantillons du %@ au %@",
 	},
 	xAccountCount: {
 		"%@ accounts", "%@ 个账号", "%@ 個帳號", "계정 %@개", "%@ アカウント", "Аккаунтов: %@", "%@ comptes",

@@ -15,7 +15,7 @@ func providerView(l l10n.Localizer, snap runway.Snapshot, displayRange store.Cos
 		return snap.Codex
 	}
 	g := snap.Grok
-	v := runway.CodexView{Meters: g.Meters, Heatmap: g.Heatmap, DisplayedCost: g.Cost, DisplayedRange: displayRange, Cost: g.Cost, ResetCredits: g.ResetCredits, ResetCreditSummary: g.ResetCreditSummary, RecentSessions: g.RecentSessions}
+	v := runway.CodexView{Meters: g.Meters, Heatmap: g.Heatmap, DisplayedCost: g.Cost, DisplayedRange: displayRange, Cost: g.Cost, ResetCredits: g.ResetCredits, ResetCreditSummary: g.ResetCreditSummary, RecentSessions: g.RecentSessions, Speed: g.Speed}
 	if g.Cost != nil {
 		d := runway.DisplayCost(l, *g.Cost, displayRange, "", time.Now())
 		v.CostText, v.CostSubtitle, v.CostLines = d.Text, d.Subtitle, d.Lines
@@ -26,13 +26,15 @@ func providerView(l l10n.Localizer, snap runway.Snapshot, displayRange store.Cos
 	return v
 }
 
-// panelDetail draws the scrolling body of the reset credits and quota
-// estimate pages. The accounts and API cost pages lay themselves out.
+// panelDetail draws the scrolling body of the reset credits, quota estimate
+// and speed analysis pages. The accounts and API cost pages lay themselves out.
 func panelDetail(c *ui.Context, l l10n.Localizer, m store.Module, v runway.CodexView) {
 	switch m {
 	case store.ModuleResetCredits:
 		creditsDetail(c, l, v)
 	case store.ModuleQuotaEstimate:
 		estimateDetail(c, l, v)
+	case store.ModuleSpeedAnalysis:
+		speedDetail(c, l, v)
 	}
 }

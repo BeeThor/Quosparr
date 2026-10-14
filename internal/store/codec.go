@@ -244,8 +244,8 @@ func truncate(s string, n int) string {
 
 // encodeFields marshals v (a struct with json tags) and adds the unknown keys
 // kept from decoding. Known keys win over extras. The output is compact with
-// sorted keys.
-func encodeFields(v any, extra map[string]json.RawMessage) ([]byte, error) {
+// sorted keys. Each edit may change the known fields before the extras join.
+func encodeFields(v any, extra map[string]json.RawMessage, edits ...func(fields)) ([]byte, error) {
 	known, err := json.Marshal(v)
 	if err != nil {
 		return nil, err
@@ -253,6 +253,9 @@ func encodeFields(v any, extra map[string]json.RawMessage) ([]byte, error) {
 	var m fields
 	if err := json.Unmarshal(known, &m); err != nil {
 		return nil, err
+	}
+	for _, edit := range edits {
+		edit(m)
 	}
 	for k, raw := range extra {
 		if _, ok := m[k]; !ok {

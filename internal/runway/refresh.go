@@ -443,6 +443,10 @@ func (s *Service) refreshNow(ctx context.Context, policy usage.RefreshPolicy) {
 		sessions.Add(1)
 		go func() { defer sessions.Done(); s.loadRecentSessions(ctx) }()
 	}
+	if prefs.ShowsSpeedAnalysis {
+		sessions.Add(1)
+		go func() { defer sessions.Done(); s.loadSpeed(ctx) }()
+	}
 
 	start := s.Epoch()
 	auth, gen, err := s.loadValidAuth(ctx, false)
@@ -1034,6 +1038,37 @@ func (s *Service) loadRecentSessions(ctx context.Context) {
 		s.recent, s.recentErr = nil, err.Error()
 	} else {
 		s.recent, s.recentErr, s.recentAt = sum.Items, "", s.now()
+	}
+	s.publishLocked()
+}
+
+// RefreshSpeed re-measures the model speed from the newest local sessions;
+// without force it is skipped while the last result is fresh.
+func (s *Service) RefreshSpeed(force bool) <-chan struct{} {
+	s.mu.Lock()
+	skip := s.allBusy || (!force && !s.stale(s.speedAt))
+	s.mu.Unlock()
+	if skip {
+		return closedChan()
+	}
+	return s.run(func() { s.loadSpeed(s.root) })
+}
+
+func (s *Service) loadSpeed(ctx context.Context) {
+	if s.src.ScanSpeed == nil || !s.enter(SectionSpeed) {
+		return
+	}
+	defer s.leave(SectionSpeed)
+	r, err := s.src.ScanSpeed(ctx, s.now())
+	if stopped(ctx, err) && err != nil {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if err != nil {
+		s.speed, s.speedErr = nil, err.Error()
+	} else {
+		s.speed, s.speedErr, s.speedAt = &r, "", s.now()
 	}
 	s.publishLocked()
 }

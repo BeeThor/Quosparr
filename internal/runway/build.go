@@ -284,6 +284,7 @@ func (s *Service) sessionsViewLocked(v *CodexView) {
 			}
 		}
 	}
+	v.Speed, v.SpeedError = s.speed, s.speedErr
 	v.RecentSessions = s.recent
 	if s.recentErr != "" {
 		v.RecentSessionLines = []DetailLine{{lc.Text(l10n.KeyError), s.recentErr}}

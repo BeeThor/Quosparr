@@ -45,6 +45,8 @@ func panelModuleOn(m store.Module, p store.Preferences, grok bool) bool {
 		return p.ShowsQuotaSummary
 	case store.ModuleTokenUsage:
 		return p.ShowsTokenUsageHeatmap
+	case store.ModuleSpeedAnalysis:
+		return p.ShowsSpeedAnalysis
 	case store.ModuleRateLimitResetToday:
 		return p.ShowsRateLimitResetToday
 	case store.ModuleQuotaEstimate:
@@ -73,6 +75,8 @@ func panelModule(c *ui.Context, l l10n.Localizer, m store.Module, prefs store.Pr
 		}
 	case store.ModuleTokenUsage:
 		panelToken(c, l, prefs.TokenUsageChartStyle, snap, acts, first, state)
+	case store.ModuleSpeedAnalysis:
+		panelSpeed(c, l, snap, acts, first, state)
 	case store.ModuleRateLimitResetToday:
 		panelResetToday(c, l, snap, acts, first, state)
 	case store.ModuleQuotaEstimate:
