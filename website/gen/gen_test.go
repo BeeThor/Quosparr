@@ -69,7 +69,7 @@ func TestReleaseFromGitHub(t *testing.T) {
 }
 
 func TestWebpSize(t *testing.T) {
-	for name, want := range map[string][2]int{"1.webp": {764, 1785}, "2.webp": {1600, 886}} {
+	for name, want := range map[string][2]int{"2.webp": {1600, 886}, "1.webp": {778, 1793}, "1-en.webp": {762, 1786}} {
 		data, err := os.ReadFile(filepath.Join(repoRoot, "docs", "images", name))
 		if err != nil {
 			t.Fatal(err)
@@ -102,6 +102,7 @@ func TestBuildWritesEveryLanguage(t *testing.T) {
 			`hreflang="x-default"`,
 			`application/ld+json`,
 			`data-asset="mac-arm64"`,
+			`src="/img/shot-` + mainShot(l) + `.webp"`,
 		} {
 			if !strings.Contains(html, want) {
 				t.Errorf("%s: missing %s", l.Code, want)

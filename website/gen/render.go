@@ -89,9 +89,9 @@ func render(root, out string, locales []Locale, rel Release) error {
 			ReadmeURL:  repoURL + "/blob/main/" + l.Readme,
 			UpgradeURL: repoURL + "/blob/main/" + l.Upgrade,
 		}
-		page.Hero = shots[1].with(l.T.Shots.Main)
-		page.Wide = shots[2].with(l.T.Shots.Windows)
-		page.Gallery = []Image{shots[3].with(l.T.Shots.Cost), shots[6].with(l.T.Shots.Estimate), shots[4].with(l.T.Shots.Accounts), shots[5].with(l.T.Shots.Display)}
+		page.Hero = shots[mainShot(l)].with(l.T.Shots.Main)
+		page.Wide = shots["2"].with(l.T.Shots.Windows)
+		page.Gallery = []Image{shots["3"].with(l.T.Shots.Cost), shots["6"].with(l.T.Shots.Estimate), shots["4"].with(l.T.Shots.Accounts), shots["5"].with(l.T.Shots.Display)}
 		page.JSONLD, err = jsonLD(page)
 		if err != nil {
 			return err
@@ -124,22 +124,31 @@ func (img Image) with(alt string) Image {
 	return img
 }
 
-func copyShots(src, dst string) (map[int]Image, error) {
-	shots := map[int]Image{}
-	for i := 1; i <= 6; i++ {
-		data, err := os.ReadFile(filepath.Join(src, fmt.Sprintf("%d.webp", i)))
+// mainShot names the main panel screenshot in the page's language: 1 shows
+// the Chinese UI and 1-en the English one.
+func mainShot(l Locale) string {
+	if strings.HasPrefix(l.Code, "zh-") {
+		return "1"
+	}
+	return "1-en"
+}
+
+func copyShots(src, dst string) (map[string]Image, error) {
+	shots := map[string]Image{}
+	for _, n := range []string{"1", "1-en", "2", "3", "4", "5", "6"} {
+		data, err := os.ReadFile(filepath.Join(src, n+".webp"))
 		if err != nil {
 			return nil, err
 		}
 		w, h, err := webpSize(data)
 		if err != nil {
-			return nil, fmt.Errorf("docs/images/%d.webp: %w", i, err)
+			return nil, fmt.Errorf("docs/images/%s.webp: %w", n, err)
 		}
-		name := fmt.Sprintf("shot-%d.webp", i)
+		name := "shot-" + n + ".webp"
 		if err := os.WriteFile(filepath.Join(dst, name), data, 0o644); err != nil {
 			return nil, err
 		}
-		shots[i] = Image{Src: "/img/" + name, W: w, H: h}
+		shots[n] = Image{Src: "/img/" + name, W: w, H: h}
 	}
 	return shots, nil
 }
