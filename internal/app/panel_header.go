@@ -27,7 +27,9 @@ func panelHeader(c *ui.Context, a *App, l l10n.Localizer, prefs store.Preference
 			ui.Spacer(c).Grow(1)
 			panelHeaderButtons(c, a, l, prefs, acts, panelBusy(snap, grokView))
 		})
-		providerStrip(c, a, l, snap, prefs.SelectedProvider, acts.SelectProvider)
+		if providers := prefs.PanelSelection(); len(providers) > 1 {
+			providerStrip(c, a, l, snap, providers, prefs.SelectedProvider, acts.SelectProvider)
+		}
 		if grokView {
 			grokIdentityRow(c, a, l, prefs, snap)
 			return
@@ -53,14 +55,15 @@ func panelBusy(snap runway.Snapshot, grokView bool) bool {
 	return snap.Refresh.Refreshing()
 }
 
-// providerStrip splits the width evenly among the providers: each tab is the
+// providerStrip splits the width evenly among the shown providers, and is
+// left out when only one is shown: each tab is the
 // logo and name over the remaining share of the account's shortest quota
 // window. The selected tab sits on a gray fill in full color; the others are
 // monochrome and gray. With no SelectProvider action the tabs stay disabled.
-func providerStrip(c *ui.Context, a *App, l l10n.Localizer, snap runway.Snapshot, cur store.Provider, selectFn func(store.Provider)) {
+func providerStrip(c *ui.Context, a *App, l l10n.Localizer, snap runway.Snapshot, providers []store.Provider, cur store.Provider, selectFn func(store.Provider)) {
 	t := c.Theme()
 	ui.Row(c).Gap(6).Padding(10, 0, 0, 0).Children(func() {
-		for _, p := range store.Providers() {
+		for _, p := range providers {
 			name := l.Text(providerKey(p))
 			selected := p == cur
 			tab := ui.ButtonBase(c.Key("provider-tab-"+string(p))).Label(name).Disabled(selectFn == nil).

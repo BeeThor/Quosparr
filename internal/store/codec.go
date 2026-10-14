@@ -179,6 +179,21 @@ func readProxyTestURL(r *reader, key string) string {
 	return NormalizeProxyTestURL(s)
 }
 
+// readPanelProviders decodes the Go-only panel providers leniently: an
+// unreadable value shows every provider, and unknown names are dropped.
+func readPanelProviders(r *reader, key string) []Provider {
+	raw, ok := r.take(key)
+	var ids []string
+	if !ok || json.Unmarshal(raw, &ids) != nil {
+		return nil
+	}
+	out := make([]Provider, 0, len(ids))
+	for _, id := range ids {
+		out = append(out, Provider(id))
+	}
+	return canonicalProviders(out, len(Providers()))
+}
+
 // readResetTimeFormat decodes the Go-only reset time format leniently, as
 // readThemeColor: anything but a known value is the relative countdown.
 func readResetTimeFormat(r *reader, key string) ResetTimeFormat {

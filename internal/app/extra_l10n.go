@@ -65,6 +65,9 @@ const (
 	xDisplayFont               textKey = "displayFont"
 	xDisplayFontHint           textKey = "displayFontDescription"
 	xDisplayFontDefault        textKey = "displayFontDefault"
+	xPanelProviders            textKey = "mainPanelProviders"
+	xPanelProvidersHint        textKey = "mainPanelProvidersDescription"
+	xPanelProvidersAll         textKey = "mainPanelProvidersAll"
 	xResetTimeFormat           textKey = "quotaResetTimeFormat"
 	xResetTimeFormatHint       textKey = "quotaResetTimeFormatDescription"
 	xResetTimeRelative         textKey = "quotaResetTimeRelative"
@@ -204,6 +207,19 @@ var extraTexts = map[textKey][7]string{
 	xResetTimeFormat: {
 		"Next reset time", "下次重置时间格式", "下次重置時間格式", "다음 리셋 시간 형식", "次のリセット時刻の表示", "Время следующего сброса", "Heure de la prochaine réinit.",
 	},
+	xPanelProviders: {
+		"Main panel providers", "主面板服务商", "主面板服務商", "메인 패널 공급자", "メインパネルのプロバイダー", "Провайдеры главной панели", "Fournisseurs du panneau principal",
+	},
+	xPanelProvidersHint: {
+		"Hidden Grok and Claude stop refreshing quotas unless the status bar, floating window or a widget shows them.",
+		"隐藏的 Grok、Claude 不再刷新额度，除非状态栏、悬浮窗或桌面组件仍在显示。",
+		"隱藏的 Grok、Claude 不再重新整理額度，除非狀態列、浮動視窗或桌面小工具仍在顯示。",
+		"숨긴 Grok, Claude는 상태 막대, 플로팅 창 또는 위젯에 표시되지 않으면 사용량을 새로 고치지 않습니다.",
+		"非表示の Grok・Claude は、ステータスバー・フローティングウインドウ・ウィジェットに表示されない限り使用量を更新しません。",
+		"Скрытые Grok и Claude не обновляют лимиты, если их не показывают строка состояния, плавающее окно или виджет.",
+		"Grok et Claude masqués n’actualisent plus leurs quotas, sauf s’ils figurent dans la barre d’état, la fenêtre flottante ou un widget.",
+	},
+	xPanelProvidersAll: {"Show all", "显示全部", "顯示全部", "모두 표시", "すべて表示", "Показывать все", "Tout afficher"},
 	xResetTimeFormatHint: {
 		"Click the reset time in the main panel to switch.",
 		"在主面板中点击重置时间也可切换。",

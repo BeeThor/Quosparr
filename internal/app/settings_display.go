@@ -39,13 +39,15 @@ func (u *settingsUI) appearanceGroup(c *ui.Context) {
 		return tx(l, xMacOnly)
 	}
 	settingsGroup(c, l.Text(l10n.KeyDisplayAppearanceSection), "", nil, func(row rowFunc) {
-		row(tx(l, xProvider), tx(l, xProviderDescription), func() {
-			providers := store.Providers()
-			selected := max(0, slices.Index(providers, p.SelectedProvider))
-			if ProviderTabs(c.Key("provider"), &selected, ro, providerTabLabels(l)...) {
-				s.SetSelectedProvider(providers[selected])
-			}
-		})
+		u.panelProviderRows(c, row, p, ro)
+		if providers := p.PanelSelection(); len(providers) > 1 {
+			row(tx(l, xProvider), tx(l, xProviderDescription), func() {
+				selected := max(0, slices.Index(providers, p.SelectedProvider))
+				if providerTabsOf(c.Key("provider"), providers, &selected, ro, providerLabels(l, providers)...) {
+					s.SetSelectedProvider(providers[selected])
+				}
+			})
+		}
 		row(l.Text(l10n.KeyAppearance), "", func() {
 			if v, ok := pills(c, "appearance", p.Appearance, store.Appearances(),
 				func(v store.Appearance) string { return l.Text(appearanceKey(v)) }, ro); ok {
@@ -100,6 +102,59 @@ func (u *settingsUI) fontControl(c *ui.Context, cur string, ro bool) {
 		}
 		u.s.SetFontFamily(sel)
 	}
+}
+
+// panelProviderRows choose the providers of the main panel: all of them, or
+// a custom set of at least one. Turning custom on keeps every provider
+// checked, so the panel does not change until one is unchecked.
+func (u *settingsUI) panelProviderRows(c *ui.Context, row rowFunc, p store.Preferences, ro bool) {
+	s, l := u.s, u.L()
+	custom := len(p.PanelProviders) > 0
+	row(tx(l, xPanelProviders), tx(l, xPanelProvidersHint), func() {
+		if v, ok := choose(c, "panel-scope", tx(l, xPanelProviders), custom, []bool{false, true},
+			func(v bool) string {
+				if v {
+					return l.Text(l10n.KeyStatusBarProviderScopeCustom)
+				}
+				return tx(l, xPanelProvidersAll)
+			}, ro); ok {
+			var next []store.Provider
+			if v {
+				next = store.Providers()
+			}
+			s.SetPanelProviders(next)
+		}
+	})
+	if !custom {
+		return
+	}
+	row(l.Text(l10n.KeyStatusBarProviders), "", func() {
+		selected := map[store.Provider]bool{}
+		for _, item := range p.PanelProviders {
+			selected[item] = true
+		}
+		ui.Row(c).Gap(12).Wrap().Children(func() {
+			for _, prov := range store.Providers() {
+				on := selected[prov]
+				// Dropping the last one is not offered.
+				box := ui.Checkbox(c.Key("panel-prov-"+string(prov)), &on, l.Text(providerKey(prov))).
+					Disabled(ro || (on && len(selected) <= 1))
+				if !box.Changed() || ro {
+					continue
+				}
+				selected[prov] = on
+				next := make([]store.Provider, 0, len(selected))
+				for _, item := range store.Providers() {
+					if selected[item] {
+						next = append(next, item)
+					}
+				}
+				if len(next) > 0 {
+					s.SetPanelProviders(next)
+				}
+			}
+		})
+	})
 }
 
 // statusBarRows are the settings of the status item. Where the OS has no

@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"reflect"
+	"slices"
 	"sync"
 
 	"github.com/licoy/quosparr/internal/l10n"
@@ -310,6 +311,12 @@ func (s *Settings) applyAppearance() {
 // SetSelectedProvider selects the provider the panel shows.
 func (s *Settings) SetSelectedProvider(v store.Provider) bool {
 	return s.Update(func(p *store.Preferences) { p.SelectedProvider = v })
+}
+
+// SetPanelProviders chooses the providers the main panel offers; empty shows
+// every provider. A hidden selected provider moves to the first shown one.
+func (s *Settings) SetPanelProviders(providers []store.Provider) bool {
+	return s.Update(func(p *store.Preferences) { p.PanelProviders = slices.Clone(providers) })
 }
 
 // SetLanguage selects the language; it takes effect at once.

@@ -82,6 +82,7 @@ func readPreferences(r *reader) Preferences {
 	p.ProxyTestURL = readProxyTestURL(r, "proxyTestURL")
 	p.ShowsSpeedAnalysis = r.bool("showsSpeedAnalysis", p.ShowsSpeedAnalysis)
 	p.FloatingWindow = readFloatingWindow(r, "floatingWindow")
+	p.PanelProviders = readPanelProviders(r, "panelProviders")
 	return p
 }
 

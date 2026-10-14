@@ -119,3 +119,41 @@ func TestWidgetSinkFailureIsVisible(t *testing.T) {
 		t.Fatalf("widget failure missing: %s", s.Snapshot().Codex.LastError)
 	}
 }
+
+// A provider the panel hides and nothing else shows is not fetched; showing
+// it again fetches its quota at once.
+func TestHiddenPanelProvidersSkipQuotaRefresh(t *testing.T) {
+	f := newFake(t)
+	g, c := &fakeGrok{}, &fakeClaude{}
+	s, _ := newService(t, f, func(o *Options) {
+		o.Grok, o.Claude = g, c
+		o.Preferences.PanelProviders = []store.Provider{store.ProviderCodex}
+	})
+	wait(t, s.Refresh(usage.RefreshForce))
+	settle(t, s)
+	wait(t, s.RefreshQuota())
+	settle(t, s)
+	if g.count() != 0 || len(c.calls()) != 0 {
+		t.Fatalf("hidden providers refreshed: grok %d, claude %d", g.count(), len(c.calls()))
+	}
+	if f.count("quota") != 2 {
+		t.Fatalf("Codex quota refreshed %d times, want 2", f.count("quota"))
+	}
+
+	p := s.Preferences()
+	p.StatusBarProviderScope = store.ProviderScopeCustom
+	p.StatusBarProviders = []store.Provider{store.ProviderCodex, store.ProviderClaude}
+	s.SetPreferences(p)
+	settle(t, s)
+	if g.count() != 0 || len(c.calls()) != 1 {
+		t.Fatalf("status bar pick: grok %d, claude %d, want 0 and 1", g.count(), len(c.calls()))
+	}
+
+	p = s.Preferences()
+	p.PanelProviders = nil
+	s.SetPreferences(p)
+	settle(t, s)
+	if g.count() != 1 || len(c.calls()) != 1 {
+		t.Fatalf("showing every provider: grok %d, claude %d, want 1 and 1", g.count(), len(c.calls()))
+	}
+}

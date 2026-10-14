@@ -63,8 +63,13 @@ func ProviderMonoIcon(c *ui.Context, provider store.Provider, size float32) ui.E
 // the provider logo preceding each caller-localized label. With no labels it
 // shows only icons, retaining the localized brand names for accessibility.
 func ProviderTabs(c *ui.Context, selected *int, disabled bool, labels ...string) bool {
+	return providerTabsOf(c, store.Providers(), selected, disabled, labels...)
+}
+
+// providerTabsOf is ProviderTabs over a subset of the providers, which the
+// labels and the selected index follow.
+func providerTabsOf(c *ui.Context, providers []store.Provider, selected *int, disabled bool, labels ...string) bool {
 	t := c.Theme()
-	providers := store.Providers()
 	if len(labels) == 0 {
 		labels = make([]string, len(providers))
 	}

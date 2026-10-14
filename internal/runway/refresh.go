@@ -281,10 +281,16 @@ func (s *Service) providerWantedLocked(p store.Provider) bool {
 }
 
 // showsProviderLocked reports whether the panel, the status item or a widget
-// shows the provider in full. Every provider's quota refreshes for the
-// panel's provider strip, but only a shown provider reports its errors.
+// shows the provider in full. Only a shown provider reports its errors.
 func (s *Service) showsProviderLocked(p store.Provider) bool {
 	return s.providerWantedLocked(p) || s.widgetNeedsLocked()
+}
+
+// quotaWantedLocked reports whether the provider's quota refreshes: it is
+// shown, or it has a tab in the panel's provider strip. A provider the panel
+// hides and nothing else shows is not fetched.
+func (s *Service) quotaWantedLocked(p store.Provider) bool {
+	return s.showsProviderLocked(p) || slices.Contains(s.prefs.PanelSelection(), p)
 }
 
 func (s *Service) widgetNeedsLocked() bool {
@@ -460,6 +466,8 @@ func (s *Service) startFull(policy usage.RefreshPolicy, widgets bool) <-chan str
 		s.mu.Lock()
 		showsGrok := s.showsProviderLocked(store.ProviderGrok)
 		showsClaude := s.showsProviderLocked(store.ProviderClaude)
+		wantsGrok := s.quotaWantedLocked(store.ProviderGrok)
+		wantsClaude := s.quotaWantedLocked(store.ProviderClaude)
 		// Local data is the open panel's provider only, or every provider
 		// when this refresh carries a widget write that needs it.
 		widgetLocal := widgets && s.widgetLocalLocked()
@@ -480,13 +488,17 @@ func (s *Service) startFull(policy usage.RefreshPolicy, widgets bool) <-chan str
 			}
 		}
 		if g := s.opts.Grok; g != nil {
-			report(g.Refresh(ctx), showsGrok)
+			if wantsGrok {
+				report(g.Refresh(ctx), showsGrok)
+			}
 			if grokLocal {
 				report(g.RefreshLocal(ctx), showsGrok)
 			}
 		}
 		if c := s.opts.Claude; c != nil {
-			report(c.Refresh(ctx, policy == usage.RefreshForce), showsClaude)
+			if wantsClaude {
+				report(c.Refresh(ctx, policy == usage.RefreshForce), showsClaude)
+			}
 			if claudeLocal {
 				report(c.RefreshLocal(ctx), showsClaude)
 			}
@@ -930,12 +942,18 @@ func (s *Service) RefreshQuota() <-chan struct{} {
 	if !busy {
 		s.schedule.RefreshCompleted(s.now(), s.refreshInterval())
 	}
+	wantsGrok := s.quotaWantedLocked(store.ProviderGrok)
+	wantsClaude := s.quotaWantedLocked(store.ProviderClaude)
 	s.mu.Unlock()
 	if busy {
 		return closedChan()
 	}
-	s.refreshGrok()
-	s.refreshClaude(true)
+	if wantsGrok {
+		s.refreshGrok()
+	}
+	if wantsClaude {
+		s.refreshClaude(true)
+	}
 	return s.runAccountScoped(s.refreshQuotaNow)
 }
 

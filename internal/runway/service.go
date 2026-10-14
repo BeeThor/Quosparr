@@ -449,8 +449,13 @@ func (s *Service) Epoch() uint64 {
 func (s *Service) SetPreferences(p store.Preferences) {
 	s.mu.Lock()
 	old := s.prefs
+	hadGrok := s.quotaWantedLocked(store.ProviderGrok)
+	hadClaude := s.quotaWantedLocked(store.ProviderClaude)
 	s.prefs = p.Clone()
 	s.lc = s.localizer()
+	// A provider shown again fetches its quota now instead of at the next tick.
+	grokBack := !hadGrok && s.quotaWantedLocked(store.ProviderGrok)
+	claudeBack := !hadClaude && s.quotaWantedLocked(store.ProviderClaude)
 	now := s.now()
 	s.refreshIntervalChangedLocked(now)
 	if old.QuotaEstimateWindowMode != p.QuotaEstimateWindowMode && s.est != nil && s.quota != nil && s.estDaily != nil {
@@ -476,6 +481,12 @@ func (s *Service) SetPreferences(p store.Preferences) {
 	s.mu.Unlock()
 	if switched {
 		s.refreshPanelLocal()
+	}
+	if grokBack {
+		s.refreshGrok()
+	}
+	if claudeBack {
+		s.refreshClaude(false)
 	}
 	if p.SelectedProvider == store.ProviderGrok && (rangeChanged && p.ShowsCostSummary || costOn || heatOn || recentOn || speedOn) {
 		s.refreshGrokLocal()

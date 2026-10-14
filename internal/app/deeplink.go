@@ -1,6 +1,8 @@
 package app
 
 import (
+	"slices"
+
 	"github.com/licoy/quosparr/internal/export"
 	"github.com/licoy/quosparr/internal/runway"
 	"github.com/licoy/quosparr/internal/store"
@@ -15,13 +17,21 @@ func (a *App) OpenWidgetURL(raw string) bool {
 		return false
 	}
 	a.cancelPanelDetails()
-	provider := widgetProvider(link.Provider, a.settings.Prefs().SelectedProvider)
+	prefs := a.settings.Prefs()
+	provider := widgetProvider(link.Provider, prefs.SelectedProvider)
 	if link.Section == export.SectionResetToday {
 		provider = store.ProviderCodex
 	}
+	detail := widgetSectionModule(link.Section)
+	if !slices.Contains(prefs.PanelSelection(), provider) {
+		// A widget may show a provider the panel hides: the panel stays on
+		// its own provider and opens the overview.
+		provider, detail = prefs.SelectedProvider, ""
+		link.Section = export.SectionOverview
+	}
 	a.settings.SetSelectedProvider(provider)
 	a.panelState.provider = provider
-	a.panelState.detail = widgetSectionModule(link.Section)
+	a.panelState.detail = detail
 	acts := a.PanelActions()
 	if link.Section == export.SectionOverview {
 		if acts.Refresh != nil {

@@ -109,6 +109,9 @@ type Preferences struct {
 	// FloatingWindow is Go-only: the desktop floating window, omitted while
 	// it is at its default.
 	FloatingWindow FloatingWindow `json:"floatingWindow,omitzero"`
+	// PanelProviders is Go-only: the providers the main panel offers, in
+	// Providers() order. Empty shows every provider and is not written.
+	PanelProviders []Provider `json:"panelProviders,omitempty"`
 
 	// extra holds keys this version does not know, written back unchanged so
 	// that older and newer apps sharing the domain do not erase each other's
@@ -163,6 +166,7 @@ func (p Preferences) Clone() Preferences {
 	p.MainPanelModuleOrder = slices.Clone(p.MainPanelModuleOrder)
 	p.StatusBarProviders = slices.Clone(p.StatusBarProviders)
 	p.FloatingWindow = p.FloatingWindow.clone()
+	p.PanelProviders = slices.Clone(p.PanelProviders)
 	p.extra = maps.Clone(p.extra)
 	return p
 }
@@ -221,6 +225,29 @@ func (p *Preferences) Normalize() {
 	p.ProxyTestURL = NormalizeProxyTestURL(p.ProxyTestURL)
 	p.normalizeStatusBarProviders()
 	p.FloatingWindow.normalize()
+	p.normalizePanelProviders()
+}
+
+// PanelSelection is the providers the main panel offers: the chosen ones,
+// or every provider.
+func (p Preferences) PanelSelection() []Provider {
+	if sel := canonicalProviders(p.PanelProviders, len(Providers())); len(sel) > 0 {
+		return sel
+	}
+	return Providers()
+}
+
+// normalizePanelProviders keeps the custom panel list canonical, empty for
+// every provider, and moves the selected provider onto a shown one.
+func (p *Preferences) normalizePanelProviders() {
+	p.PanelProviders = canonicalProviders(p.PanelProviders, len(Providers()))
+	if len(p.PanelProviders) == 0 {
+		p.PanelProviders = nil
+		return
+	}
+	if !slices.Contains(p.PanelProviders, p.SelectedProvider) {
+		p.SelectedProvider = p.PanelProviders[0]
+	}
 }
 
 // normalizeStatusBarProviders applies the custom-list rules. Legacy both is

@@ -93,7 +93,7 @@ func TestThirtyFourFieldsAllDifferFromDefaults(t *testing.T) {
 	typ := d.Type()
 	count := 0
 	for i := 0; i < typ.NumField(); i++ {
-		if typ.Field(i).Tag.Get("json") == "" || typ.Field(i).Name == "ThemeColor" || typ.Field(i).Name == "FontFamily" || typ.Field(i).Name == "QuotaResetTimeFormat" || typ.Field(i).Name == "ProxyTestURL" || typ.Field(i).Name == "ShowsSpeedAnalysis" || typ.Field(i).Name == "StatusBarProviders" || typ.Field(i).Name == "FloatingWindow" {
+		if typ.Field(i).Tag.Get("json") == "" || typ.Field(i).Name == "ThemeColor" || typ.Field(i).Name == "FontFamily" || typ.Field(i).Name == "QuotaResetTimeFormat" || typ.Field(i).Name == "ProxyTestURL" || typ.Field(i).Name == "ShowsSpeedAnalysis" || typ.Field(i).Name == "StatusBarProviders" || typ.Field(i).Name == "FloatingWindow" || typ.Field(i).Name == "PanelProviders" {
 			continue // the unexported extra map, and the keys only Go writes
 		}
 		count++
@@ -652,6 +652,62 @@ func TestThemeColorIsGoOnlyAndLenient(t *testing.T) {
 	}
 	if got := mustDecode(t, string(enc)); got.ThemeColor != "#62BA46" {
 		t.Errorf("round trip = %q", got.ThemeColor)
+	}
+}
+
+func TestPanelProvidersAreGoOnlyAndLenient(t *testing.T) {
+	enc, err := EncodePreferences(DefaultPreferences())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(enc), "panelProviders") {
+		t.Errorf("showing every provider is written: %s", enc)
+	}
+	for raw, want := range map[string][]Provider{
+		`["grok","codex","codex"]`: {ProviderCodex, ProviderGrok},
+		`["claude","gemini"]`:      {ProviderClaude},
+		`["gemini"]`:               nil,
+		`[]`:                       nil,
+		`"codex"`:                  nil,
+		`[1]`:                      nil,
+		`null`:                     nil,
+	} {
+		if got := mustDecode(t, `{"panelProviders":`+raw+`}`); !slices.Equal(got.PanelProviders, want) {
+			t.Errorf("panelProviders %s decoded to %v, want %v", raw, got.PanelProviders, want)
+		}
+	}
+	p := DefaultPreferences()
+	p.PanelProviders = []Provider{ProviderCodex}
+	if enc, err = EncodePreferences(p); err != nil {
+		t.Fatal(err)
+	}
+	if got := mustDecode(t, string(enc)); !slices.Equal(got.PanelProviders, p.PanelProviders) {
+		t.Errorf("round trip = %v", got.PanelProviders)
+	}
+}
+
+func TestPanelSelectionKeepsSelectedProviderShown(t *testing.T) {
+	p := DefaultPreferences()
+	if got := p.PanelSelection(); !slices.Equal(got, Providers()) {
+		t.Errorf("default selection = %v, want every provider", got)
+	}
+	p.SelectedProvider = ProviderGrok
+	p.PanelProviders = []Provider{ProviderGrok, ProviderClaude}
+	p.Normalize()
+	if p.SelectedProvider != ProviderGrok {
+		t.Errorf("a shown selection moved to %s", p.SelectedProvider)
+	}
+	if got := p.PanelSelection(); !slices.Equal(got, []Provider{ProviderClaude, ProviderGrok}) {
+		t.Errorf("selection = %v, want Providers() order", got)
+	}
+	p.PanelProviders = []Provider{ProviderClaude}
+	p.Normalize()
+	if p.SelectedProvider != ProviderClaude {
+		t.Errorf("a hidden selection stayed on %s, want claude", p.SelectedProvider)
+	}
+	got := mustDecode(t, `{"selectedProvider":"grok","panelProviders":["codex"]}`)
+	if got.SelectedProvider != ProviderCodex {
+		t.Errorf("decoded a hidden selection as %s, want codex", got.SelectedProvider)
 	}
 }
 

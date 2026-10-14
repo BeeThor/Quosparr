@@ -19,9 +19,11 @@ func providerKey(v store.Provider) l10n.Key {
 	}
 }
 
-func providerTabLabels(l l10n.Localizer) []string {
-	labels := make([]string, 0, len(store.Providers()))
-	for _, p := range store.Providers() {
+func providerTabLabels(l l10n.Localizer) []string { return providerLabels(l, store.Providers()) }
+
+func providerLabels(l l10n.Localizer, providers []store.Provider) []string {
+	labels := make([]string, 0, len(providers))
+	for _, p := range providers {
 		labels = append(labels, l.Text(providerKey(p)))
 	}
 	return labels
