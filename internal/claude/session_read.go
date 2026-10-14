@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/licoy/quosparr/internal/speed"
 	"github.com/licoy/quosparr/internal/usage"
 )
 
@@ -29,7 +30,9 @@ type usageRecord struct {
 	model     string
 	effort    string
 	parts     TokenParts
-	geo       string
+	// tier is the usage speed field: fast, standard, or unknown when absent.
+	tier speed.Tier
+	geo  string
 	// toolUse is set when any line of the message asked for a tool. A
 	// message without one is the turn's final answer.
 	toolUse bool
@@ -313,7 +316,7 @@ func (sink *scanSink) consume(line []byte, mtime time.Time, parent *time.Time, h
 	rec := usageRecord{
 		sessionID: sessionID, at: at, hasTime: hasTime, parent: *parent, hasParent: *hasParent,
 		model: NormalizeModel(row.Message.Model), effort: strings.TrimSpace(row.Effort),
-		parts: parts, geo: geoOf(row),
+		parts: parts, tier: speedTier(row.Message.Usage.Speed), geo: geoOf(row),
 		toolUse: strings.TrimSpace(row.Message.StopReason) == "tool_use" || bytes.Contains(row.Message.Content, []byte(`"type":"tool_use"`)),
 	}
 	sink.keep(rec, requestOf(row))

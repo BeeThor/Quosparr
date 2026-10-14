@@ -163,3 +163,65 @@ func TestStatWithoutOutputHasNoTPS(t *testing.T) {
 		t.Fatal("half an output part rates")
 	}
 }
+
+func tiered(s Sample, tier Tier) Sample {
+	s.Tier = tier
+	return s
+}
+
+func TestBuildIgnoresTiersWithoutFast(t *testing.T) {
+	at := testNow.Add(-time.Hour)
+	r := Build([]Session{{ID: "s", Samples: []Sample{
+		tiered(ttft(at, "m", "high", time.Second), TierStandard),
+		ttft(at, "m", "high", 2*time.Second),
+		// A fast sample outside the window does not split the tiers.
+		tiered(ttft(testNow.Add(-Window-time.Second), "m", "high", time.Second), TierFast),
+	}}}, testNow)
+	if r.Tiered || len(r.Groups) != 1 || r.Groups[0].Calls != 2 || r.Groups[0].Tier != TierUnknown {
+		t.Fatalf("report = %+v", r)
+	}
+	if g := r.Sessions[0].Groups; len(g) != 1 || g[0].Tier != TierUnknown {
+		t.Fatalf("session groups = %+v", g)
+	}
+}
+
+func TestBuildSplitsTiersNextToEachOther(t *testing.T) {
+	at := testNow.Add(-time.Hour)
+	var samples []Sample
+	for i := 0; i < 3; i++ {
+		samples = append(samples, tiered(ttft(at, "big", "high", time.Second), TierFast))
+	}
+	samples = append(samples,
+		ttft(at, "big", "high", 4*time.Second),
+		tiered(ttft(at, "big", "high", 3*time.Second), TierStandard),
+		tiered(output(at, "big", "high", 100, time.Second), TierFast),
+	)
+	for i := 0; i < 5; i++ {
+		samples = append(samples, tiered(ttft(at, "mid", "", time.Second), TierStandard))
+	}
+	r := Build([]Session{{ID: "s", Samples: samples}}, testNow)
+	if !r.Tiered {
+		t.Fatal("report with a fast sample is not tiered")
+	}
+	var got []string
+	for _, g := range r.Groups {
+		got = append(got, g.Model+"/"+string(g.Tier))
+	}
+	// big leads with 6 samples although each of its tiers has fewer than the 5
+	// of mid; inside it the tiers go standard, fast, unknown.
+	want := []string{"big/standard", "big/fast", "big/", "mid/standard"}
+	if len(got) != len(want) {
+		t.Fatalf("groups = %v, want %v", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("groups = %v, want %v", got, want)
+		}
+	}
+	if fast := r.Groups[1]; fast.Calls != 3 || fast.TPS() != 100 {
+		t.Fatalf("fast = %+v", fast)
+	}
+	if g := r.Sessions[0].Groups; len(g) != 4 || g[1].Tier != TierFast {
+		t.Fatalf("session groups = %+v", g)
+	}
+}

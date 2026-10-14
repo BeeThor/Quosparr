@@ -6,8 +6,26 @@ import (
 	"time"
 )
 
-// groupKey identifies one model at one reasoning effort.
-type groupKey struct{ model, effort string }
+// groupKey identifies one model at one reasoning effort and tier.
+type groupKey struct {
+	model, effort string
+	tier          Tier
+}
+
+// family is the model and effort of a key: the tiers of one family are
+// listed together so that they can be compared.
+func (k groupKey) family() [2]string { return [2]string{k.model, k.effort} }
+
+// tierRank orders the tiers inside a family: standard, fast, then unknown.
+func tierRank(t Tier) int {
+	switch t {
+	case TierStandard:
+		return 0
+	case TierFast:
+		return 1
+	}
+	return 2
+}
 
 // acc collects the raw numbers of one group before they become a Stat.
 type acc struct {
@@ -35,7 +53,7 @@ func (a *acc) stat(k groupKey) Stat {
 	sorted := append([]time.Duration(nil), a.ttfts...)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i] < sorted[j] })
 	return Stat{
-		Model: k.model, Effort: k.effort,
+		Model: k.model, Effort: k.effort, Tier: k.tier,
 		Calls:   len(sorted),
 		TTFTP50: percentile(sorted, 50), TTFTP90: percentile(sorted, 90),
 		OutputTokens: a.outputTokens, Decode: a.decode,
@@ -73,22 +91,28 @@ func percentile(sorted []time.Duration, p int) time.Duration {
 	return sorted[min(max(rank, 1), len(sorted))-1]
 }
 
-// groupStats turns the accumulators into stats, most samples first; ties are
-// broken by model and effort so the order never depends on map iteration.
+// groupStats turns the accumulators into stats, the model and effort with
+// the most samples first and its tiers next to each other; ties are broken by
+// model and effort so the order never depends on map iteration.
 func groupStats(groups map[groupKey]*acc) []Stat {
 	keys := make([]groupKey, 0, len(groups))
-	for k := range groups {
+	families := map[[2]string]int{}
+	for k, a := range groups {
 		keys = append(keys, k)
+		families[k.family()] += a.weight()
 	}
 	sort.Slice(keys, func(i, j int) bool {
 		a, b := keys[i], keys[j]
-		if wa, wb := groups[a].weight(), groups[b].weight(); wa != wb {
+		if wa, wb := families[a.family()], families[b.family()]; wa != wb {
 			return wa > wb
 		}
 		if a.model != b.model {
 			return a.model < b.model
 		}
-		return a.effort < b.effort
+		if a.effort != b.effort {
+			return a.effort < b.effort
+		}
+		return tierRank(a.tier) < tierRank(b.tier)
 	})
 	stats := make([]Stat, 0, len(keys))
 	for _, k := range keys {
@@ -104,7 +128,7 @@ type sessionAcc struct {
 }
 
 func addTo(groups map[groupKey]*acc, s Sample) {
-	k := groupKey{s.Model, s.Effort}
+	k := groupKey{s.Model, s.Effort, s.Tier}
 	if groups[k] == nil {
 		groups[k] = &acc{}
 	}
@@ -113,9 +137,11 @@ func addTo(groups map[groupKey]*acc, s Sample) {
 
 // Build turns the sessions' samples into a report. Samples without a model, or
 // older than Window before now, or after now, are dropped, as are samples with
-// nothing to measure; a session left without samples is not listed.
+// nothing to measure; a session left without samples is not listed. Without
+// any fast sample the tiers are not told apart.
 func Build(sessions []Session, now time.Time) Report {
 	from := now.Add(-Window)
+	tiered := hasFast(sessions, from, now)
 	all := map[groupKey]*acc{}
 	var kept []sessionAcc
 	var first, last time.Time
@@ -125,6 +151,9 @@ func Build(sessions []Session, now time.Time) Report {
 			s, ok := usable(raw, from, now)
 			if !ok {
 				continue
+			}
+			if !tiered {
+				s.Tier = TierUnknown
 			}
 			addTo(all, s)
 			addTo(sa.groups, s)
@@ -142,10 +171,23 @@ func Build(sessions []Session, now time.Time) Report {
 	return Report{
 		Groups:       groupStats(all),
 		Sessions:     sessionStats(kept),
+		Tiered:       tiered,
 		From:         first,
 		To:           last,
 		CalculatedAt: now,
 	}
+}
+
+// hasFast reports whether any usable sample ran at the fast tier.
+func hasFast(sessions []Session, from, to time.Time) bool {
+	for _, session := range sessions {
+		for _, raw := range session.Samples {
+			if _, ok := usable(raw, from, to); ok && raw.Tier == TierFast {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // sessionStats lists the sessions newest first.

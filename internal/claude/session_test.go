@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/licoy/quosparr/internal/speed"
 	"github.com/licoy/quosparr/internal/usage"
 	"github.com/licoy/quosparr/internal/usage/decimal"
 )
@@ -225,6 +226,41 @@ func TestSpeedSamplesHaveNoTTFT(t *testing.T) {
 	}
 	if len(report.Groups) != 1 || report.Groups[0].Calls != 0 || !report.Groups[0].HasTPS() {
 		t.Fatalf("report %+v", report.Groups)
+	}
+}
+
+func TestSpeedSamplesCarryTier(t *testing.T) {
+	home := t.TempDir()
+	config := filepath.Join(home, "cfg")
+	dir := filepath.Join(config, "projects", "demo")
+	mustMkdir(t, dir)
+	base := time.Now().UTC().Truncate(time.Second)
+	at := func(sec int) string { return base.Add(time.Duration(sec) * time.Second).Format(time.RFC3339) }
+	turn := func(sec int, id, usage string) []string {
+		return []string{
+			`{"type":"user","sessionId":"tier","timestamp":"` + at(sec) + `"}`,
+			`{"type":"assistant","sessionId":"tier","timestamp":"` + at(sec+2) + `","message":{"id":"` + id + `","model":"claude-opus-4-8","usage":` + usage + `}}`,
+		}
+	}
+	var lines []string
+	lines = append(lines, turn(0, "m_fast", `{"output_tokens":10,"speed":"fast"}`)...)
+	lines = append(lines, turn(10, "m_std", `{"output_tokens":10,"speed":"standard"}`)...)
+	lines = append(lines, turn(20, "m_old", `{"output_tokens":10}`)...)
+	writeJSONL(t, filepath.Join(dir, "tier.jsonl"), lines...)
+	sc := SessionScanner{ConfigDir: config, Home: home}
+	sessions, err := sc.SpeedSessions(context.Background(), base.Add(time.Hour))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(sessions) != 1 || len(sessions[0].Samples) != 3 {
+		t.Fatalf("samples %+v", sessions)
+	}
+	tiers := map[speed.Tier]int{}
+	for _, s := range sessions[0].Samples {
+		tiers[s.Tier]++
+	}
+	if tiers[speed.TierFast] != 1 || tiers[speed.TierStandard] != 1 || tiers[speed.TierUnknown] != 1 {
+		t.Fatalf("tiers %v", tiers)
 	}
 }
 

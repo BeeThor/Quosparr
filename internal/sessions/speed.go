@@ -120,6 +120,7 @@ var (
 	markReasoning     = []byte(`"type":"Reasoning"`)
 	markAgentMessage  = []byte(`"type":"AgentMessage"`)
 	markUsageRecord   = []byte(`"type":"token_usage_record"`)
+	markSettings      = []byte(`"type":"thread_settings_applied"`)
 )
 
 // speedLine is the part of a rollout line the speed scan reads.
@@ -137,15 +138,21 @@ type speedLine struct {
 		Usage struct {
 			OutputTokens int64 `json:"output_tokens"`
 		} `json:"usage"`
+		ThreadSettings struct {
+			ServiceTier string `json:"service_tier"`
+		} `json:"thread_settings"`
 	} `json:"payload"`
 }
 
 // speedCursor follows the requests of a session through its lines. A request
 // is sent at the turn start or when the last tool output arrived; the first
 // reasoning or message item that started after it is the first streamed token,
-// and the response ends at its token_usage_record.
+// and the response ends at its token_usage_record. The service tier comes
+// from the thread settings Codex writes before a turn whenever it applies them;
+// it stays unknown until the first such line.
 type speedCursor struct {
 	model, effort string
+	tier          speed.Tier
 
 	requestAt time.Time
 	hasReq    bool
@@ -185,7 +192,7 @@ func wantedSpeedLine(line []byte) bool {
 	switch {
 	case bytes.Contains(line, markUsageRecord), bytes.Contains(line, markTurnContext),
 		bytes.Contains(line, markTaskStarted), bytes.Contains(line, markFuncOutput),
-		bytes.Contains(line, markCustomOutput):
+		bytes.Contains(line, markCustomOutput), bytes.Contains(line, markSettings):
 		return true
 	case bytes.Contains(line, markItemCompleted):
 		return bytes.Contains(line, markReasoning) || bytes.Contains(line, markAgentMessage)
@@ -208,6 +215,8 @@ func (c *speedCursor) eventMsg(at time.Time, l speedLine) {
 		c.requestAt, c.hasReq, c.hasStream = at, true, false
 	case "item_completed":
 		c.itemCompleted(l)
+	case "thread_settings_applied":
+		c.tier = codexTier(l.Payload.ThreadSettings.ServiceTier)
 	}
 }
 
@@ -247,7 +256,7 @@ func (c *speedCursor) responseDone(end time.Time, outputTokens int64) {
 // sample is the measurement of the response that just ended; a response with
 // neither a first token nor a rate to report is no sample.
 func (c *speedCursor) sample(end time.Time, outputTokens int64) (speed.Sample, bool) {
-	s := speed.Sample{At: c.requestAt, Model: c.model, Effort: c.effort}
+	s := speed.Sample{At: c.requestAt, Model: c.model, Effort: c.effort, Tier: c.tier}
 	if c.hasStream {
 		if wait := c.streamAt.Sub(c.requestAt); wait <= speed.MaxTTFT {
 			s.TTFT, s.HasTTFT = wait, true
@@ -257,4 +266,16 @@ func (c *speedCursor) sample(end time.Time, outputTokens int64) (speed.Sample, b
 		}
 	}
 	return s, s.HasTTFT || s.Decode > 0
+}
+
+// codexTier maps a Codex service tier: "priority" is fast mode, "default" the
+// standard tier; anything else, flex included, is not compared.
+func codexTier(v string) speed.Tier {
+	switch v {
+	case "priority", "fast":
+		return speed.TierFast
+	case "default":
+		return speed.TierStandard
+	}
+	return speed.TierUnknown
 }

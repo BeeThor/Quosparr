@@ -3,6 +3,7 @@ package claude
 import (
 	"context"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/licoy/quosparr/internal/speed"
@@ -65,9 +66,21 @@ func speedSample(rec usageRecord) (speed.Sample, bool) {
 		return speed.Sample{}, false
 	}
 	return speed.Sample{
-		At: rec.parent, Model: rec.model, Effort: rec.effort,
+		At: rec.parent, Model: rec.model, Effort: rec.effort, Tier: rec.tier,
 		HasTTFT: false, OutputTokens: rec.parts.Output, Decode: decode,
 	}, true
+}
+
+// speedTier maps the usage speed field. Logs written before fast mode have
+// no field and stay unknown rather than counting as standard.
+func speedTier(v string) speed.Tier {
+	switch strings.ToLower(strings.TrimSpace(v)) {
+	case "fast":
+		return speed.TierFast
+	case "standard":
+		return speed.TierStandard
+	}
+	return speed.TierUnknown
 }
 
 // ScanSpeed builds a speed.Report from SpeedSessions. TTFT stays empty.

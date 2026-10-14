@@ -30,7 +30,7 @@ func panelSpeed(c *ui.Context, l l10n.Localizer, snap runway.Snapshot, acts Pane
 	sectionBlock(c, first, func() {
 		drawSectionHead(c, l, st, sectionSpec{
 			title: title, refreshing: busy, refresh: sectionRefresh(acts, runway.SectionSpeed),
-			info: &sectionInfo{id: "speed-info", help: title, body: popoverBody(c, l, st, title, speedInfo(l, v.Speed != nil && v.Speed.NoTTFT)...)},
+			info: &sectionInfo{id: "speed-info", help: title, body: popoverBody(c, l, st, title, speedInfo(l, v.Speed)...)},
 		})
 		switch {
 		case v.Speed != nil:
@@ -70,14 +70,19 @@ func speedError(c *ui.Context, errText string) {
 	}
 }
 
-// speedInfo is the explanation of the figures; without TTFT it says why the
-// column is missing instead of defining it.
-func speedInfo(l l10n.Localizer, noTTFT bool) []string {
+// speedInfo is the explanation of the figures of r, nil before the first
+// scan; without TTFT it says why the column is missing instead of defining
+// it, and a tiered report adds how the tiers are told apart.
+func speedInfo(l l10n.Localizer, r *speed.Report) []string {
 	first := tx(l, xSpeedInfoTTFT)
-	if noTTFT {
+	if r != nil && r.NoTTFT {
 		first = tx(l, xSpeedInfoNoTTFT)
 	}
-	return []string{first, tx(l, xSpeedInfoOutput), tx(l, xSpeedInfoSource)}
+	info := []string{first, tx(l, xSpeedInfoOutput), tx(l, xSpeedInfoSource)}
+	if r != nil && r.Tiered {
+		info = append(info, tx(l, xSpeedInfoTier))
+	}
+	return info
 }
 
 // speedGroupRow is one model at one effort: its name and effort, then the
@@ -96,15 +101,36 @@ func speedGroupRow(c *ui.Context, l l10n.Localizer, s speed.Stat, first, ttft bo
 }
 
 // speedModelCell is the model name followed by its reasoning effort in dim
-// ink, on one line that ends in an ellipsis when it does not fit.
+// ink and its tier, Fast in purple, on one line that ends in an ellipsis when
+// it does not fit.
 func speedModelCell(c *ui.Context, l l10n.Localizer, s speed.Stat) {
+	t := c.Theme()
 	name := speedModelName(l, s.Model)
 	spans := []ui.Span{{Text: name, Size: fsCallout, Weight: 500}}
 	if s.Effort != "" {
-		spans = append(spans, ui.Span{Text: " " + s.Effort, Size: fsCallout, Color: inkSecondary(c.Theme())})
+		spans = append(spans, ui.Span{Text: " " + s.Effort, Size: fsCallout, Color: inkSecondary(t)})
 		name += " " + s.Effort
 	}
+	if tier := speedTierLabel(l, s.Tier); tier != "" {
+		color := inkSecondary(t)
+		if s.Tier == speed.TierFast {
+			color = sys(t, sysPurple)
+		}
+		spans = append(spans, ui.Span{Text: " · " + tier, Size: fsCallout, Weight: 500, Color: color})
+		name += " · " + tier
+	}
 	ui.RichText(c, spans...).SingleLine().Ellipsis("…").Grow(1).Basis(0).Tooltip(name)
+}
+
+// speedTierLabel names a known tier; an unknown tier has no label.
+func speedTierLabel(l l10n.Localizer, tier speed.Tier) string {
+	switch tier {
+	case speed.TierFast:
+		return tx(l, xSpeedTierFast)
+	case speed.TierStandard:
+		return tx(l, xSpeedTierStandard)
+	}
+	return ""
 }
 
 // speedFigure is an optional dim label before a right-aligned figure.

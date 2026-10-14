@@ -416,6 +416,34 @@ func TestPanelSpeedCardKeepsFiguresWhenNarrow(t *testing.T) {
 	}
 }
 
+// A tiered report marks Fast and standard rows and explains the split; the
+// plain fixture has neither.
+func TestPanelSpeedDetailMarksTiers(t *testing.T) {
+	l := l10n.New(l10n.English)
+	plain := speedFixture()
+	_, tt := speedPanel(t, nil, speedSnapshot(plain), PanelActions{})
+	if err := tt.Click(l.Text(l10n.KeyShowDetails)); err != nil {
+		t.Fatal(err)
+	}
+	if tt.HasText(tx(l, xSpeedInfoTier)) || hasExact(tt, "gpt-5.5 high · Fast") {
+		t.Fatalf("untiered report shows tiers; texts %q", tt.Texts())
+	}
+
+	r := speedFixture()
+	r.Tiered = true
+	r.Groups[0].Tier = speed.TierFast
+	r.Groups[1].Tier = speed.TierStandard
+	_, tt = speedPanel(t, nil, speedSnapshot(r), PanelActions{})
+	if err := tt.Click(l.Text(l10n.KeyShowDetails)); err != nil {
+		t.Fatal(err)
+	}
+	for _, text := range []string{"gpt-5.5 high · Fast", "gpt-5.5 medium · Standard", "gpt-5.4-mini", tx(l, xSpeedInfoTier)} {
+		if !hasExact(tt, text) {
+			t.Fatalf("tiered detail missing %q; texts %q", text, tt.Texts())
+		}
+	}
+}
+
 // The (i) button explains TTFT, the output speed and where they come from,
 // and the explanation fits the panel in every language.
 func TestPanelSpeedInfoPopoverExplainsTheFigures(t *testing.T) {

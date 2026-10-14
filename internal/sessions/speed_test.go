@@ -37,6 +37,12 @@ func (l *speedLog) turnContext(sec float64, model, effort string) {
 	l.line(sec, "turn_context", fmt.Sprintf(`{"model":%q,"effort":%q,"cwd":"/x"}`, model, effort))
 }
 
+// settings is the thread settings line Codex writes before a turn; the model
+// inside it must not be taken for the turn's model.
+func (l *speedLog) settings(sec float64, tier string) {
+	l.line(sec, "event_msg", fmt.Sprintf(`{"type":"thread_settings_applied","thread_settings":{"model":"other","service_tier":%q}}`, tier))
+}
+
 func (l *speedLog) item(sec float64, kind string, startedSec float64) {
 	l.line(sec, "event_msg", fmt.Sprintf(`{"type":"item_completed","item":{"type":%q},"started_at_ms":%d,"completed_at_ms":%d}`,
 		kind, l.at(startedSec).UnixMilli(), l.at(sec).UnixMilli()))
@@ -104,6 +110,34 @@ func TestScanSpeedFileFollowsRequests(t *testing.T) {
 	}
 	wantSample(t, samples[0], l.at(4), 2*time.Second, true, 100, 4*time.Second)
 	wantSample(t, samples[1], l.at(11), 1500*time.Millisecond, true, 50, 2700*time.Millisecond)
+}
+
+func TestScanSpeedFileTracksServiceTier(t *testing.T) {
+	l := &speedLog{base: time.Date(2026, 10, 14, 0, 0, 0, 0, time.UTC)}
+	turn := func(sec float64) {
+		l.taskStarted(sec)
+		l.turnContext(sec, "m", "high")
+		l.item(sec+2, "Reasoning", sec+1)
+		l.record(sec+3, 10)
+	}
+	turn(0) // before any settings line: unknown
+	l.settings(9, "priority")
+	turn(10)
+	l.settings(19, "default")
+	turn(20)
+	l.settings(29, "flex")
+	turn(30)
+
+	samples := scanOneFile(t, l)
+	want := []speed.Tier{speed.TierUnknown, speed.TierFast, speed.TierStandard, speed.TierUnknown}
+	if len(samples) != len(want) {
+		t.Fatalf("samples = %+v", samples)
+	}
+	for i, s := range samples {
+		if s.Tier != want[i] || s.Model != "m" {
+			t.Fatalf("sample %d = %+v, want tier %q", i, s, want[i])
+		}
+	}
 }
 
 func TestScanSpeedFileToolOutputDuringStream(t *testing.T) {

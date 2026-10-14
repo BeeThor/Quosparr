@@ -13,6 +13,18 @@ const (
 	Window = 7 * 24 * time.Hour
 )
 
+// Tier is the service tier a model call ran at, as its log records it.
+type Tier string
+
+const (
+	// TierUnknown is a call whose log does not say its tier.
+	TierUnknown Tier = ""
+	// TierStandard is the default tier.
+	TierStandard Tier = "standard"
+	// TierFast is the paid faster tier (Codex priority, Claude fast mode).
+	TierFast Tier = "fast"
+)
+
 // Sample is one measurement of a model call. Codex logs a full sample per
 // response; Grok logs the first token per model call and the token count per
 // turn, so its samples carry either the TTFT or the output part.
@@ -21,6 +33,7 @@ type Sample struct {
 	At     time.Time
 	Model  string
 	Effort string // reasoning effort, "" when unknown
+	Tier   Tier
 	// TTFT is the wait from the request to the first streamed item, valid
 	// when HasTTFT.
 	TTFT    time.Duration
@@ -40,10 +53,12 @@ type Session struct {
 	Samples     []Sample
 }
 
-// Stat is the speed of one model at one reasoning effort.
+// Stat is the speed of one model at one reasoning effort and tier. Tier is
+// TierUnknown for every stat of a report that is not Tiered.
 type Stat struct {
 	Model  string
 	Effort string
+	Tier   Tier
 	// Calls counts the samples with a TTFT; TTFTP50 and TTFTP90 are their
 	// percentiles (zero when Calls is 0).
 	Calls            int
@@ -85,6 +100,10 @@ type Report struct {
 	// NoTTFT marks a source whose logs have no first-token time, so the
 	// views leave the TTFT and call count columns out.
 	NoTTFT bool
+	// Tiered marks a report with at least one fast sample: only then are the
+	// tiers told apart, so a source that never ran fast keeps one row per
+	// model and effort.
+	Tiered bool
 	// From and To bound the samples; CalculatedAt is when the report was built.
 	From, To     time.Time
 	CalculatedAt time.Time

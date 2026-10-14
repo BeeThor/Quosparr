@@ -153,7 +153,7 @@ func speedNote(c *ui.Context, l l10n.Localizer, r speed.Report, errText string) 
 		if !r.From.IsZero() && !r.To.IsZero() {
 			dimText(c, tx(l, xSpeedRange, r.From.Local().Format(time.DateOnly), r.To.Local().Format(time.DateOnly)))
 		}
-		for _, text := range speedInfo(l, r.NoTTFT) {
+		for _, text := range speedInfo(l, &r) {
 			ui.Text(c, text).FontSize(fsCaption).TextColor(inkSecondary(t))
 		}
 		speedError(c, errText)
