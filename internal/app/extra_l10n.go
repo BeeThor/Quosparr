@@ -46,6 +46,9 @@ const (
 	xColorGreen                textKey = "themeColorGreen"
 	xColorGraphite             textKey = "themeColorGraphite"
 	xColorCustom               textKey = "themeColorCustom"
+	xDisplayFont               textKey = "displayFont"
+	xDisplayFontHint           textKey = "displayFontDescription"
+	xDisplayFontDefault        textKey = "displayFontDefault"
 	xResetTimeFormat           textKey = "quotaResetTimeFormat"
 	xResetTimeFormatHint       textKey = "quotaResetTimeFormatDescription"
 	xResetTimeRelative         textKey = "quotaResetTimeRelative"
@@ -94,6 +97,19 @@ var extraTexts = map[textKey][7]string{
 	xColorGreen:    {"Green", "绿色", "綠色", "초록색", "グリーン", "Зелёный", "Vert"},
 	xColorGraphite: {"Graphite", "石墨色", "石墨色", "그래파이트", "グラファイト", "Графит", "Graphite"},
 	xColorCustom:   {"Custom", "自定义", "自訂", "사용자 지정", "カスタム", "Свой цвет", "Personnalisée"},
+	xDisplayFont: {
+		"Display font", "显示字体", "顯示字體", "표시 글꼴", "表示フォント", "Шрифт интерфейса", "Police d’affichage",
+	},
+	xDisplayFontHint: {
+		"Used by the main panel and settings; the menu bar keeps the system font",
+		"用于主面板和设置窗口，菜单栏保持系统字体",
+		"用於主面板和設定視窗，選單列保持系統字體",
+		"메인 패널과 설정 창에 적용되며 메뉴 막대는 시스템 글꼴을 유지합니다",
+		"メインパネルと設定ウインドウに適用され、メニューバーはシステムフォントのままです",
+		"Для главной панели и настроек; в строке меню остаётся системный шрифт",
+		"Pour le panneau principal et les réglages ; la barre des menus garde la police du système",
+	},
+	xDisplayFontDefault: {"Default", "默认", "預設", "기본값", "デフォルト", "По умолчанию", "Par défaut"},
 	xResetTimeFormat: {
 		"Next reset time", "下次重置时间格式", "下次重置時間格式", "다음 리셋 시간 형식", "次のリセット時刻の表示", "Время следующего сброса", "Heure de la prochaine réinit.",
 	},

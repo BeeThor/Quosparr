@@ -94,6 +94,9 @@ type Preferences struct {
 	// for the brand brown. Only the Go app knows the key, so it is omitted
 	// while empty and an unreadable value falls back to the brand.
 	ThemeColor string `json:"themeColor,omitempty"`
+	// FontFamily is Go-only too: the family the app's windows use, omitted
+	// for the system's, and an unusable name falls back to it.
+	FontFamily string `json:"fontFamily,omitempty"`
 	// QuotaResetTimeFormat is Go-only too: omitted for the relative countdown,
 	// and an unreadable value falls back to it.
 	QuotaResetTimeFormat ResetTimeFormat `json:"quotaResetTimeFormat,omitempty"`
@@ -203,6 +206,7 @@ func (p *Preferences) Normalize() {
 	p.RateLimitResetTodayRefreshIntervalSeconds =
 		ClampRateLimitResetTodayRefreshInterval(p.RateLimitResetTodayRefreshIntervalSeconds)
 	p.ThemeColor = NormalizeThemeColor(p.ThemeColor)
+	p.FontFamily = NormalizeFontFamily(p.FontFamily)
 	if !p.QuotaResetTimeFormat.Valid() {
 		p.QuotaResetTimeFormat = ResetTimeRelative
 	}
@@ -280,6 +284,17 @@ func NormalizeThemeColor(color string) string {
 		}
 	}
 	return strings.ToUpper(color)
+}
+
+// NormalizeFontFamily returns a font family name trimmed, or empty for the
+// system's font when it is not one name: too long, or with a comma, which
+// would make it a list, or a control character.
+func NormalizeFontFamily(family string) string {
+	s := strings.TrimSpace(family)
+	if len(s) > 256 || strings.ContainsFunc(s, func(r rune) bool { return r == ',' || unicode.IsControl(r) }) {
+		return ""
+	}
+	return s
 }
 
 // ClampWidgetRefreshInterval limits the widget refresh interval to 60...1800 s.

@@ -122,6 +122,10 @@ type settingsUI struct {
 
 	pickingColor bool
 	customColor  ui.Color
+	// fonts are the installed families, listed once a settings window
+	// shows them, so fonts installed meanwhile show in the next window.
+	fonts       []string
+	fontsListed bool
 
 	confirmRepair bool
 	noticeTitle   string
@@ -148,7 +152,7 @@ func (u *settingsUI) text(k l10n.Key) string { return u.L().Text(k) }
 
 // view builds one frame of the settings window.
 func (u *settingsUI) view(c *ui.Context) {
-	applyThemeColor(c, u.s.prefs.ThemeColor)
+	applyThemeColor(c, u.s.prefs.ThemeColor, u.s.prefs.FontFamily)
 	if !u.draftReady {
 		u.draft, u.draftReady = NewProxyDraft(u.s.Proxy()), true
 		u.testURL = u.s.Prefs().ProxyTestTarget()

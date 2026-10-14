@@ -44,7 +44,7 @@ func TestExportSettingsSidebarReview(t *testing.T) {
 						u.view(c)
 						return
 					}
-					applyThemeColor(c, u.s.prefs.ThemeColor)
+					applyThemeColor(c, u.s.prefs.ThemeColor, u.s.prefs.FontFamily)
 					u.shell(c, func(c *ui.Context) {
 						ui.Scroll(c).Grow(1).Padding(4, 24, 24, 24).Gap(10).Children(func() { sidebarAccountFixture(c, u, snap.Accounts.Sidebar) })
 					})

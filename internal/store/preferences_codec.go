@@ -77,6 +77,7 @@ func readPreferences(r *reader) Preferences {
 	p.ExportsStatusJSON = r.bool("exportsStatusJSON", p.ExportsStatusJSON)
 	p.AccountPrivacyModeEnabled = r.bool("accountPrivacyModeEnabled", p.AccountPrivacyModeEnabled)
 	p.ThemeColor = readThemeColor(r, "themeColor")
+	p.FontFamily = readFontFamily(r, "fontFamily")
 	p.QuotaResetTimeFormat = readResetTimeFormat(r, "quotaResetTimeFormat")
 	p.ProxyTestURL = readProxyTestURL(r, "proxyTestURL")
 	p.ShowsSpeedAnalysis = r.bool("showsSpeedAnalysis", p.ShowsSpeedAnalysis)

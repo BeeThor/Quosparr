@@ -106,8 +106,8 @@ func brandInk(t *ui.Theme, color ui.Color) ui.Color {
 }
 
 type themeKey struct {
-	dark  bool
-	color string
+	dark        bool
+	color, font string
 }
 
 // themes caches the built themes; a custom color dragged across the picker
@@ -115,19 +115,22 @@ type themeKey struct {
 var themes = map[themeKey]*ui.Theme{}
 
 // applyTheme makes the frame use the app's theme in the brand color.
-func applyTheme(c *ui.Context) *ui.Theme { return applyThemeColor(c, "") }
+func applyTheme(c *ui.Context) *ui.Theme { return applyThemeColor(c, "", "") }
 
 // applyThemeColor makes the frame use the app's theme in the system's (or
-// the chosen) appearance, with the theme color the user chose
-// (store.Preferences.ThemeColor, empty for the brand). Views call it first.
-func applyThemeColor(c *ui.Context, color string) *ui.Theme {
-	k := themeKey{c.Theme().Dark, color}
+// the chosen) appearance, with the theme color and the font family the user
+// chose (store.Preferences.ThemeColor, empty for the brand, and FontFamily,
+// empty for the system's; a family the system lacks falls back to it).
+// Views call it first.
+func applyThemeColor(c *ui.Context, color, font string) *ui.Theme {
+	k := themeKey{c.Theme().Dark, color, font}
 	t := themes[k]
 	if t == nil {
 		if len(themes) >= 16 {
 			clear(themes)
 		}
 		t = buildThemeColor(k.dark, color)
+		t.Font = font
 		themes[k] = t
 	}
 	c.SetTheme(t)
@@ -341,8 +344,8 @@ func inverseColors(t *ui.Theme) (fill, text ui.Color) {
 }
 
 // applyPanelTheme shows native material only when the host actually provides it.
-func applyPanelTheme(c *ui.Context, style store.PanelBackground, color string) *ui.Theme {
-	t := applyThemeColor(c, color)
+func applyPanelTheme(c *ui.Context, style store.PanelBackground, color, font string) *ui.Theme {
+	t := applyThemeColor(c, color, font)
 	if style == store.PanelBackgroundTranslucent && c.Vibrancy() {
 		material := *t
 		// Tooltips draw the inverse colours, which fall back to Text on

@@ -329,6 +329,12 @@ func (s *Settings) SetThemeColor(v string) bool {
 	return s.Update(func(p *store.Preferences) { p.ThemeColor = v })
 }
 
+// SetFontFamily selects the font of the app's windows, empty for the
+// system's; it takes effect at once.
+func (s *Settings) SetFontFamily(v string) bool {
+	return s.Update(func(p *store.Preferences) { p.FontFamily = v })
+}
+
 // SetPanelBackground selects the main panel background.
 func (s *Settings) SetPanelBackground(v store.PanelBackground) bool {
 	return s.Update(func(p *store.Preferences) { p.MainPanelBackgroundStyle = v })

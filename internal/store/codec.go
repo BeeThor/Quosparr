@@ -157,6 +157,17 @@ func readThemeColor(r *reader, key string) string {
 	return NormalizeThemeColor(s)
 }
 
+// readFontFamily decodes the Go-only font family leniently, as
+// readThemeColor: anything but a usable name is the system's font.
+func readFontFamily(r *reader, key string) string {
+	raw, ok := r.take(key)
+	var s string
+	if !ok || json.Unmarshal(raw, &s) != nil {
+		return ""
+	}
+	return NormalizeFontFamily(s)
+}
+
 // readProxyTestURL decodes the Go-only test site leniently: anything but a
 // valid URL is the default.
 func readProxyTestURL(r *reader, key string) string {

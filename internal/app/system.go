@@ -6,6 +6,7 @@ import (
 
 	"github.com/egoist/mygo"
 	"github.com/licoy/quosparr/internal/l10n"
+	"github.com/licoy/quosparr/internal/platform"
 	"github.com/licoy/quosparr/internal/store"
 )
 
@@ -41,6 +42,10 @@ type System struct {
 	PanelBackground bool
 	Widgets         bool
 
+	// FontFamilies lists the installed font families the display font can
+	// be; nil offers only the system's.
+	FontFamilies func() []string
+
 	// SetAutomaticUpdateChecks applies the "check automatically" choice to
 	// the updater; nil until the updater is wired.
 	SetAutomaticUpdateChecks func(on bool)
@@ -56,6 +61,7 @@ func DefaultSystem() System {
 		LoginAsync:         async,
 		PreferredLanguages: l10n.SystemPreferredLanguages,
 		SetAppearance:      setMygoAppearance,
+		FontFamilies:       platform.FontFamilies,
 		StatusBarStyles:    mac,
 		PanelBackground:    mac,
 		Widgets:            mac && macOSAtLeast(14),

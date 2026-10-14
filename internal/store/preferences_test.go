@@ -93,7 +93,7 @@ func TestThirtyFourFieldsAllDifferFromDefaults(t *testing.T) {
 	typ := d.Type()
 	count := 0
 	for i := 0; i < typ.NumField(); i++ {
-		if typ.Field(i).Tag.Get("json") == "" || typ.Field(i).Name == "ThemeColor" || typ.Field(i).Name == "QuotaResetTimeFormat" || typ.Field(i).Name == "ProxyTestURL" || typ.Field(i).Name == "ShowsSpeedAnalysis" || typ.Field(i).Name == "StatusBarProviders" {
+		if typ.Field(i).Tag.Get("json") == "" || typ.Field(i).Name == "ThemeColor" || typ.Field(i).Name == "FontFamily" || typ.Field(i).Name == "QuotaResetTimeFormat" || typ.Field(i).Name == "ProxyTestURL" || typ.Field(i).Name == "ShowsSpeedAnalysis" || typ.Field(i).Name == "StatusBarProviders" {
 			continue // the unexported extra map, and the keys only Go writes
 		}
 		count++
@@ -652,6 +652,39 @@ func TestThemeColorIsGoOnlyAndLenient(t *testing.T) {
 	}
 	if got := mustDecode(t, string(enc)); got.ThemeColor != "#62BA46" {
 		t.Errorf("round trip = %q", got.ThemeColor)
+	}
+}
+
+func TestFontFamilyIsGoOnlyAndLenient(t *testing.T) {
+	enc, err := EncodePreferences(DefaultPreferences())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(enc), "fontFamily") {
+		t.Errorf("the system font is written: %s", enc)
+	}
+	for raw, want := range map[string]string{
+		`"PingFang SC"`:      "PingFang SC",
+		`"  Menlo  "`:        "Menlo",
+		`"Menlo, monospace"`: "",
+		`"Bad\nName"`:        "",
+		`12`:                 "",
+		`null`:               "",
+	} {
+		if got := mustDecode(t, `{"fontFamily":`+raw+`}`); got.FontFamily != want {
+			t.Errorf("fontFamily %s decoded to %q, want %q", raw, got.FontFamily, want)
+		}
+	}
+	p := DefaultPreferences()
+	p.FontFamily = "Source Han Serif SC"
+	if enc, err = EncodePreferences(p); err != nil {
+		t.Fatal(err)
+	}
+	if got := mustDecode(t, string(enc)); got.FontFamily != p.FontFamily {
+		t.Errorf("round trip = %q", got.FontFamily)
+	}
+	if got := NormalizeFontFamily(strings.Repeat("a", 257)); got != "" {
+		t.Errorf("an overlong name normalized to %q", got)
 	}
 }
 

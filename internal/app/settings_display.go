@@ -53,6 +53,7 @@ func (u *settingsUI) appearanceGroup(c *ui.Context) {
 			}
 		})
 		row(tx(l, xThemeColor), u.themeColorName(p.ThemeColor), func() { u.themeColorControl(c, ro) })
+		row(tx(l, xDisplayFont), tx(l, xDisplayFontHint), func() { u.fontControl(c, p.FontFamily, ro) })
 		detail := l.Text(l10n.KeyMainPanelBackgroundDescription)
 		if !sys.PanelBackground {
 			detail = macNote(false)
@@ -75,6 +76,30 @@ func (u *settingsUI) appearanceGroup(c *ui.Context) {
 		})
 		u.statusBarRows(c, row, p, ro, sys.StatusBarStyles, macNote(sys.StatusBarStyles))
 	})
+}
+
+// fontControl chooses the display font: the system's, listed first as
+// Default, or an installed family, which typing filters.
+func (u *settingsUI) fontControl(c *ui.Context, cur string, ro bool) {
+	l := u.L()
+	if !u.fontsListed {
+		u.fontsListed = true
+		if f := u.s.System().FontFamilies; f != nil {
+			u.fonts = f()
+		}
+	}
+	def := tx(l, xDisplayFontDefault)
+	options := append([]string{def}, u.fonts...)
+	sel := cur
+	if sel == "" {
+		sel = def
+	}
+	if ui.Combobox(c.Key("font-family"), &sel, options).Label(tx(l, xDisplayFont)).Width(230).Disabled(ro).Changed() {
+		if sel == def {
+			sel = ""
+		}
+		u.s.SetFontFamily(sel)
+	}
 }
 
 // statusBarRows are the settings of the status item. Where the OS has no

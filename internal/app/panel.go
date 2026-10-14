@@ -16,7 +16,7 @@ import (
 func (a *App) panelView(c *ui.Context) {
 	prefs := a.settings.Prefs()
 	a.syncPanelContext(prefs)
-	t := applyPanelTheme(c, prefs.MainPanelBackgroundStyle, prefs.ThemeColor)
+	t := applyPanelTheme(c, prefs.MainPanelBackgroundStyle, prefs.ThemeColor, prefs.FontFamily)
 	l := a.L()
 	snap := a.Snapshot()
 	acts := a.PanelActions()
