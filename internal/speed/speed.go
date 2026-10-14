@@ -82,6 +82,9 @@ type Report struct {
 	// Sessions are the analysed conversations, newest first; Sessions[0] is
 	// the one the card names.
 	Sessions []SessionStat
+	// NoTTFT marks a source whose logs have no first-token time, so the
+	// views leave the TTFT and call count columns out.
+	NoTTFT bool
 	// From and To bound the samples; CalculatedAt is when the report was built.
 	From, To     time.Time
 	CalculatedAt time.Time

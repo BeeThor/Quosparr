@@ -56,13 +56,14 @@ func claudePartialCost(sum usage.Summary) bool {
 	return sum.Confidence == usage.ConfidenceTokensOnly && sum.Totals.TotalTokens > 0
 }
 
-// withoutTTFT clears time-to-first-token figures. Claude logs have none, so
-// the column stays "—".
+// withoutTTFT clears time-to-first-token figures and marks the report so
+// the views hide those columns: Claude logs have no first-token time.
 func withoutTTFT(r *speed.Report) *speed.Report {
 	if r == nil {
 		return nil
 	}
 	out := *r
+	out.NoTTFT = true
 	out.Groups = append([]speed.Stat(nil), r.Groups...)
 	for i := range out.Groups {
 		out.Groups[i].Calls = 0

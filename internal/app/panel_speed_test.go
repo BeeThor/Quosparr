@@ -264,6 +264,28 @@ func TestPanelSpeedGrokDetailUsesGrokReport(t *testing.T) {
 	}
 }
 
+// Claude logs have no first-token time: the card, the table and the session
+// rows leave the TTFT and call count columns out, and the notes say why.
+func TestPanelSpeedClaudeHidesTTFT(t *testing.T) {
+	l := l10n.New(l10n.English)
+	snap := speedSnapshot(nil)
+	snap.Claude = runway.ClaudeState{Speed: speedFixture()}
+	a, tt := speedPanel(t, func(p *store.Preferences) { p.SelectedProvider = store.ProviderClaude }, snap, PanelActions{})
+	if !hasExact(tt, "36 tok/s") || hasExact(tt, tx(l, xSpeedTTFT)) {
+		t.Fatalf("Claude speed card shows TTFT or misses the rate; texts %q", tt.Texts())
+	}
+	a.panelState.detail = store.ModuleSpeedAnalysis
+	tt.Frame()
+	for _, text := range []string{tx(l, xSpeedTTFT), "P50", "P90", tx(l, xSpeedCalls), tx(l, xSpeedInfoTTFT)} {
+		if hasExact(tt, text) {
+			t.Fatalf("Claude speed detail shows %q; texts %q", text, tt.Texts())
+		}
+	}
+	if !hasExact(tt, "36") || !tt.HasText(tx(l, xSpeedInfoNoTTFT)) {
+		t.Fatalf("Claude speed detail misses the rate or the note; texts %q", tt.Texts())
+	}
+}
+
 func TestSpeedFigures(t *testing.T) {
 	ms := time.Millisecond
 	for _, test := range []struct {

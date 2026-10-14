@@ -34,18 +34,20 @@ func speedDetail(c *ui.Context, l l10n.Localizer, v runway.CodexView) {
 		return
 	}
 	ui.Column(c).Gap(16).Children(func() {
-		speedModelTable(c, l, r.Groups)
-		speedSessionList(c, l, r.Sessions)
+		speedModelTable(c, l, r.Groups, !r.NoTTFT)
+		speedSessionList(c, l, r.Sessions, !r.NoTTFT)
 		speedNote(c, l, *r, v.SpeedError)
 	})
 }
 
-func speedModelTable(c *ui.Context, l l10n.Localizer, groups []speed.Stat) {
+// speedModelTable leaves the TTFT and call count columns out unless ttft:
+// the call count only counts samples with a TTFT.
+func speedModelTable(c *ui.Context, l l10n.Localizer, groups []speed.Stat, ttft bool) {
 	ui.Column(c).Gap(8).Children(func() {
 		ui.Text(c, tx(l, xSpeedByModel)).FontSize(fsHeadline).FontWeight(600)
-		tableContainer(c, func() { speedHeadRow(c, l) }, func() {
+		tableContainer(c, func() { speedHeadRow(c, l, ttft) }, func() {
 			for i, g := range groups {
-				speedTableRow(c, l, g, i == 0)
+				speedTableRow(c, l, g, i == 0, ttft)
 			}
 		})
 	})
@@ -53,7 +55,7 @@ func speedModelTable(c *ui.Context, l l10n.Localizer, groups []speed.Stat) {
 
 // speedHeadRow stacks the metric over its percentile or unit so that the
 // figure columns stay narrow in every language.
-func speedHeadRow(c *ui.Context, l l10n.Localizer) {
+func speedHeadRow(c *ui.Context, l l10n.Localizer, ttft bool) {
 	t := c.Theme()
 	head := func(s string) ui.Element {
 		return ui.Text(c, s).FontSize(fsCaption).FontWeight(600).TextColor(inkSecondary(t)).SingleLine().TextAlign(ui.End)
@@ -64,17 +66,21 @@ func speedHeadRow(c *ui.Context, l l10n.Localizer) {
 			head(bottom)
 		})
 	}
-	ttft := tx(l, xSpeedTTFT)
+	label := tx(l, xSpeedTTFT)
 	ui.Row(c).Gap(6).Padding(7, 10).Grow(1).AlignItems(ui.End).Children(func() {
 		head(tx(l, xSpeedModel)).TextAlign(ui.Start).Grow(1).Basis(0)
-		stacked(ttft, "P50", speedColPercentile)
-		stacked(ttft, "P90", speedColPercentile)
+		if ttft {
+			stacked(label, "P50", speedColPercentile)
+			stacked(label, "P90", speedColPercentile)
+		}
 		stacked(tx(l, xSpeedOutput), "tok/s", speedColOutput)
-		head(tx(l, xSpeedCalls)).Width(speedColCalls).Shrink(0)
+		if ttft {
+			head(tx(l, xSpeedCalls)).Width(speedColCalls).Shrink(0)
+		}
 	})
 }
 
-func speedTableRow(c *ui.Context, l l10n.Localizer, s speed.Stat, first bool) {
+func speedTableRow(c *ui.Context, l l10n.Localizer, s speed.Stat, first, ttft bool) {
 	ui.Column(c).Children(func() {
 		tableRowRule(c, first)
 		ui.Row(c).Gap(6).Padding(6, 10).AlignItems(ui.Center).Children(func() {
@@ -82,29 +88,33 @@ func speedTableRow(c *ui.Context, l l10n.Localizer, s speed.Stat, first bool) {
 			cell := func(text string, width float32) {
 				ui.Text(c, text).FontSize(fsCaption).FontFeatures("tnum").Width(width).Shrink(0).TextAlign(ui.End).SingleLine()
 			}
-			cell(speedTTFT(s.TTFTP50, s.Calls), speedColPercentile)
-			cell(speedTTFT(s.TTFTP90, s.Calls), speedColPercentile)
+			if ttft {
+				cell(speedTTFT(s.TTFTP50, s.Calls), speedColPercentile)
+				cell(speedTTFT(s.TTFTP90, s.Calls), speedColPercentile)
+			}
 			cell(speedRate(s, false), speedColOutput)
-			cell(strconv.Itoa(s.Calls), speedColCalls)
+			if ttft {
+				cell(strconv.Itoa(s.Calls), speedColCalls)
+			}
 		})
 	})
 }
 
-func speedSessionList(c *ui.Context, l l10n.Localizer, list []speed.SessionStat) {
+func speedSessionList(c *ui.Context, l l10n.Localizer, list []speed.SessionStat, ttft bool) {
 	if len(list) == 0 {
 		return
 	}
 	ui.Column(c).Gap(8).Children(func() {
 		ui.Text(c, l.Text(l10n.KeyRecentSessions)).FontSize(fsHeadline).FontWeight(600)
 		for _, s := range list {
-			speedSessionCard(c, l, s)
+			speedSessionCard(c, l, s, ttft)
 		}
 	})
 }
 
 // speedSessionCard is one conversation: its title, project and age over one
 // line per model.
-func speedSessionCard(c *ui.Context, l l10n.Localizer, s speed.SessionStat) {
+func speedSessionCard(c *ui.Context, l l10n.Localizer, s speed.SessionStat, ttft bool) {
 	t := c.Theme()
 	title := speedOneLine(s.Title)
 	if title == "" {
@@ -118,7 +128,7 @@ func speedSessionCard(c *ui.Context, l l10n.Localizer, s speed.SessionStat) {
 			}
 		})
 		for _, g := range s.Groups {
-			speedGroupRow(c, l, g, false)
+			speedGroupRow(c, l, g, false, ttft)
 		}
 	})
 }
@@ -143,8 +153,8 @@ func speedNote(c *ui.Context, l l10n.Localizer, r speed.Report, errText string) 
 		if !r.From.IsZero() && !r.To.IsZero() {
 			dimText(c, tx(l, xSpeedRange, r.From.Local().Format(time.DateOnly), r.To.Local().Format(time.DateOnly)))
 		}
-		for _, key := range []textKey{xSpeedInfoTTFT, xSpeedInfoOutput, xSpeedInfoSource} {
-			ui.Text(c, tx(l, key)).FontSize(fsCaption).TextColor(inkSecondary(t))
+		for _, text := range speedInfo(l, r.NoTTFT) {
+			ui.Text(c, text).FontSize(fsCaption).TextColor(inkSecondary(t))
 		}
 		speedError(c, errText)
 	})

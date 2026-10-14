@@ -30,7 +30,7 @@ func panelSpeed(c *ui.Context, l l10n.Localizer, snap runway.Snapshot, acts Pane
 	sectionBlock(c, first, func() {
 		drawSectionHead(c, l, st, sectionSpec{
 			title: title, refreshing: busy, refresh: sectionRefresh(acts, runway.SectionSpeed),
-			info: &sectionInfo{id: "speed-info", help: title, body: popoverBody(c, l, st, title, tx(l, xSpeedInfoTTFT), tx(l, xSpeedInfoOutput), tx(l, xSpeedInfoSource))},
+			info: &sectionInfo{id: "speed-info", help: title, body: popoverBody(c, l, st, title, speedInfo(l, v.Speed != nil && v.Speed.NoTTFT)...)},
 		})
 		switch {
 		case v.Speed != nil:
@@ -52,7 +52,7 @@ func speedSummary(c *ui.Context, l l10n.Localizer, st *panelState, r speed.Repor
 	ui.Column(c).Gap(6).Children(func() {
 		cardColumn(c, surfaceSunkenKind, radiusCard).Children(func() {
 			for i, g := range r.Groups[:min(speedCardRows, len(r.Groups))] {
-				speedGroupRow(c, l, g, i == 0)
+				speedGroupRow(c, l, g, i == 0, !r.NoTTFT)
 			}
 		})
 		speedAttribution(c, l, r)
@@ -70,14 +70,26 @@ func speedError(c *ui.Context, errText string) {
 	}
 }
 
+// speedInfo is the explanation of the figures; without TTFT it says why the
+// column is missing instead of defining it.
+func speedInfo(l l10n.Localizer, noTTFT bool) []string {
+	first := tx(l, xSpeedInfoTTFT)
+	if noTTFT {
+		first = tx(l, xSpeedInfoNoTTFT)
+	}
+	return []string{first, tx(l, xSpeedInfoOutput), tx(l, xSpeedInfoSource)}
+}
+
 // speedGroupRow is one model at one effort: its name and effort, then the
-// time to first token and the output speed in fixed columns.
-func speedGroupRow(c *ui.Context, l l10n.Localizer, s speed.Stat, first bool) {
+// time to first token when ttft and the output speed in fixed columns.
+func speedGroupRow(c *ui.Context, l l10n.Localizer, s speed.Stat, first, ttft bool) {
 	ui.Column(c).Children(func() {
 		tableRowRule(c, first)
 		ui.Row(c).Gap(8).Padding(7, 10).AlignItems(ui.Center).Children(func() {
 			speedModelCell(c, l, s)
-			speedFigure(c, tx(l, xSpeedTTFT), speedTTFT(s.TTFTP50, s.Calls), speedColTTFT)
+			if ttft {
+				speedFigure(c, tx(l, xSpeedTTFT), speedTTFT(s.TTFTP50, s.Calls), speedColTTFT)
+			}
 			speedFigure(c, "", speedRate(s, true), speedColRate)
 		})
 	})

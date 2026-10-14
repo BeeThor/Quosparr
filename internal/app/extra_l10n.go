@@ -55,6 +55,7 @@ const (
 	xSpeedTitle                textKey = "speedAnalysis"
 	xSpeedModuleDescription    textKey = "speedAnalysisDescription"
 	xSpeedInfoTTFT             textKey = "speedAnalysisInfoTTFT"
+	xSpeedInfoNoTTFT           textKey = "speedAnalysisInfoNoTTFT"
 	xSpeedInfoOutput           textKey = "speedAnalysisInfoOutput"
 	xSpeedInfoSource           textKey = "speedAnalysisInfoSource"
 	xSpeedTTFT                 textKey = "speedAnalysisTTFT"
@@ -139,6 +140,15 @@ var extraTexts = map[textKey][7]string{
 		"TTFT（最初のトークンまでの時間）は、リクエスト送信から最初のストリーミング出力が届くまでの待ち時間です。",
 		"TTFT (время до первого токена) — ожидание от отправки запроса до первого потокового вывода.",
 		"TTFT (délai avant le premier jeton) : attente entre l’envoi de la requête et l’arrivée de la première sortie en flux.",
+	},
+	xSpeedInfoNoTTFT: {
+		"These logs have no first-token time, so TTFT is not shown and output speed is timed from the request, wait included.",
+		"该服务商的日志没有首字时间，因此不显示首字延迟，输出速率从发出请求开始计时，包含等待时间。",
+		"該服務商的記錄沒有首字時間，因此不顯示首字延遲，輸出速率從送出請求開始計時，包含等待時間。",
+		"이 로그에는 첫 토큰 시각이 없어 TTFT를 표시하지 않으며, 출력 속도는 대기 시간을 포함해 요청 시점부터 측정합니다.",
+		"このログには最初のトークンの時刻がないため TTFT は表示せず、出力速度は待ち時間を含めリクエスト送信時から計測します。",
+		"В этих логах нет времени первого токена, поэтому TTFT не показывается, а скорость вывода считается от отправки запроса с учётом ожидания.",
+		"Ces journaux n’indiquent pas l’heure du premier jeton : le TTFT n’est pas affiché et la vitesse de sortie est mesurée depuis la requête, attente comprise.",
 	},
 	xSpeedInfoOutput: {
 		"Output speed is the output tokens (reasoning included) divided by the time they took to stream.",
