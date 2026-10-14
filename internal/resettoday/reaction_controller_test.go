@@ -138,7 +138,17 @@ func counts(values ...int) func(context.Context) (ReactionSnapshot, error) {
 }
 
 func TestReopenDoesNotAnnounceCatchUpDelta(t *testing.T) {
-	c, _ := newController(counts(10, 50), nil)
+	var fetches atomic.Int32
+	g := newGate()
+	defer g.open()
+	// The reopen fetch waits on the gate so Loading is observed before it lands.
+	c, _ := newController(func(ctx context.Context) (ReactionSnapshot, error) {
+		if fetches.Add(1) == 1 {
+			return snapshotWith(10, 1000), nil
+		}
+		g.wait(ctx)
+		return snapshotWith(50, 1000), nil
+	}, nil)
 	defer c.Close()
 	c.SetPollingEnabled(true, true)
 	waitUntil(t, countIs(c, 10))
@@ -150,6 +160,7 @@ func TestReopenDoesNotAnnounceCatchUpDelta(t *testing.T) {
 	if !c.State().Loading {
 		t.Error("reopen is not loading")
 	}
+	g.open()
 	waitUntil(t, countIs(c, 50))
 	waitUntil(t, func() bool { return !c.State().Loading })
 	if c.State().Delta.Amount != 0 {

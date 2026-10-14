@@ -220,10 +220,13 @@ func (c *ReactionController) load(ctx context.Context) {
 	}
 
 	snapshot, err := c.FetchFunc(ctx)
+	c.mu.Lock()
+	// Checked under the lock: endSessionLocked cancels while holding it, so a
+	// session that ended during the fetch cannot write into the next one.
 	if ctx.Err() != nil {
+		c.mu.Unlock()
 		return
 	}
-	c.mu.Lock()
 	switch {
 	case err == nil:
 		if generation != c.generation || c.state.Busy {
