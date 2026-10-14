@@ -88,18 +88,17 @@ func TestLiveRefreshUsesLatestUIProvider(t *testing.T) {
 	e := newEnv(t, nil)
 	p := quietLivePreferences()
 	e.s.prefs = p
-	// The provider strip refreshes the Codex quota for every provider, so the
-	// Codex-only reset credits tell the two dispatches apart.
+	// The Grok dispatch is a full refresh, which covers Codex too and loads
+	// the credential afresh; only the Codex section refresh may reuse the
+	// cached one, so a cached load tells the two dispatches apart.
 	var codexLoads atomic.Int32
 	g := newGrokBridge(nil, p, nil)
 	svc := runway.New(runway.Options{Preferences: p, Grok: g, Sources: runway.Sources{
-		LoadValidAuth: func(context.Context, bool, *codex.Auth) (codex.Auth, error) { return codex.Auth{}, nil },
-		FetchQuota: func(context.Context, codexapi.Auth) (codexapi.QuotaSnapshot, error) {
-			return codexapi.QuotaSnapshot{}, errors.New("offline")
-		},
-		FetchResetCredits: func(context.Context, codexapi.Auth) (codexapi.ResetCreditsSnapshot, error) {
-			codexLoads.Add(1)
-			return codexapi.ResetCreditsSnapshot{}, errors.New("unexpected Codex refresh")
+		LoadValidAuth: func(_ context.Context, preferCached bool, _ *codex.Auth) (codex.Auth, error) {
+			if preferCached {
+				codexLoads.Add(1)
+			}
+			return codex.Auth{}, errors.New("signed out")
 		},
 	}})
 	defer svc.Close()

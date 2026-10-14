@@ -361,6 +361,7 @@ func (rt *liveApp) panelActions(s *Settings) PanelActions {
 				rt.queuePreferences(livePreferenceRequest{provider: &p})
 			}
 		},
+		PanelShown: svc.SetPanelOpen,
 	}
 	installDetailActions(rt, &actions)
 	installAccountActions(rt, s, &actions)
@@ -368,13 +369,16 @@ func (rt *liveApp) panelActions(s *Settings) PanelActions {
 }
 
 func refreshSection(s *runway.Service, sec runway.Section) {
-	if s.Preferences().SelectedProvider == store.ProviderGrok {
+	if p := s.Preferences().SelectedProvider; p == store.ProviderGrok || p == store.ProviderClaude {
 		switch sec {
 		case runway.SectionQuotaEstimate, runway.SectionSessionRepair:
 			// A queued Codex-only section can outlive a provider switch.
 			return
-		case runway.SectionQuota, runway.SectionResetCredits, runway.SectionAPICost, runway.SectionTokenHeatmap, runway.SectionRecentSessions, runway.SectionSpeed:
-			s.Refresh(usage.RefreshForce)
+		case runway.SectionQuota, runway.SectionResetCredits:
+			s.RefreshQuota()
+			return
+		case runway.SectionAPICost, runway.SectionTokenHeatmap, runway.SectionRecentSessions, runway.SectionSpeed:
+			s.RefreshProviderLocal(p)
 			return
 		}
 	}
@@ -642,6 +646,7 @@ type grokBridge struct {
 	speed      *speed.Report
 	generation uint64
 	refreshMu  sync.Mutex
+	scanMu     sync.Mutex
 }
 
 func newGrokBridge(mod *grok.Module, prefs store.Preferences, langs []string) *grokBridge {
@@ -670,12 +675,22 @@ func (g *grokBridge) Refresh(ctx context.Context) error {
 	if g.mod != nil {
 		g.mod.Refresh(ctx, grok.RefreshTarget{Kind: grok.RefreshCurrent})
 	}
-	g.reload(false)
-	if err := g.scanLocal(ctx); err != nil {
-		g.reload(true)
+	g.reload(true)
+	return ctx.Err()
+}
+
+// RefreshLocal rescans the local Grok sessions without touching the quota.
+func (g *grokBridge) RefreshLocal(ctx context.Context) error {
+	g.scanMu.Lock()
+	defer g.scanMu.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	err := g.scanLocal(ctx)
+	g.reload(true)
+	if err != nil {
 		return err
 	}
-	g.reload(true)
 	return ctx.Err()
 }
 

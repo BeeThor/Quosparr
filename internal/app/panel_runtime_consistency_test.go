@@ -148,6 +148,7 @@ func TestPanelRuntimeRefreshUpdatesOpenCostDetail(t *testing.T) {
 		t.Fatal("initial cost did not render")
 	}
 	tokens.Store(222)
+	svc.SetPanelOpen(true)     // Only the open panel's refresh rescans its cost.
 	a.PanelActions().Refresh() // A background/runtime refresh while the detail is open.
 	select {
 	case <-quotaStarted:

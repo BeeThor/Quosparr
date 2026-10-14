@@ -95,6 +95,10 @@ func (m *Module) fetchUsage(ctx context.Context, id string, doc AuthDocument, fo
 		if err != nil {
 			return err
 		}
+		// A read skipped only for spacing keeps the cached quota without an error.
+		if len(acc.CachedQuota) > 0 && !m.throttle().Blocked(token, m.now()) {
+			return nil
+		}
 		_ = m.Store.UpdateMetadata(acc.ApplyError(ErrorCodeRateLimited, acc.RequiresReauth))
 		return &RateLimitedError{RetryAfter: wait, HasRetryAfter: wait > 0}
 	}

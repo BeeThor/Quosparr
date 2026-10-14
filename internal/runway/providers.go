@@ -83,8 +83,12 @@ type GrokAccountQuota struct {
 type GrokProvider interface {
 	// State returns the current immutable state as of now.
 	State(now time.Time) GrokState
-	// Refresh refetches Grok data; it must honour ctx and return when done.
+	// Refresh refetches the Grok quota and accounts; it must honour ctx and
+	// return when done.
 	Refresh(ctx context.Context) error
+	// RefreshLocal rescans the local sessions: cost, token chart, recent
+	// sessions and speed. It never fetches the quota.
+	RefreshLocal(ctx context.Context) error
 	// SetOnChange registers the callback invoked after State changed.
 	SetOnChange(fn func())
 }
@@ -146,7 +150,12 @@ type ClaudeAccountQuota struct {
 // must run without holding any lock State takes.
 type ClaudeProvider interface {
 	State(now time.Time) ClaudeState
-	Refresh(ctx context.Context) error
+	// Refresh refetches the Claude usage and accounts. force is a manual
+	// refresh, which may read the usage sooner than the automatic spacing
+	// allows.
+	Refresh(ctx context.Context, force bool) error
+	// RefreshLocal rescans the local sessions, like GrokProvider.RefreshLocal.
+	RefreshLocal(ctx context.Context) error
 	SetOnChange(fn func())
 }
 

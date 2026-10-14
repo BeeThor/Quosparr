@@ -38,6 +38,7 @@ func TestFullRefreshLoadsSpeedWhenShown(t *testing.T) {
 	f := newFake(t)
 	var fs fakeSpeed
 	s, _ := newService(t, f, func(o *Options) { o.Sources.ScanSpeed = fs.scan })
+	showPanel(s)
 	c := refreshAll(t, s).Codex
 	if fs.calls.Load() != 1 {
 		t.Fatalf("scans = %d, want 1", fs.calls.Load())
@@ -79,6 +80,7 @@ func TestSpeedErrorIsShownAndClearedByTheNextScan(t *testing.T) {
 	boom := errors.New("sessions unreadable")
 	fs.err.Store(&boom)
 	s, _ := newService(t, f, func(o *Options) { o.Sources.ScanSpeed = fs.scan })
+	showPanel(s)
 	c := refreshAll(t, s).Codex
 	if c.Speed != nil || c.SpeedError != "sessions unreadable" || c.Quota == nil {
 		t.Fatalf("speed = %+v, error %q, quota %v", c.Speed, c.SpeedError, c.Quota != nil)
@@ -143,6 +145,7 @@ func TestRefreshSpeedIsSkippedDuringAFullRefresh(t *testing.T) {
 		return f.quota("plus", 10), nil
 	}
 	s, _ := newService(t, f, func(o *Options) { o.Sources.ScanSpeed = fs.scan })
+	showPanel(s)
 	full := s.Refresh(usage.RefreshForce)
 	gate.waitStarted(t)
 	wait(t, s.RefreshSpeed(true))
@@ -176,7 +179,7 @@ func TestEnablingSpeedLoadsItForTheSelectedProvider(t *testing.T) {
 	}
 }
 
-func TestEnablingSpeedWhileGrokIsSelectedRefreshesGrok(t *testing.T) {
+func TestEnablingSpeedWhileGrokIsSelectedRescansGrok(t *testing.T) {
 	f := newFake(t)
 	var fs fakeSpeed
 	g := &fakeGrok{}
@@ -190,8 +193,8 @@ func TestEnablingSpeedWhileGrokIsSelectedRefreshesGrok(t *testing.T) {
 	p.ShowsSpeedAnalysis = true
 	s.SetPreferences(p)
 	settle(t, s)
-	if g.count() != 1 || fs.calls.Load() != 0 {
-		t.Fatalf("grok refreshes = %d, codex speed scans = %d", g.count(), fs.calls.Load())
+	if g.localCount() != 1 || g.count() != 0 || fs.calls.Load() != 0 {
+		t.Fatalf("grok local scans = %d, quota refreshes = %d, codex speed scans = %d", g.localCount(), g.count(), fs.calls.Load())
 	}
 }
 

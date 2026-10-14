@@ -325,3 +325,41 @@ func jsonNumber(n int64) string {
 func osWrite(path string, data []byte) error {
 	return FileStore{Path: path}.Save(context.Background(), data)
 }
+
+func TestSpacedUsageReadKeepsCacheWithoutError(t *testing.T) {
+	hits := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hits++
+		_, _ = w.Write([]byte(`{"five_hour":{"utilization":4,"resets_at":null}}`))
+	}))
+	defer srv.Close()
+	home := t.TempDir()
+	store := NewStoreAt(home+"/accounts", home+"/.claude", home)
+	now := time.Date(2026, 10, 14, 0, 0, 0, 0, time.UTC)
+	id := seedAccount(t, store, "acct-a", "org-a", true, now.Add(time.Hour))
+	if err := osWrite(store.official().(FileStore).Path, mustManaged(t, "test-access-token", "test-refresh-token", now.Add(time.Hour))); err != nil {
+		t.Fatal(err)
+	}
+	mod := NewModule(store)
+	mod.Now = func() time.Time { return now }
+	mod.Usage = &UsageClient{HTTP: srv.Client(), Endpoint: srv.URL + "/usage", Now: mod.Now}
+	if err := mod.Refresh(context.Background(), id, false); err != nil || hits != 1 {
+		t.Fatal(err, hits)
+	}
+	now = now.Add(time.Minute)
+	if err := mod.Refresh(context.Background(), id, false); err != nil || hits != 1 {
+		t.Fatal("spaced read", err, hits)
+	}
+	idx, _ := store.LoadIndex()
+	if acc, _ := idx.Account(id); acc.LastError != "" || len(acc.CachedQuota) == 0 {
+		t.Fatalf("spaced read marked the account: %q", acc.LastError)
+	}
+	if err := mod.Refresh(context.Background(), id, true); err != nil || hits != 2 {
+		t.Fatal("forced read", err, hits)
+	}
+	mod.throttle().ObserveRateLimit("test-access-token", now, time.Hour, true)
+	var limited *RateLimitedError
+	if err := mod.Refresh(context.Background(), id, true); !errors.As(err, &limited) || hits != 2 {
+		t.Fatal("a 429 block must still be reported", err)
+	}
+}

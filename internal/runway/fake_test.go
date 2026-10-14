@@ -315,3 +315,11 @@ func switchTo(f *fake, auth codex.Auth) func(context.Context, string) (codex.Swi
 		return codex.SwitchResult{Auth: auth, Account: codex.ManagedAccount{ID: id, PlanType: "plus"}}, nil
 	}
 }
+
+// showPanel marks the main panel open without the refresh opening it starts,
+// for tests of what a full refresh does while the panel shows.
+func showPanel(s *Service) {
+	s.mu.Lock()
+	s.panelOpen = true
+	s.mu.Unlock()
+}

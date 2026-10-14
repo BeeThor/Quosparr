@@ -32,6 +32,16 @@ func TestPanelOpenRefreshesResetStatusEveryPresentation(t *testing.T) {
 	}
 }
 
+func TestPanelPresentationIsReportedToTheService(t *testing.T) {
+	var shown []bool
+	a, _ := newPanel(t, nil, panelFixture(), PanelActions{PanelShown: func(open bool) { shown = append(shown, open) }})
+	a.panelOpened()
+	a.panelClosed()
+	if len(shown) != 2 || !shown[0] || shown[1] {
+		t.Fatalf("panel presentation = %v, want open then closed", shown)
+	}
+}
+
 func TestPanelOpenSkipsHiddenResetStatus(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
@@ -91,7 +101,12 @@ func TestPanelOpenLoadsLatestResetThroughLiveQueue(t *testing.T) {
 				return latest, nil
 			}
 			reset.ref.Refresh(context.Background(), true)
-			svc := runway.New(runway.Options{Preferences: prefs, ResetToday: reset})
+			// Opening also loads the Codex local data; no one is signed in.
+			svc := runway.New(runway.Options{Preferences: prefs, ResetToday: reset, Sources: runway.Sources{
+				LoadValidAuth: func(context.Context, bool, *codex.Auth) (codex.Auth, error) {
+					return codex.Auth{}, &runway.AuthLoadError{}
+				},
+			}})
 			defer svc.Close()
 			rt := &liveApp{svc: svc, reset: reset}
 			defer rt.closePreferences()

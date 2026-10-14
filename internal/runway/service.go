@@ -118,6 +118,7 @@ type Service struct {
 	estDaily    *usage.Summary
 	est         *estimate.Snapshot
 	estErr      string
+	estAt       time.Time
 	cost        *usage.Summary
 	disp        *usage.Summary
 	dispRange   store.CostRange
@@ -171,8 +172,13 @@ type Service struct {
 	widgetSchedule Schedule
 	widgetPending  bool
 	widgetReqs     export.Requirements
-	lastReset      time.Time
-	lastTickKey    string
+	// panelOpen is set while the main panel shows: only then does the panel's
+	// provider refresh its local data. localPending asks the full refresh
+	// that was running when the panel opened to do it once it ends.
+	panelOpen    bool
+	localPending bool
+	lastReset    time.Time
+	lastTickKey  string
 }
 
 // flight is one shared detail cost query.
@@ -457,48 +463,44 @@ func (s *Service) SetPreferences(p store.Preferences) {
 	rangeChanged := old.APICostSummaryRange != p.APICostSummaryRange
 	costOn := p.ShowsCostSummary && !old.ShowsCostSummary
 	heatOn := p.ShowsTokenUsageHeatmap && !old.ShowsTokenUsageHeatmap
-	providerChanged := old.SelectedProvider != p.SelectedProvider || old.StatusBarProviderScope != p.StatusBarProviderScope
-	if providerChanged {
-		s.epoch++
-		s.clearAccountBusyLocked()
-	}
 	reportOn := codexSelected && p.ShowsSessionRepairSummary && !old.ShowsSessionRepairSummary
-	recentOn := codexSelected && p.ShowsRecentSessions && !old.ShowsRecentSessions
+	recentOn := p.ShowsRecentSessions && !old.ShowsRecentSessions
 	speedOn := p.ShowsSpeedAnalysis && !old.ShowsSpeedAnalysis
+	// Quotas keep their schedule; a switch only loads the local data of the
+	// provider the open panel now shows.
+	switched := old.SelectedProvider != p.SelectedProvider
 	if p.ExportsStatusJSON && !old.ExportsStatusJSON {
 		s.exportStatusLocked()
 	}
 	s.publishLocked()
 	s.mu.Unlock()
-	if providerChanged {
-		s.run(func() {
-			s.cancelAccountScoped()
-			s.beginFullRefresh(usage.RefreshForce)
-		})
-	} else if p.SelectedProvider == store.ProviderGrok && (rangeChanged && p.ShowsCostSummary || costOn || heatOn || (!old.ShowsRecentSessions && p.ShowsRecentSessions) || speedOn) {
-		s.refreshGrok()
-	} else if p.SelectedProvider == store.ProviderClaude && (rangeChanged && p.ShowsCostSummary || costOn || heatOn || (!old.ShowsRecentSessions && p.ShowsRecentSessions) || speedOn) {
-		s.refreshClaude()
+	if switched {
+		s.refreshPanelLocal()
+	}
+	if p.SelectedProvider == store.ProviderGrok && (rangeChanged && p.ShowsCostSummary || costOn || heatOn || recentOn || speedOn) {
+		s.refreshGrokLocal()
+	} else if p.SelectedProvider == store.ProviderClaude && (rangeChanged && p.ShowsCostSummary || costOn || heatOn || recentOn || speedOn) {
+		s.refreshClaudeLocal()
 	}
 	if reportOn {
 		s.RefreshSessionReport(true)
 	}
-	if recentOn {
+	if codexSelected && recentOn {
 		s.RefreshRecentSessions(true)
 	}
-	if codexSelected && !providerChanged && speedOn {
+	if codexSelected && speedOn {
 		s.RefreshSpeed(true)
 	}
-	if wantEstimate && !providerChanged {
+	if wantEstimate {
 		s.RefreshQuotaEstimate()
 	}
 	if wantResetToday {
 		s.RefreshResetToday(true)
 	}
-	if codexSelected && !providerChanged && (rangeChanged && p.ShowsCostSummary || costOn) {
+	if codexSelected && (rangeChanged && p.ShowsCostSummary || costOn) {
 		s.RefreshCost(usage.RefreshForce)
 	}
-	if codexSelected && !providerChanged && heatOn {
+	if codexSelected && heatOn {
 		s.RefreshTokenHeatmap(usage.RefreshForce)
 	}
 }

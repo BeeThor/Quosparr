@@ -133,12 +133,14 @@ func TestGrokSpeedScanFailureIsNoReportNotAnError(t *testing.T) {
 	}
 }
 
-// countingGrok is a Grok provider that only counts refreshes.
-type countingGrok struct{ refreshes atomic.Int32 }
+// countingGrok is a Grok provider that only counts quota refreshes and
+// local scans.
+type countingGrok struct{ refreshes, locals atomic.Int32 }
 
-func (g *countingGrok) State(time.Time) runway.GrokState { return runway.GrokState{} }
-func (g *countingGrok) Refresh(context.Context) error    { g.refreshes.Add(1); return nil }
-func (g *countingGrok) SetOnChange(func())               {}
+func (g *countingGrok) State(time.Time) runway.GrokState   { return runway.GrokState{} }
+func (g *countingGrok) Refresh(context.Context) error      { g.refreshes.Add(1); return nil }
+func (g *countingGrok) RefreshLocal(context.Context) error { g.locals.Add(1); return nil }
+func (g *countingGrok) SetOnChange(func())                 {}
 
 func speedService(t *testing.T, provider store.Provider, grokProvider runway.GrokProvider, scans *atomic.Int32) *runway.Service {
 	t.Helper()
@@ -148,7 +150,7 @@ func speedService(t *testing.T, provider store.Provider, grokProvider runway.Gro
 		Preferences: p,
 		Grok:        grokProvider,
 		Sources: runway.Sources{
-			// The provider strip also fetches the Codex quota; no one is signed in.
+			// The full refresh also covers Codex; no one is signed in.
 			LoadValidAuth: func(context.Context, bool, *codex.Auth) (codex.Auth, error) {
 				return codex.Auth{}, &runway.AuthLoadError{}
 			},
@@ -185,13 +187,18 @@ func TestRefreshSectionSpeedForCodexScansSpeedOnly(t *testing.T) {
 	}
 }
 
-func TestRefreshSectionSpeedForGrokRefreshesGrok(t *testing.T) {
+func TestRefreshSectionSpeedForGrokRescansGrokOnly(t *testing.T) {
 	var scans atomic.Int32
 	g := &countingGrok{}
 	s := speedService(t, store.ProviderGrok, g, &scans)
 	refreshSection(s, runway.SectionSpeed)
-	waitSpeedCond(t, "the grok refresh", func() bool { return g.refreshes.Load() == 1 })
-	if scans.Load() != 0 {
-		t.Fatalf("the Codex scan ran %d times for the Grok panel", scans.Load())
+	waitSpeedCond(t, "the grok local scan", func() bool { return g.locals.Load() == 1 })
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := s.WaitIdle(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if g.refreshes.Load() != 0 || scans.Load() != 0 {
+		t.Fatalf("a local section refreshed the quota %d times and Codex speed %d times", g.refreshes.Load(), scans.Load())
 	}
 }

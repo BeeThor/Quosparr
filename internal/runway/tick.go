@@ -4,7 +4,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/licoy/quosparr/internal/export"
 	"github.com/licoy/quosparr/internal/store"
 	"github.com/licoy/quosparr/internal/usage"
 )
@@ -22,7 +21,9 @@ func (s *Service) Tick(now time.Time) {
 	}
 	hasWidgets := s.widgetReqs != 0 && s.opts.WidgetSink != nil
 	refreshWidgets := hasWidgets && s.widgetSchedule.IsDue(now)
-	idle := !s.allBusy && !s.anyBusyLocked()
+	// Section refreshes never hold the schedule back; only a full refresh
+	// already running does.
+	idle := !s.allBusy
 	start := false
 	if reset := s.nextDueResetLocked(s.lastReset, now); !reset.IsZero() && idle {
 		s.lastReset = reset
@@ -31,9 +32,7 @@ func (s *Service) Tick(now time.Time) {
 		start = true
 	}
 	resetTodayDue := false
-	if s.opts.ResetToday != nil &&
-		(s.prefs.SelectedProvider == store.ProviderCodex || s.widgetReqs.Has(export.RequireResetToday)) &&
-		(s.prefs.ShowsRateLimitResetToday || s.widgetReqs.Has(export.RequireResetToday)) {
+	if s.opts.ResetToday != nil && s.resetTodayWantedLocked() {
 		interval := time.Duration(s.prefs.RateLimitResetTodayRefreshIntervalSeconds) * time.Second
 		last := s.opts.ResetToday.LastFetch()
 		resetTodayDue = last.IsZero() || now.Sub(last) >= interval

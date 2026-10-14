@@ -28,9 +28,12 @@ type PanelActions struct {
 	RefreshSection func(runway.Section)
 	SwitchAccount  func(id string)
 	SelectProvider func(store.Provider)
-	QueryCost      func(context.Context, store.Provider, CostQuery) (usage.Summary, error)
-	QueryReaction  func(context.Context) (resettoday.ReactionSnapshot, error)
-	React          func(context.Context) (resettoday.ReactionPostResult, error)
+	// PanelShown reports the panel opening and closing; the panel provider's
+	// local data loads only while it shows.
+	PanelShown    func(open bool)
+	QueryCost     func(context.Context, store.Provider, CostQuery) (usage.Summary, error)
+	QueryReaction func(context.Context) (resettoday.ReactionSnapshot, error)
+	React         func(context.Context) (resettoday.ReactionPostResult, error)
 	// RepairSessions rebuilds the session index after a backup; the panel
 	// asks for confirmation first.
 	RepairSessions func()
@@ -317,6 +320,9 @@ func (a *App) panelOpened() {
 		a.panel.Invalidate()
 	}
 	prefs, actions := a.settings.Prefs(), a.PanelActions()
+	if actions.PanelShown != nil {
+		actions.PanelShown(true)
+	}
 	if prefs.SelectedProvider == store.ProviderCodex && prefs.ShowsRateLimitResetToday && actions.RefreshSection != nil {
 		// The queued section refresh bypasses the timer interval and coalesces
 		// in-flight requests, keeping the last snapshot visible while fetching.
@@ -325,6 +331,9 @@ func (a *App) panelOpened() {
 }
 
 func (a *App) panelClosed() {
+	if shown := a.PanelActions().PanelShown; shown != nil {
+		shown(false)
+	}
 	a.cancelPanelDetails()
 	a.panelState.detail = ""
 	a.panelState.chartMode = ""

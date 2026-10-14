@@ -35,6 +35,7 @@ type claudeBridge struct {
 	generation uint64
 	gateway    bool
 	refreshMu  sync.Mutex
+	scanMu     sync.Mutex
 	sessions   claude.SessionCache
 }
 
@@ -54,7 +55,7 @@ func (g *claudeBridge) State(time.Time) runway.ClaudeState {
 	return st
 }
 
-func (g *claudeBridge) Refresh(ctx context.Context) error {
+func (g *claudeBridge) Refresh(ctx context.Context, force bool) error {
 	g.refreshMu.Lock()
 	defer g.refreshMu.Unlock()
 	if ctx.Err() != nil {
@@ -65,15 +66,25 @@ func (g *claudeBridge) Refresh(ctx context.Context) error {
 		// external switch moves the current account.
 		if id, err := g.mod.Sync(ctx); err == nil && id != "" {
 			// An expired current account is reported, not refreshed.
-			_ = g.mod.Refresh(ctx, id, false)
+			_ = g.mod.Refresh(ctx, id, force)
 		}
 	}
-	g.reload(false)
-	if err := g.scanLocal(ctx); err != nil {
-		g.reload(true)
+	g.reload(true)
+	return ctx.Err()
+}
+
+// RefreshLocal rescans the local Claude sessions without touching the usage.
+func (g *claudeBridge) RefreshLocal(ctx context.Context) error {
+	g.scanMu.Lock()
+	defer g.scanMu.Unlock()
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+	err := g.scanLocal(ctx)
+	g.reload(true)
+	if err != nil {
 		return err
 	}
-	g.reload(true)
 	return ctx.Err()
 }
 

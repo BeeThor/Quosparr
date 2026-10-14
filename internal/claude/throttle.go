@@ -61,6 +61,14 @@ func (t *UsageThrottle) Allow(token string, now time.Time, force bool) (time.Dur
 	return 0, true
 }
 
+// Blocked reports whether a 429 still holds the token back, as opposed to
+// the ordinary spacing between reads.
+func (t *UsageThrottle) Blocked(token string, now time.Time) bool {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.lookup(token).blockedUntil.After(now)
+}
+
 // Commit records that a usage request was sent.
 func (t *UsageThrottle) Commit(token string, now time.Time) {
 	if stringsTrim(token) == "" {
