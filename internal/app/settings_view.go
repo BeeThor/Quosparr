@@ -5,13 +5,11 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 	"github.com/licoy/quosparr/internal/l10n"
-	"github.com/licoy/quosparr/internal/platform"
 	"github.com/licoy/quosparr/internal/store"
 )
 
@@ -51,22 +49,24 @@ const (
 	tabGeneral settingsTab = iota
 	tabAccounts
 	tabDisplay
+	tabModules
+	tabNotifications
 	tabAdvanced
 	tabAbout
 )
 
-var settingsTabs = []settingsTab{tabGeneral, tabAccounts, tabDisplay, tabAdvanced, tabAbout}
+var settingsTabs = []settingsTab{tabGeneral, tabAccounts, tabDisplay, tabModules, tabNotifications, tabAdvanced, tabAbout}
 
 func (t settingsTab) key() l10n.Key {
-	return [...]l10n.Key{l10n.KeyGeneral, l10n.KeyAccounts, l10n.KeyDisplay, l10n.KeyAdvanced, l10n.KeyAbout}[t]
+	return [...]l10n.Key{l10n.KeyGeneral, l10n.KeyAccounts, l10n.KeyDisplay, l10n.KeyPanelModules, l10n.KeyNotificationSettings, l10n.KeyAdvanced, l10n.KeyAbout}[t]
 }
 
 func (t settingsTab) icon() *ui.SVG {
-	return [...]*ui.SVG{icGear, icUsers, icEye, icSliders, icInfo}[t]
+	return [...]*ui.SVG{icGear, icUsers, icEye, icLayout, icBell, icSliders, icInfo}[t]
 }
 
 func (t settingsTab) tint() Tint {
-	return [...]Tint{TintGray, TintGreen, TintBlue, TintOrange, TintIndigo}[t]
+	return [...]Tint{TintGray, TintGreen, TintBlue, TintPurple, TintRed, TintOrange, TintIndigo}[t]
 }
 
 //go:embed assets/app-icon.png
@@ -162,6 +162,10 @@ func (u *settingsUI) pageContent(c *ui.Context) {
 			ui.Column(c).Gap(10).Children(func() { u.accountsPage(c) })
 		case tabDisplay:
 			u.displayPage(c)
+		case tabModules:
+			u.modulesGroup(c)
+		case tabNotifications:
+			u.notificationsGroup(c)
 		case tabAdvanced:
 			u.advancedPage(c)
 		case tabAbout:
@@ -271,22 +275,8 @@ func (u *settingsUI) generalPage(c *ui.Context) {
 				s.SetWidgetRefreshInterval(v)
 			}
 		})
-		row(l.Text(l10n.KeyCodexFolder), "~/.codex", func() {
-			if PillButton(c, nil, l.Text(l10n.KeyCodexFolder), u.opts.Actions.OpenFolder == nil).Clicked() {
-				u.opts.Actions.OpenFolder(codexDir())
-			}
-		})
 	})
 	u.proxyGroup(c)
-}
-
-// codexDir is ~/.codex, for opening in the file manager.
-func codexDir() string {
-	home, err := platform.Home()
-	if err != nil {
-		return ""
-	}
-	return filepath.Join(home, ".codex")
 }
 
 // openFolder opens a folder in the file manager.

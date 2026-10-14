@@ -46,9 +46,8 @@ func TestPrivacyDisplayCardOrderAndTranslatedLayout(t *testing.T) {
 			tt := ui.NewTester(u.view, width, settingsHeight)
 			appearance, ok := tt.Find(u.L().Text(l10n.KeyDisplayAppearanceSection))
 			privacy, privacyOK := tt.Find(tx(u.L(), xPrivacyDisplaySection))
-			modules, modulesOK := tt.Find(u.L().Text(l10n.KeyMainPanelModules))
-			if !ok || !privacyOK || !modulesOK || appearance.Y >= privacy.Y || privacy.Y >= modules.Y {
-				t.Fatalf("language %s privacy card order is wrong: %+v %+v %+v", language, appearance, privacy, modules)
+			if !ok || !privacyOK || appearance.Y >= privacy.Y {
+				t.Fatalf("language %s privacy card order is wrong: %+v %+v", language, appearance, privacy)
 			}
 			for _, text := range tt.Texts() {
 				r, _ := tt.Find(text)

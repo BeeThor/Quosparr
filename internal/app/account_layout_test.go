@@ -72,7 +72,7 @@ func accountLayoutFixture(t *testing.T, language store.Language, kind, width int
 					return
 				}
 				accountProviderHeader(c, u, f)
-				accountToolbar(c, u, f, accountCountTitle(u.L(), len(rows)), func(*ui.Menu) {}, func() string { return "" }, func() string { return "" })
+				accountToolbar(c, u, f, accountCountTitle(u.L(), len(rows)), accountFolder{u.text(l10n.KeyCodexFolder), "/codex"}, func(*ui.Menu) {}, func() string { return "" }, func() string { return "" })
 				accountEditor(c, u, f)
 				accountSelectionEditor(c, u, f, nil)
 				for _, account := range rows {

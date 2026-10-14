@@ -5,7 +5,10 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/ui"
+	"github.com/licoy/quosparr/internal/codex"
+	"github.com/licoy/quosparr/internal/grok"
 	"github.com/licoy/quosparr/internal/l10n"
+	"github.com/licoy/quosparr/internal/runway"
 )
 
 type delayedSettingsNotification struct{ done chan struct{} }
@@ -22,7 +25,7 @@ func TestSettingsNotificationAndManualUpdateEventsStayResponsive(t *testing.T) {
 	for _, action := range []string{"notification", "update"} {
 		t.Run(action, func(t *testing.T) {
 			e := newEnv(t, nil)
-			tab, key := tabDisplay, l10n.KeyTestNotification
+			tab, key := tabNotifications, l10n.KeyTestNotification
 			if action == "update" {
 				tab, key = tabAbout, l10n.KeyCheckForUpdates
 			}
@@ -62,18 +65,41 @@ func TestSettingsNotificationAndManualUpdateEventsStayResponsive(t *testing.T) {
 }
 
 func TestSettingsFolderAndExternalLinksDispatch(t *testing.T) {
+	codexHome, grokHome := t.TempDir(), t.TempDir()
+	svc := runway.New(runway.Options{})
+	defer svc.Close()
+	rt := &liveApp{
+		codex:   codex.NewStore(codexHome, t.TempDir()),
+		grokMod: grok.NewModule(grok.NewStore(grokHome, t.TempDir())),
+		svc:     svc,
+	}
+	previous := currentRuntime()
+	setLive(rt)
+	defer setLive(previous)
 	e := newEnv(t, nil)
-	u, tt := openSettingsView(t, e, tabGeneral)
+	u, tt := openSettingsView(t, e, tabAccounts)
 	tt.SetPreferences(ui.Preferences{ReduceMotion: true})
 	var opened string
 	u.opts.Actions.OpenFolder = func(path string) { opened = path }
 	tt.Frame()
-	focusSettingsAction(t, tt, e.s.L().Text(l10n.KeyCodexFolder))
-	start := time.Now()
-	tt.Key(0, ui.KeySpace)
-	t.Logf("folder dispatch event=%s", time.Since(start))
-	if opened != codexDir() {
-		t.Fatal("folder dispatch lost the requested path")
+	for i, folder := range []struct {
+		key  l10n.Key
+		path string
+	}{{l10n.KeyCodexFolder, codexHome}, {l10n.KeyGrokFolder, grokHome}} {
+		accountFormOf(u).kind = i
+		tt.Frame()
+		focusSettingsAction(t, tt, e.s.L().Text(folder.key))
+		start := time.Now()
+		tt.Key(0, ui.KeySpace)
+		t.Logf("folder dispatch event=%s", time.Since(start))
+		if opened != folder.path {
+			t.Fatalf("folder dispatch opened %q, want %q", opened, folder.path)
+		}
+	}
+	u.tab = tabGeneral
+	tt.Frame()
+	if tt.HasText(e.s.L().Text(l10n.KeyCodexFolder)) {
+		t.Fatal("general page still opens the Codex folder")
 	}
 	u.tab = tabAbout
 	tt.Frame()

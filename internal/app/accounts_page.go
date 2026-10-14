@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"errors"
+	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
@@ -93,7 +94,8 @@ func renderCodexAccounts(c *ui.Context, u *settingsUI, f *accountForm, rt *liveA
 	view := rt.svc.Snapshot().Accounts
 	panelAccountStatus(c, l, view)
 	rows := view.Sidebar
-	accountToolbar(c, u, f, accountCountTitle(l, len(rows)), func(m *ui.Menu) {
+	folder := accountFolder{l.Text(l10n.KeyCodexFolder), rt.codexFolder()}
+	accountToolbar(c, u, f, accountCountTitle(l, len(rows)), folder, func(m *ui.Menu) {
 		if m.Item(l.Text(l10n.KeyAccountsAddOAuth)).Chosen() {
 			u.startCodexLogin(f, rt)
 		}
@@ -133,7 +135,8 @@ func renderGrokAccounts(c *ui.Context, u *settingsUI, f *accountForm, rt *liveAp
 	view := rt.svc.Snapshot().Grok.Accounts
 	panelAccountStatus(c, l, view)
 	rows := view.Sidebar
-	accountToolbar(c, u, f, accountCountTitle(l, len(rows)), func(m *ui.Menu) {
+	folder := accountFolder{l.Text(l10n.KeyGrokFolder), rt.grokFolder()}
+	accountToolbar(c, u, f, accountCountTitle(l, len(rows)), folder, func(m *ui.Menu) {
 		// grok.Module has no API-key add; a key alone is not a managed login.
 		if m.Item(l.Text(l10n.KeyGrokAccountsAddOAuth)).Chosen() {
 			u.startGrokLogin(f, rt)
@@ -172,7 +175,29 @@ func renderGrokAccounts(c *ui.Context, u *settingsUI, f *accountForm, rt *liveAp
 	})
 }
 
-func accountToolbar(c *ui.Context, u *settingsUI, f *accountForm, title string, menu func(*ui.Menu), export, refresh func() string) {
+// accountFolder is the official CLI directory of a provider, which the
+// toolbar opens in the file manager.
+type accountFolder struct {
+	label, path string
+}
+
+// codexFolder is CODEX_HOME (~/.codex by default); "" without a store.
+func (rt *liveApp) codexFolder() string {
+	if rt.codex == nil {
+		return ""
+	}
+	return filepath.Dir(rt.codex.OfficialAuthPath())
+}
+
+// grokFolder is GROK_HOME (~/.grok by default); "" without a store.
+func (rt *liveApp) grokFolder() string {
+	if rt.grokMod == nil || rt.grokMod.Store == nil {
+		return ""
+	}
+	return rt.grokMod.Store.OfficialHome()
+}
+
+func accountToolbar(c *ui.Context, u *settingsUI, f *accountForm, title string, folder accountFolder, menu func(*ui.Menu), export, refresh func() string) {
 	l := u.L()
 	ui.Row(c).Gap(8).Padding(0, 0, 0, 12).AlignItems(ui.Center).Children(func() {
 		ui.Text(c, title).FontSize(13).FontWeight(600).Grow(1).Basis(0).SingleLine()
@@ -188,6 +213,10 @@ func accountToolbar(c *ui.Context, u *settingsUI, f *accountForm, title string, 
 		}
 		if IconButton(c, icExport, l.Text(l10n.KeyAccountsExport), f.busy).Clicked() {
 			f.status = export()
+		}
+		open := u.opts.Actions.OpenFolder
+		if IconButton(c, icFolder, folder.label, open == nil || folder.path == "").Clicked() {
+			open(folder.path)
 		}
 	})
 	if f.status != "" {

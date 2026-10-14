@@ -45,7 +45,9 @@ func settingsSection(c *ui.Context, title, subtitle string, header func(), body 
 		if title != "" || header != nil {
 			ui.Row(c).Gap(10).Padding(0, 12).AlignItems(ui.End).Children(func() {
 				ui.Column(c).Grow(1).Basis(0).Gap(2).Children(func() {
-					ui.Text(c, title).FontSize(13).FontWeight(600)
+					if title != "" {
+						ui.Text(c, title).FontSize(13).FontWeight(600)
+					}
 					if subtitle != "" {
 						ui.Text(c, subtitle).FontSize(11).TextColor(t.TextMuted)
 					}

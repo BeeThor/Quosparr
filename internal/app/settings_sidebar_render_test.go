@@ -69,7 +69,7 @@ func sidebarAccountFixture(c *ui.Context, u *settingsUI, rows []codex.ManagedAcc
 	l := u.L()
 	f := accountFormOf(u)
 	accountProviderHeader(c, u, f)
-	accountToolbar(c, u, f, accountCountTitle(l, len(rows)), func(*ui.Menu) {}, func() string { return "" }, func() string { return "" })
+	accountToolbar(c, u, f, accountCountTitle(l, len(rows)), accountFolder{"Codex", "/codex"}, func(*ui.Menu) {}, func() string { return "" }, func() string { return "" })
 	accountRows(c, len(rows), func(i int) {
 		renderCodexSettingsRow(c, u, f, nil, rows[i], "ada", u.s.Prefs().AccountPrivacyModeEnabled)
 	})

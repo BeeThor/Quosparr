@@ -387,8 +387,9 @@ func (a *App) startBackground() {
 	a.stopBackground = a.opts.Seams.StartBackground(ctx)
 }
 
-// OpenSettingsTab opens the settings window on tab 0..4 (general,
-// accounts, display, advanced, about); for dev runs and screenshots.
+// OpenSettingsTab opens the settings window on tab 0..6 (general,
+// accounts, appearance & menu, panel modules, notifications, advanced,
+// about); for dev runs and screenshots.
 func (a *App) OpenSettingsTab(tab int) {
 	a.OpenSettings()
 	if a.setUI != nil && tab >= 0 && tab < len(settingsTabs) {

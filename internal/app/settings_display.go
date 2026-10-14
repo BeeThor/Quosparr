@@ -9,13 +9,11 @@ import (
 	"github.com/licoy/quosparr/internal/store"
 )
 
-// ---- Display ----
+// ---- Appearance & menu ----
 
 func (u *settingsUI) displayPage(c *ui.Context) {
 	u.appearanceGroup(c)
 	u.privacyGroup(c)
-	u.modulesGroup(c)
-	u.notificationsGroup(c)
 }
 
 func (u *settingsUI) privacyGroup(c *ui.Context) {
@@ -120,14 +118,16 @@ func (u *settingsUI) statusBarRows(c *ui.Context, row rowFunc, p store.Preferenc
 	}
 }
 
-// ---- Main panel modules ----
+// ---- Panel modules ----
 
+// modulesGroup is the panel modules page. The page header names it, so the
+// section is untitled.
 func (u *settingsUI) modulesGroup(c *ui.Context) {
 	s, l := u.s, u.L()
 	p := s.Prefs()
 	ro := s.ReadOnly()
 	atDefault := slices.Equal(p.MainPanelModuleOrder, store.Modules())
-	settingsSection(c, l.Text(l10n.KeyMainPanelModules), l.Text(l10n.KeyMainPanelModulesDescription), func() {
+	settingsSection(c, "", l.Text(l10n.KeyMainPanelModulesDescription), func() {
 		if IconButton(c, icUndo, l.Text(l10n.KeyRestoreDefaultOrder), ro || atDefault).Clicked() {
 			s.ResetMainPanelModuleOrder()
 		}
@@ -248,11 +248,12 @@ func (u *settingsUI) moduleConfig(c *ui.Context, m store.Module, p store.Prefere
 
 // ---- Notifications ----
 
+// notificationsGroup is the notifications page; the page header names it.
 func (u *settingsUI) notificationsGroup(c *ui.Context) {
 	s, l := u.s, u.L()
 	p := s.Prefs()
 	ro := s.ReadOnly()
-	settingsGroup(c, l.Text(l10n.KeyNotificationSettings), "", nil, func(row rowFunc) {
+	settingsGroup(c, "", "", nil, func(row rowFunc) {
 		row(l.Text(l10n.KeyQuotaAlerts), l.Text(l10n.KeyQuotaAlertsDescription), func() {
 			if v, ok := toggle(c, "alert-quota", l.Text(l10n.KeyQuotaAlerts), p.QuotaAlertsEnabled, ro); ok {
 				s.SetQuotaAlerts(v)

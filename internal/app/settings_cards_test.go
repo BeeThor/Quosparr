@@ -132,8 +132,6 @@ func TestSettingsSectionTitlesSitAboveBoxes(t *testing.T) {
 		}{
 			{u.generalPage, []l10n.Key{l10n.KeyNetworkProxy}},
 			{u.appearanceGroup, []l10n.Key{l10n.KeyDisplayAppearanceSection}},
-			{u.modulesGroup, []l10n.Key{l10n.KeyMainPanelModules}},
-			{u.notificationsGroup, []l10n.Key{l10n.KeyNotificationSettings}},
 		} {
 			tt := ui.NewTester(func(c *ui.Context) {
 				applyTheme(c)
@@ -148,6 +146,17 @@ func TestSettingsSectionTitlesSitAboveBoxes(t *testing.T) {
 		tt := ui.NewTester(func(c *ui.Context) { applyTheme(c); u.advancedPage(c) }, 600, 600)
 		if hasExact(tt, u.text(l10n.KeyAdvanced)) {
 			t.Fatal("advanced box repeats the page title")
+		}
+		tt = ui.NewTester(func(c *ui.Context) { applyTheme(c); u.notificationsGroup(c) }, 600, 600)
+		if hasExact(tt, u.text(l10n.KeyNotificationSettings)) {
+			t.Fatal("notifications box repeats the page title")
+		}
+		tt = ui.NewTester(func(c *ui.Context) { applyTheme(c); u.modulesGroup(c) }, 600, 1800)
+		if hasExact(tt, u.text(l10n.KeyPanelModules)) || hasExact(tt, u.text(l10n.KeyMainPanelModules)) {
+			t.Fatal("panel modules box repeats the page title")
+		}
+		if !hasExact(tt, u.text(l10n.KeyMainPanelModulesDescription)) {
+			t.Fatal("panel modules description missing")
 		}
 	}
 }

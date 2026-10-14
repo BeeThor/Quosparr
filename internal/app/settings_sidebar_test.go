@@ -222,3 +222,33 @@ func TestSettingsTabBadgeOnlyOnAccounts(t *testing.T) {
 		}
 	}
 }
+
+func TestPanelModulesHaveTheirOwnSidebarPage(t *testing.T) {
+	e := newEnv(t, nil)
+	u, tt := openSettingsView(t, e, tabDisplay)
+	description := u.text(l10n.KeyMainPanelModulesDescription)
+	if tt.HasText(description) {
+		t.Fatal("display page still lists the panel modules")
+	}
+	if err := tt.Click(u.text(l10n.KeyPanelModules)); err != nil {
+		t.Fatal(err)
+	}
+	if u.tab != tabModules || !tt.HasText(description) || !tt.HasText(u.text(moduleInfoOf(store.ModuleQuota).title)) {
+		t.Fatalf("panel modules page missing; texts %q", tt.Texts())
+	}
+}
+
+func TestNotificationsHaveTheirOwnSidebarPage(t *testing.T) {
+	e := newEnv(t, nil)
+	u, tt := openSettingsView(t, e, tabDisplay)
+	alerts := u.text(l10n.KeyQuotaAlerts)
+	if tt.HasText(alerts) {
+		t.Fatal("appearance and menu page still lists the notifications")
+	}
+	if err := tt.Click(u.text(l10n.KeyNotificationSettings)); err != nil {
+		t.Fatal(err)
+	}
+	if u.tab != tabNotifications || !tt.HasText(alerts) || !tt.HasText(u.text(l10n.KeyTestNotificationSubtitle)) {
+		t.Fatalf("notifications page missing; texts %q", tt.Texts())
+	}
+}
