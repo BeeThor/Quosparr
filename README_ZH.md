@@ -10,7 +10,7 @@
 
 一只停在菜单栏里的小麻雀，替你守着 Codex 与 Grok 的额度。
 
-Quosparr 是面向 macOS、Windows、Linux 的原生菜单栏 / 系统托盘应用，展示 Codex 与 Grok 额度、reset credits、API 等价成本与本机会话，两个供应商各自独立管理多账号。
+Quosparr 是面向 macOS、Windows、Linux 的原生菜单栏 / 系统托盘应用，展示 Codex 与 Grok 额度、reset credits、API 等价成本与本机会话，两个供应商各自独立管理账号。
 
 </div>
 
@@ -22,7 +22,7 @@ Quosparr 是面向 macOS、Windows、Linux 的原生菜单栏 / 系统托盘应�
 - 查看 reset credits 数量、状态与过期时间
 - 根据官方周用量百分比与每日 Credits 推算本周额度，并与往周对比，便于发现额度缩水
 - Codex 重置动态：查看今天 Codex 速率限制是否已重置，可单独设置刷新间隔（数据来自 [Did Codex Reset](https://didcodexreset.com)）
-- 多账号：浏览器登录、导入本机 `auth.json`、粘贴 token / JSON（含 `/auth/session`）、导入文件或添加 API Key；确认后原子写入 `~/.codex/auth.json` 完成切号
+- 服务商账号：浏览器登录、导入本机 `auth.json`、粘贴 token / JSON（含 `/auth/session`）、导入文件或添加 API Key；确认后原子写入 `~/.codex/auth.json` 完成切号
 - 查看最近会话、项目与状态，并修复本机会话索引
 
 **Grok**
@@ -53,11 +53,11 @@ Quosparr 是面向 macOS、Windows、Linux 的原生菜单栏 / 系统托盘应�
     <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr 订阅额度推算" width="240"></td>
   </tr>
   <tr>
-    <th colspan="3">多账号</th>
+    <th colspan="3">服务商账号</th>
     <th colspan="3">显示设置</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr 多账号" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr 服务商账号" width="370"></td>
     <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr 显示设置" width="370"></td>
   </tr>
   <tr>
@@ -127,7 +127,7 @@ Linux 需要 GTK3、AppIndicator、支持托盘的桌面，以及可用的 Secre
 ## 隐私
 
 - Quosparr 的自有数据保存在 `~/.quosparr`，不向 `~/.codex` 写入应用缓存，默认只保存非密钥的派生数据
-- 多账号凭据是唯一例外，保存在 `~/.quosparr/accounts/<id>/auth.json`（目录 `0700`、文件 `0600`，原子写入；Windows 使用仅当前用户可访问的 ACL），账号索引不包含 token
+- 服务商账号凭据是唯一例外，保存在 `~/.quosparr/accounts/<id>/auth.json`（目录 `0700`、文件 `0600`，原子写入；Windows 使用仅当前用户可访问的 ACL），账号索引不包含 token
 - 官方 `~/.codex/auth.json` 仅在 OAuth 刷新回写或你确认切号时写入；刷新非当前账号只更新账号库副本
 - Grok 凭据从 `$GROK_HOME/auth.json` 读取，托管副本位于 `~/.quosparr/accounts/grok-<stable-id>/auth.json`。Grok 切号只替换 OAuth / 兼容 legacy scope，保留 API Key 与未知 scope，且仅保证新会话使用新账号；已运行的 Grok 进程不会被终止，可能写回旧账号，因此切换前会给出提示
 - 会话修复只处理 `session_index.jsonl`，写入前先备份；不会删除 `~/.codex/sessions` 与 `~/.codex/archived_sessions` 下的文件

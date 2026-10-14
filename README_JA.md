@@ -10,7 +10,7 @@
 
 メニューバーにとまる小さなスズメが、Codex と Grok のクォータを見守ります。
 
-Quosparr は macOS、Windows、Linux 向けのネイティブなメニューバー / システムトレイアプリです。Codex と Grok のクォータ、reset credits、API 換算コスト、ローカルセッションを表示し、プロバイダーごとに独立した複数アカウント管理を備えています。
+Quosparr は macOS、Windows、Linux 向けのネイティブなメニューバー / システムトレイアプリです。Codex と Grok のクォータ、reset credits、API 換算コスト、ローカルセッションを表示し、プロバイダーごとに独立したアカウント管理を備えています。
 
 </div>
 
@@ -22,7 +22,7 @@ Quosparr は macOS、Windows、Linux 向けのネイティブなメニューバ�
 - reset credits の数、状態、有効期限を表示します。
 - 公式の週次使用率と日次 Credits から今週の枠を推定し、過去の週と比較して枠の引き下げを見つけやすくします。
 - Codex リセット更新: 今日 Codex のレート制限がリセットされたかを確認でき、専用の更新間隔を設定できます（データは [Did Codex Reset](https://didcodexreset.com) から取得）。
-- 複数アカウント: ブラウザでのサインイン、ローカル `auth.json` の取り込み、token / JSON の貼り付け（`/auth/session` を含む）、ファイルの取り込み、API キーの追加に対応します。確認後に `~/.codex/auth.json` を原子的に書き込んで切り替えます。
+- プロバイダーアカウント: ブラウザでのサインイン、ローカル `auth.json` の取り込み、token / JSON の貼り付け（`/auth/session` を含む）、ファイルの取り込み、API キーの追加に対応します。確認後に `~/.codex/auth.json` を原子的に書き込んで切り替えます。
 - 最近のセッション、プロジェクト、状態を表示し、ローカルのセッションインデックスを修復できます。
 
 **Grok**
@@ -53,11 +53,11 @@ Quosparr は macOS、Windows、Linux 向けのネイティブなメニューバ�
     <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr サブスク枠の推定" width="240"></td>
   </tr>
   <tr>
-    <th colspan="3">複数アカウント</th>
+    <th colspan="3">プロバイダーアカウント</th>
     <th colspan="3">表示設定</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr 複数アカウント" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr プロバイダーアカウント" width="370"></td>
     <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr 表示設定" width="370"></td>
   </tr>
   <tr>
@@ -127,7 +127,7 @@ Linux には GTK3、AppIndicator、トレイに対応したデスクトップ、
 ## プライバシー
 
 - Quosparr は独自のデータを `~/.quosparr` に保存し、アプリのキャッシュを `~/.codex` に書き込みません。既定で保存されるのは、秘密情報を含まない派生データのみです。
-- 複数アカウントの資格情報は唯一の例外で、`~/.quosparr/accounts/<id>/auth.json` に保存されます（ディレクトリは `0700`、ファイルは `0600`、原子的に書き込み。Windows では現在のユーザーのみがアクセスできる ACL を使用）。アカウントインデックスには token は含まれません。
+- プロバイダーアカウントの資格情報は唯一の例外で、`~/.quosparr/accounts/<id>/auth.json` に保存されます（ディレクトリは `0700`、ファイルは `0600`、原子的に書き込み。Windows では現在のユーザーのみがアクセスできる ACL を使用）。アカウントインデックスには token は含まれません。
 - 公式の `~/.codex/auth.json` に書き込まれるのは、OAuth のリフレッシュ時か、アカウント切り替えを確認したときだけです。現在のアカウント以外をリフレッシュした場合は、ライブラリ内のコピーだけが更新されます。
 - Grok の資格情報は `$GROK_HOME/auth.json` から読み込まれ、管理コピーは `~/.quosparr/accounts/grok-<stable-id>/auth.json` にあります。Grok の切り替えでは OAuth / 互換レガシーのスコープだけが置き換えられ、API キーと未知のスコープは残ります。保証されるのは新しいセッションのみで、実行中の Grok プロセスは終了されず、以前のアカウントを書き戻す可能性があるため、切り替え前にアプリが警告を表示します。
 - セッションの修復が対象とするのは `session_index.jsonl` だけで、書き込み前にバックアップを作成します。`~/.codex/sessions` と `~/.codex/archived_sessions` 配下のファイルは削除されません。

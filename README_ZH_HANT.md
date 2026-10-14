@@ -10,7 +10,7 @@
 
 一隻停在選單列裡的小麻雀，替你守著 Codex 與 Grok 的額度。
 
-Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應用程式，顯示 Codex 與 Grok 額度、reset credits、API 等價成本與本機工作階段，兩個供應商各自獨立管理多帳號。
+Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應用程式，顯示 Codex 與 Grok 額度、reset credits、API 等價成本與本機工作階段，兩個供應商各自獨立管理帳號。
 
 </div>
 
@@ -22,7 +22,7 @@ Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應�
 - 查看 reset credits 數量、狀態與到期時間。
 - 根據官方週用量百分比與每日 Credits 推算本週額度，並與前幾週比較，方便發現額度被調降。
 - Codex 重設動態：查看今天 Codex 速率限制是否已重置，可單獨設定重新整理間隔（資料來自 [Did Codex Reset](https://didcodexreset.com)）。
-- 多帳號：瀏覽器登入、匯入本機 `auth.json`、貼上 token / JSON（含 `/auth/session`）、匯入檔案或新增 API Key。確認後以原子方式寫入 `~/.codex/auth.json` 完成切換帳號。
+- 服務商帳號：瀏覽器登入、匯入本機 `auth.json`、貼上 token / JSON（含 `/auth/session`）、匯入檔案或新增 API Key。確認後以原子方式寫入 `~/.codex/auth.json` 完成切換帳號。
 - 查看最近的工作階段、專案與狀態，並修復本機工作階段索引。
 
 **Grok**
@@ -53,11 +53,11 @@ Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應�
     <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr 訂閱額度推算" width="240"></td>
   </tr>
   <tr>
-    <th colspan="3">多帳號</th>
+    <th colspan="3">服務商帳號</th>
     <th colspan="3">顯示設定</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr 多帳號" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr 服務商帳號" width="370"></td>
     <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr 顯示設定" width="370"></td>
   </tr>
   <tr>
@@ -127,7 +127,7 @@ Linux 需要 GTK3、AppIndicator、支援系統匣的桌面環境，以及可用
 ## 隱私
 
 - Quosparr 的自有資料存放在 `~/.quosparr`，不會在 `~/.codex` 中寫入應用程式快取。預設只儲存非機密的衍生資料。
-- 多帳號憑證是唯一的例外，儲存在 `~/.quosparr/accounts/<id>/auth.json`（目錄 `0700`、檔案 `0600`，以原子方式寫入；Windows 使用僅限目前使用者存取的 ACL）。帳號索引不含 token。
+- 服務商帳號憑證是唯一的例外，儲存在 `~/.quosparr/accounts/<id>/auth.json`（目錄 `0700`、檔案 `0600`，以原子方式寫入；Windows 使用僅限目前使用者存取的 ACL）。帳號索引不含 token。
 - 官方 `~/.codex/auth.json` 只會在 OAuth 重新整理回寫，或你確認切換帳號時寫入。重新整理非目前帳號只會更新帳號庫中的副本。
 - Grok 憑證從 `$GROK_HOME/auth.json` 讀取，託管副本位於 `~/.quosparr/accounts/grok-<stable-id>/auth.json`。Grok 切換帳號只會取代 OAuth / 相容 legacy scope，並保留 API Key 與未知 scope。此操作僅保證新的工作階段使用新帳號；已在執行的 Grok 行程不會被終止，且可能寫回舊帳號，因此切換前應用程式會顯示警告。
 - 工作階段修復只處理 `session_index.jsonl`，寫入前會先備份。`~/.codex/sessions` 與 `~/.codex/archived_sessions` 下的檔案絕不會被刪除。

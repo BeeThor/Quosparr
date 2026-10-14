@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"github.com/egoist/mygo/ui"
+	"github.com/licoy/quosparr/internal/codex"
 	"github.com/licoy/quosparr/internal/l10n"
+	"github.com/licoy/quosparr/internal/runway"
 	"github.com/licoy/quosparr/internal/store"
 )
 
@@ -197,5 +199,26 @@ func TestSettingsSystemProxyFormVisibility(t *testing.T) {
 	}
 	if hasExact(tt, l.Text(l10n.KeyNetworkProxyHost)) || hasExact(tt, l.Text(l10n.KeyNetworkProxyPort)) {
 		t.Fatal("System mode retained HTTP fields")
+	}
+}
+
+func TestManagedAccountCountSumsProviders(t *testing.T) {
+	var snap runway.Snapshot
+	if got := managedAccountCount(snap); got != 0 {
+		t.Fatalf("empty snapshot counted %d accounts", got)
+	}
+	snap.Accounts.Sidebar = []codex.ManagedAccount{{ID: "a"}, {ID: "b"}}
+	snap.Grok.Accounts.Sidebar = []codex.ManagedAccount{{ID: "grok-c"}}
+	if got := managedAccountCount(snap); got != 3 {
+		t.Fatalf("counted %d accounts, want 3", got)
+	}
+}
+
+func TestSettingsTabBadgeOnlyOnAccounts(t *testing.T) {
+	u := &settingsUI{}
+	for _, tab := range settingsTabs {
+		if tab != tabAccounts && u.tabBadge(tab) != "" {
+			t.Fatalf("tab %d shows a badge", tab)
+		}
 	}
 }

@@ -10,7 +10,7 @@
 
 Un petit moineau perché dans votre barre de menus, qui veille sur vos quotas Codex et Grok.
 
-Quosparr est une application native de barre de menus / zone de notification pour macOS, Windows et Linux. Elle affiche les quotas Codex et Grok, les reset credits, le coût équivalent API et les sessions locales, avec une gestion multi-comptes séparée pour chaque fournisseur.
+Quosparr est une application native de barre de menus / zone de notification pour macOS, Windows et Linux. Elle affiche les quotas Codex et Grok, les reset credits, le coût équivalent API et les sessions locales, avec une gestion des comptes séparée pour chaque fournisseur.
 
 </div>
 
@@ -22,7 +22,7 @@ Quosparr est une application native de barre de menus / zone de notification pou
 - Nombre de crédits de réinitialisation, statut et heure d’expiration.
 - Estimation de l’allocation hebdomadaire à partir du pourcentage hebdomadaire officiel et des Credits journaliers, comparée aux semaines précédentes pour repérer une baisse de quota.
 - Actualités des réinitialisations Codex : savoir si les limites Codex ont été réinitialisées aujourd’hui, avec son propre intervalle d’actualisation (données de [Did Codex Reset](https://didcodexreset.com)).
-- Plusieurs comptes : connexion navigateur, import du `auth.json` local, collage de jeton / JSON (y compris `/auth/session`), import de fichiers ou ajout d’une clé API. Le basculement, après confirmation, écrit atomiquement `~/.codex/auth.json`.
+- Comptes fournisseurs : connexion navigateur, import du `auth.json` local, collage de jeton / JSON (y compris `/auth/session`), import de fichiers ou ajout d’une clé API. Le basculement, après confirmation, écrit atomiquement `~/.codex/auth.json`.
 - Sessions récentes, projets et statut, ainsi que la réparation de l’index de session local.
 
 **Grok**
@@ -53,11 +53,11 @@ Quosparr est une application native de barre de menus / zone de notification pou
     <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr Estimation du quota d’abonnement" width="240"></td>
   </tr>
   <tr>
-    <th colspan="3">Multi-comptes</th>
+    <th colspan="3">Comptes fournisseurs</th>
     <th colspan="3">Réglages d’affichage</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr Multi-comptes" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr Comptes fournisseurs" width="370"></td>
     <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr Réglages d’affichage" width="370"></td>
   </tr>
   <tr>
@@ -127,7 +127,7 @@ Les changements ne s’appliquent qu’après **Enregistrer le proxy**. **Tester
 ## Confidentialité
 
 - Quosparr conserve ses propres données dans `~/.quosparr` et n’écrit aucun cache d’application dans `~/.codex`. Par défaut, seules des données dérivées non secrètes sont stockées.
-- Les identifiants multi-comptes sont la seule exception : ils sont stockés sous `~/.quosparr/accounts/<id>/auth.json` (répertoire `0700`, fichier `0600`, écriture atomique ; sous Windows, une ACL accessible uniquement à l’utilisateur actuel). L’index des comptes ne contient aucun jeton.
+- Les identifiants des comptes fournisseurs sont la seule exception : ils sont stockés sous `~/.quosparr/accounts/<id>/auth.json` (répertoire `0700`, fichier `0600`, écriture atomique ; sous Windows, une ACL accessible uniquement à l’utilisateur actuel). L’index des comptes ne contient aucun jeton.
 - Le `~/.codex/auth.json` officiel n’est écrit que lors d’une actualisation OAuth ou lorsque vous confirmez un basculement de compte. Actualiser un compte non actuel ne met à jour que sa copie dans la bibliothèque.
 - Les identifiants Grok sont lus depuis `$GROK_HOME/auth.json` ; les copies gérées se trouvent dans `~/.quosparr/accounts/grok-<stable-id>/auth.json`. Un basculement Grok ne remplace que les portées OAuth / legacy compatibles et conserve la clé API et les portées inconnues. Il n’est garanti que pour les nouvelles sessions ; les processus Grok en cours ne sont pas arrêtés et peuvent réécrire le compte précédent, c’est pourquoi l’app avertit avant de basculer.
 - La réparation des sessions ne touche que `session_index.jsonl` et en crée d’abord une sauvegarde. Les fichiers sous `~/.codex/sessions` et `~/.codex/archived_sessions` ne sont jamais supprimés.

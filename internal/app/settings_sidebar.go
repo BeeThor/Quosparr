@@ -3,9 +3,11 @@ package app
 import (
 	"fmt"
 	"runtime"
+	"strconv"
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
+	"github.com/licoy/quosparr/internal/runway"
 )
 
 // settingsVibrancy is the material the sidebar shows, as System Settings'
@@ -88,8 +90,33 @@ func (u *settingsUI) sidebarItem(c *ui.Context, tab settingsTab) bool {
 			Tile(c, tab.icon(), tab.tint(), 20, true)
 		}
 		ui.Text(c, title).FontSize(13).TextColor(col).SingleLine().Grow(1)
+		if badge := u.tabBadge(tab); badge != "" {
+			badgeCol := t.TextMuted
+			if selected {
+				badgeCol = t.AccentText
+			}
+			ui.Text(c, badge).FontSize(13).TextColor(badgeCol).SingleLine()
+		}
 	})
 	return b.Clicked()
+}
+
+// tabBadge is the trailing count of a sidebar tab: the managed accounts of
+// both providers on the accounts tab, nothing elsewhere.
+func (u *settingsUI) tabBadge(tab settingsTab) string {
+	if tab != tabAccounts {
+		return ""
+	}
+	rt := currentRuntime()
+	if rt == nil {
+		return ""
+	}
+	return strconv.Itoa(managedAccountCount(rt.svc.Snapshot()))
+}
+
+// managedAccountCount is how many accounts both providers manage.
+func managedAccountCount(snap runway.Snapshot) int {
+	return len(snap.Accounts.Sidebar) + len(snap.Grok.Accounts.Sidebar)
 }
 
 func (u *settingsUI) pageHeader(c *ui.Context) {

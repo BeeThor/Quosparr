@@ -10,7 +10,7 @@ English · [简体中文](./README_ZH.md) · [繁體中文](./README_ZH_HANT.md)
 
 A small sparrow perched in your menu bar, keeping watch over your Codex and Grok quota.
 
-Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. It shows Codex and Grok quota, reset credits, API-equivalent cost, and local sessions, with separate multi-account management for each provider.
+Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. It shows Codex and Grok quota, reset credits, API-equivalent cost, and local sessions, with separate account management for each provider.
 
 </div>
 
@@ -22,7 +22,7 @@ Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. I
 - Reset credit count, status, and expiration time.
 - Weekly allowance estimate from the official weekly percent and daily Credits, compared with previous weeks to spot quota cuts.
 - Codex Reset Updates: whether Codex rate limits have reset today, with its own refresh interval (data from [Did Codex Reset](https://didcodexreset.com)).
-- Multiple accounts: browser sign-in, import local `auth.json`, paste token / JSON (including `/auth/session`), import files, or add an API key. Switching after confirmation atomically writes `~/.codex/auth.json`.
+- Provider accounts: browser sign-in, import local `auth.json`, paste token / JSON (including `/auth/session`), import files, or add an API key. Switching after confirmation atomically writes `~/.codex/auth.json`.
 - Recent sessions, projects, and status, plus repair of the local session index.
 
 **Grok**
@@ -53,11 +53,11 @@ Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. I
     <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr Subscription quota estimate" width="240"></td>
   </tr>
   <tr>
-    <th colspan="3">Multi-account</th>
+    <th colspan="3">Provider accounts</th>
     <th colspan="3">Display settings</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr Multi-account" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr Provider accounts" width="370"></td>
     <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr Display settings" width="370"></td>
   </tr>
   <tr>
@@ -127,7 +127,7 @@ Changes apply only after **Save Proxy Settings**. **Test Connection** fetches th
 ## Privacy
 
 - Quosparr keeps its own data in `~/.quosparr` and writes no app cache into `~/.codex`. Only non-secret derived data is stored by default.
-- Multi-account credentials are the only exception: they are stored under `~/.quosparr/accounts/<id>/auth.json` (directory `0700`, file `0600`, written atomically; Windows uses an ACL that only the current user can access). The account index contains no tokens.
+- Provider account credentials are the only exception: they are stored under `~/.quosparr/accounts/<id>/auth.json` (directory `0700`, file `0600`, written atomically; Windows uses an ACL that only the current user can access). The account index contains no tokens.
 - Official `~/.codex/auth.json` is written only for an OAuth refresh or when you confirm an account switch. Refreshing a non-current account updates only its library copy.
 - Grok credentials are read from `$GROK_HOME/auth.json`; managed copies live at `~/.quosparr/accounts/grok-<stable-id>/auth.json`. A Grok switch replaces only OAuth / compatible legacy scopes and keeps API-key and unknown scopes. It is guaranteed only for new sessions; running Grok processes are not terminated and may write the previous account back, so the app warns before switching.
 - Session repair only touches `session_index.jsonl` and backs it up first. Files under `~/.codex/sessions` and `~/.codex/archived_sessions` are never deleted.

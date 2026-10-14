@@ -10,7 +10,7 @@
 
 메뉴 막대에 앉은 작은 참새가 Codex와 Grok 할당량을 지켜봅니다.
 
-Quosparr는 macOS, Windows, Linux용 네이티브 메뉴 막대 / 시스템 트레이 앱입니다. Codex와 Grok의 할당량, reset credits, API 환산 비용, 로컬 세션을 보여 주며 공급자별로 다중 계정을 따로 관리합니다.
+Quosparr는 macOS, Windows, Linux용 네이티브 메뉴 막대 / 시스템 트레이 앱입니다. Codex와 Grok의 할당량, reset credits, API 환산 비용, 로컬 세션을 보여 주며 공급자별로 계정을 따로 관리합니다.
 
 </div>
 
@@ -22,7 +22,7 @@ Quosparr는 macOS, Windows, Linux용 네이티브 메뉴 막대 / 시스템 트�
 - 리셋 크레딧 수, 상태, 만료 시각.
 - 공식 주간 사용률과 일별 Credits로 주간 한도를 추정하고, 이전 주와 비교해 할당량 삭감 여부를 확인합니다.
 - Codex 초기화 업데이트: 오늘 Codex 속도 제한이 리셋되었는지를 자체 새로고침 간격으로 확인합니다([Did Codex Reset](https://didcodexreset.com) 데이터).
-- 다중 계정: 브라우저 로그인, 로컬 `auth.json` 가져오기, 토큰 / JSON 붙여넣기(`/auth/session` 포함), 파일 가져오기, API 키 추가. 확인 후 전환하면 `~/.codex/auth.json`을 원자적으로 씁니다.
+- 공급자 계정: 브라우저 로그인, 로컬 `auth.json` 가져오기, 토큰 / JSON 붙여넣기(`/auth/session` 포함), 파일 가져오기, API 키 추가. 확인 후 전환하면 `~/.codex/auth.json`을 원자적으로 씁니다.
 - 최근 세션, 프로젝트, 상태와 로컬 세션 인덱스 복구.
 
 **Grok**
@@ -53,11 +53,11 @@ Quosparr는 macOS, Windows, Linux용 네이티브 메뉴 막대 / 시스템 트�
     <td colspan="2" align="center" valign="top"><img src="docs/images/6.webp?v1" alt="Quosparr 구독 한도 추정" width="240"></td>
   </tr>
   <tr>
-    <th colspan="3">다중 계정</th>
+    <th colspan="3">공급자 계정</th>
     <th colspan="3">표시 설정</th>
   </tr>
   <tr>
-    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr 다중 계정" width="370"></td>
+    <td colspan="3" align="center" valign="top"><img src="docs/images/4.webp?v1" alt="Quosparr 공급자 계정" width="370"></td>
     <td colspan="3" align="center" valign="top"><img src="docs/images/5.webp?v1" alt="Quosparr 표시 설정" width="370"></td>
   </tr>
   <tr>
@@ -127,7 +127,7 @@ Linux에는 GTK3, AppIndicator, 트레이를 지원하는 데스크톱, 프록�
 ## 개인정보
 
 - Quosparr는 자체 데이터를 `~/.quosparr`에 보관하며 앱 캐시를 `~/.codex`에 쓰지 않습니다. 기본적으로 비밀이 아닌 파생 데이터만 저장합니다.
-- 다중 계정 자격 증명이 유일한 예외입니다. `~/.quosparr/accounts/<id>/auth.json`에 저장되며(디렉터리 `0700`, 파일 `0600`, 원자적 쓰기, Windows는 현재 사용자만 접근할 수 있는 ACL 사용) 계정 인덱스에는 토큰이 없습니다.
+- 공급자 계정 자격 증명이 유일한 예외입니다. `~/.quosparr/accounts/<id>/auth.json`에 저장되며(디렉터리 `0700`, 파일 `0600`, 원자적 쓰기, Windows는 현재 사용자만 접근할 수 있는 ACL 사용) 계정 인덱스에는 토큰이 없습니다.
 - 공식 `~/.codex/auth.json`은 OAuth 새로고침 때, 또는 사용자가 계정 전환을 확인했을 때만 씁니다. 현재가 아닌 계정을 새로고침하면 라이브러리 사본만 업데이트합니다.
 - Grok 자격 증명은 `$GROK_HOME/auth.json`에서 읽으며 관리 사본은 `~/.quosparr/accounts/grok-<stable-id>/auth.json`에 있습니다. Grok 전환은 OAuth / 호환 레거시 범위만 바꾸고 API 키와 알 수 없는 범위는 유지합니다. 새 세션에만 보장되며, 실행 중인 Grok 프로세스는 종료되지 않고 이전 계정을 다시 쓸 수 있으므로 앱이 전환 전에 경고합니다.
 - 세션 복구는 `session_index.jsonl`만 다루며 먼저 백업합니다. `~/.codex/sessions`와 `~/.codex/archived_sessions` 아래 파일은 삭제하지 않습니다.
