@@ -33,6 +33,8 @@ jobs:
           RELEASE_NOTES: ${{ steps.cliff.outputs.content }}
         run: |
           printf '%s\n' "$RELEASE_NOTES" > release-notes.md
+          # The in-app update window shows only the changelog, not install hints
+          cp release-notes.md update-notes.md
           if ! grep -q '[^[:space:]]' release-notes.md; then
             printf 'macOS builds for Apple Silicon and Intel.\n' > release-notes.md
           fi
@@ -45,7 +47,9 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: release-notes
-          path: release-notes.md
+          path: |
+            release-notes.md
+            update-notes.md
 
   v1-preflight:
     runs-on: macos-latest
@@ -244,6 +248,7 @@ jobs:
           ln -s "$(command -v 7zz)" "$RUNNER_TEMP/v1-tools/7z"
           export PATH="$RUNNER_TEMP/v1-tools:$PATH"
           python3 Scripts/stage-v1-config.py "$PWD" "$RUNNER_TEMP/v1-release-config"
+          go run ./Scripts/release-assets notes -config "$RUNNER_TEMP/v1-release-config/mygo.json" -dir dist-v1 -notes update-notes.md
           python3 Scripts/release-checksums.py write dist-v1
           bash Scripts/verify-v1-release.sh "$PWD/dist-v1" "$RUNNER_TEMP/v1-release-config/mygo.json"
       # Distribution preparation is paused together with public publication

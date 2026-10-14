@@ -51,14 +51,23 @@ func run(args []string) error {
 		return sparkleAppcast(args[1:])
 	}
 	if len(args) == 0 {
-		return errors.New("usage: release-assets sign|verify -config mygo.json -dir dist [-targets target,...] | sparkle-appcast | verify-sparkle")
+		return errors.New("usage: release-assets sign|verify|notes -config mygo.json -dir dist [-targets target,...] [-notes file] | sparkle-appcast | verify-sparkle")
 	}
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	cfgPath := flags.String("config", "mygo.json", "configuration")
 	dir := flags.String("dir", "dist", "flat asset directory")
 	selected := flags.String("targets", strings.Join(targets, ","), "targets")
+	notesPath := flags.String("notes", "", "Markdown release notes for the update window")
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
+	}
+	var notes string
+	if args[0] == "notes" {
+		data, err := os.ReadFile(*notesPath)
+		if err != nil {
+			return err
+		}
+		notes = strings.TrimSpace(string(data))
 	}
 	var cfg config
 	if err := readJSON(*cfgPath, &cfg); err != nil {
@@ -86,8 +95,10 @@ func run(args []string) error {
 			err = sign(cfg, *dir, target)
 		case "verify":
 			err = verify(cfg, *dir, target)
+		case "notes":
+			err = setNotes(*dir, target, notes)
 		default:
-			return errors.New("command must be sign, verify, or verify-payload")
+			return errors.New("command must be sign, verify, notes, or verify-payload")
 		}
 		if err != nil {
 			return fmt.Errorf("%s: %w", target, err)
@@ -167,6 +178,21 @@ func sign(cfg config, dir, target string) error {
 		return err
 	}
 	return os.WriteFile(filepath.Join(dir, "update-"+target+".json"), append(data, '\n'), 0644)
+}
+// setNotes adds the release notes the update window shows; mygo signs only
+// the archive digest, so the manifest signature stays valid
+func setNotes(dir, target, notes string) error {
+	path := filepath.Join(dir, "update-"+target+".json")
+	var m manifest
+	if err := readJSON(path, &m); err != nil {
+		return err
+	}
+	m.Notes = notes
+	data, err := json.MarshalIndent(m, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, append(data, '\n'), 0644)
 }
 func verify(cfg config, dir, target string) error {
 	pub, err := base64.StdEncoding.DecodeString(strings.TrimSpace(cfg.Updates.PublicKey))
