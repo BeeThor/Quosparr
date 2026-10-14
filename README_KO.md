@@ -8,9 +8,9 @@
 
 <sub><i>이름은 <b>Quo</b>ta(할당량) + <b>Sparr</b>ow(참새)에서 왔습니다</i></sub>
 
-메뉴 막대에 앉은 작은 참새가 Codex와 Grok 할당량을 지켜봅니다.
+메뉴 막대에 앉은 작은 참새가 Codex, Grok, Claude 할당량을 지켜봅니다.
 
-Quosparr는 macOS, Windows, Linux용 네이티브 메뉴 막대 / 시스템 트레이 앱입니다. Codex와 Grok의 할당량, reset credits, API 환산 비용, 로컬 세션을 보여 주며 공급자별로 계정을 따로 관리합니다.
+Quosparr는 macOS, Windows, Linux용 네이티브 메뉴 막대 / 시스템 트레이 앱입니다. Codex, Grok, Claude Code 구독 할당량, reset credits, API 환산 비용, 로컬 세션을 보여 주며 공급자별로 계정을 따로 관리합니다.
 
 </div>
 
@@ -31,9 +31,16 @@ Quosparr는 macOS, Windows, Linux용 네이티브 메뉴 막대 / 시스템 트�
 - 여러 OAuth / SuperGrok 계정을 격리 로그인, 현재 로그인 가져오기, 자격 증명 붙여넣기, 새로고침, 별칭, 정렬, 명시적 전환으로 관리합니다.
 - 로컬 Grok CLI 로그의 최근 세션.
 
-**두 공급자 공통**
+**Claude**
 
-- 항상 보이는 `Codex | Grok` 탭. 메뉴 막대와 컨텍스트 메뉴가 선택한 공급자를 따릅니다.
+- Claude Code 구독 사용량의 5시간 창, 7일 창, 모델별 주간 한도, 추가 사용량을 봅니다. 이 값은 공개된 결제 API가 아닙니다.
+- Claude Code 로컬 세션 로그로 토큰 사용량, API 환산 비용(`anthropic-builtin-2026-10-14`), 최근 세션, 출력 속도를 계산합니다. 같은 답변은 한 번만 셉니다. 알 수 없는 모델은 정확한 비용을 주지 않습니다. 로그에 첫 토큰 시간이 없어 그 칸은 “—”이고, 속도는 처음부터 끝까지의 시간으로 계산합니다.
+- 구독 계정은 현재 로그인 가져오기, 자격 증명 붙여넣기, 파일 가져오기 후 전환합니다. 앱 안 로그인은 터미널에서 `claude auth login`을 실행한 뒤 가져오라고 안내합니다. Quosparr는 현재 계정을 새로고침하지 않습니다. 로그인이 만료되면 `claude`를 한 번 실행하세요. 다른 관리 계정은 계정 라이브러리 사본만 새로고칩니다.
+- macOS에서 공식 자격 증명은 키체인에 있고 `/usr/bin/security`로 읽고 씁니다. Windows와 Linux는 `<config>/.credentials.json`입니다. 전환은 `claudeAiOauth`만 바꾸고 MCP 토큰은 유지하며, `.claude.json`의 `oauthAccount`만 갱신합니다. 실행 중인 Claude Code는 종료하지 않으며 이전 로그인을 다시 쓸 수 있어 전환 전에 경고합니다.
+
+**세 공급자 공통**
+
+- 항상 보이는 `Codex | Grok | Claude` 탭. 메뉴 막대는 주 패널을 따르거나 공급자를 최대 두 개 표시합니다. 이미 저장된 “Codex + Grok”은 그 쌍을 유지합니다.
 - 오늘, 현재 주기, 이전 주기, 이번 달 또는 사용자 지정 범위의 API 환산 비용과 토큰 사용량.
 - 연초부터의 토큰 사용량 차트(히트맵, 꺾은선, 막대 / 일간, 주간, 누적).
 - 라이트, 다크, 시스템 모양과 English, 简体中文, 繁體中文, 한국어, 日本語, Русский, Français.
@@ -111,10 +118,11 @@ Linux에는 GTK3, AppIndicator, 트레이를 지원하는 데스크톱, 프록�
   ```
 
 - Grok 계정과 할당량은 OAuth / SuperGrok 및 호환 레거시 세션만 지원합니다. `grok login --oauth`를 실행하거나, 앱에서 로그인하거나, 현재 로그인을 가져오거나, 자격 증명 JSON을 붙여넣으세요. API 키만 있는 로그인은 관리 계정으로 추가되지 않습니다. `GROK_HOME`이 설정되어 있으면 그 값을 쓰고, 아니면 `~/.grok`를 씁니다.
+- Claude 패널은 공식 Claude Code CLI를 사용합니다. `CLAUDE_CONFIG_DIR`이 설정되어 있으면 그 값을 쓰고, 아니면 `~/.claude`를 씁니다. 구독 사용량에는 Claude.ai 로그인이 필요합니다. API 키나 게이트웨이로는 이 사용량을 볼 수 없습니다. `claude auth login` 후 현재 로그인이 자동으로 추가되고, 나중에 다른 계정으로 로그인해도 자동으로 추가됩니다. 자격 증명 JSON을 붙여넣거나 파일에서 가져올 수도 있습니다.
 
 ## 데스크톱 위젯
 
-위젯은 macOS 14 이상이 필요하며 Windows와 Linux에는 없습니다. 할당량 개요, 토큰 추세, 핵심 지표, Codex 초기화 업데이트의 네 가지 위젯을 제공합니다. 각 위젯은 위젯 편집에서 Codex, Grok 또는 둘 다를 고를 수 있으며, 탭하면 해당 페이지가 열립니다.
+위젯은 macOS 14 이상이 필요하며 Windows와 Linux에는 없습니다. 할당량 개요, 토큰 추세, 핵심 지표, Codex 초기화 업데이트의 네 가지 위젯을 제공합니다. 각 위젯은 위젯 편집에서 Codex, Grok, Claude 또는 한 쌍(Codex + Grok, Codex + Claude, Grok + Claude)을 고를 수 있습니다. 이미 Codex + Grok으로 둔 위젯은 그 쌍을 유지합니다. 탭하면 해당 페이지가 열립니다.
 
 스냅샷은 `~/.quosparr/widget-snapshot.json`에 `0600` 권한으로 저장되며 비밀이 아닌 파생 데이터만 담습니다. 이메일, 계정 ID, 토큰, 인증 JSON, 이벤트 원문은 없습니다. 주 앱만 쓰고 위젯은 읽기만 합니다.
 
@@ -130,6 +138,7 @@ Linux에는 GTK3, AppIndicator, 트레이를 지원하는 데스크톱, 프록�
 - 공급자 계정 자격 증명이 유일한 예외입니다. `~/.quosparr/accounts/<id>/auth.json`에 저장되며(디렉터리 `0700`, 파일 `0600`, 원자적 쓰기, Windows는 현재 사용자만 접근할 수 있는 ACL 사용) 계정 인덱스에는 토큰이 없습니다.
 - 공식 `~/.codex/auth.json`은 OAuth 새로고침 때, 또는 사용자가 계정 전환을 확인했을 때만 씁니다. 현재가 아닌 계정을 새로고침하면 라이브러리 사본만 업데이트합니다.
 - Grok 자격 증명은 `$GROK_HOME/auth.json`에서 읽으며 관리 사본은 `~/.quosparr/accounts/grok-<stable-id>/auth.json`에 있습니다. Grok 전환은 OAuth / 호환 레거시 범위만 바꾸고 API 키와 알 수 없는 범위는 유지합니다. 새 세션에만 보장되며, 실행 중인 Grok 프로세스는 종료되지 않고 이전 계정을 다시 쓸 수 있으므로 앱이 전환 전에 경고합니다.
+- Claude 자격 증명은 macOS에서 `/usr/bin/security`로 키체인을 읽고, Windows와 Linux에서는 `<config>/.credentials.json`을 읽습니다. 관리 사본은 `~/.quosparr/accounts/claude-<stable-id>/auth.json`이며 `claudeAiOauth`만 담습니다. 인덱스 `claude-index.json`에는 토큰이 없습니다. 전환은 MCP 토큰을 유지하고 `.claude.json`의 `oauthAccount`만 바꿉니다. Quosparr는 현재 계정을 새로고침하지 않습니다.
 - 세션 복구는 `session_index.jsonl`만 다루며 먼저 백업합니다. `~/.codex/sessions`와 `~/.codex/archived_sessions` 아래 파일은 삭제하지 않습니다.
 - API 환산 비용은 로컬 세션 로그에서 계산합니다. 세션 내용은 업로드하지 않습니다.
 - 토큰과 API 키는 로그, 자가 진단 출력, 이슈 템플릿에 쓰지 않습니다.
@@ -142,6 +151,8 @@ Linux에는 GTK3, AppIndicator, 트레이를 지원하는 데스크톱, 프록�
 - **Codex API 환산 비용**: 내장 가격표 `openai-builtin-2026-09-27`로 계산한 로컬 세션 로그 기반 비용이며, 온라인 공식 가격표는 `openai-docs-` 버전을 씁니다. 알 수 없는 모델은 정확한 비용으로 보고하지 않습니다.
 - **Grok 할당량**: 공식 CLI chat-proxy `/v1/billing?format=credits` 엔드포인트만 사용합니다. 브라우저 쿠키, 로컬 로그에서 추정한 할당량, API 결제는 섞지 않습니다.
 - **Grok API 환산 비용**: 로컬 `turn_completed` 사용량을 `xai-builtin-2026-09-27`로 계산하며 입력, 캐시, 출력, 긴 컨텍스트 요금을 포함합니다. `costUsdTicks`는 구독 회계이므로 API 환산 비용으로 쓰지 않습니다.
+- **Claude Code 구독 사용량**: 문서화되지 않은 OAuth usage 엔드포인트이며, 현재 Claude Code 구독만 나타냅니다. 공식 결제 API로 쓰지 않습니다. 브라우저 쿠키, Claude Desktop 데이터, Console API 청구서는 읽지 않습니다.
+- **Claude API 환산 비용**: Claude Code 로컬 세션 로그와 가격표 `anthropic-builtin-2026-10-14`로 계산합니다. 같은 답변은 메시지 ID로 한 번만 셉니다. 캐시 쓰기는 5분과 1시간으로 나누고 Fast 요금은 따로 둡니다. 알 수 없는 모델은 정확한 비용을 보고하지 않습니다. 일 경계는 로컬 시간대입니다.
 - **Codex 초기화 업데이트**: [didcodexreset.com/api/status.json](https://didcodexreset.com/api/status.json)의 공개 피드. 비공식이며 참고용이고 지연될 수 있습니다.
 - 차트의 「공식 통계(모든 기기)」는 현재 계정에 속하고, 「로컬 로그(모든 세션)」는 이 컴퓨터를 스캔하므로 여러 계정에 걸칠 수 있습니다. 둘은 서로의 부분집합이 아니므로 빼면 안 되며, 두 Codex 일별 값은 모두 UTC 날짜를 씁니다.
 

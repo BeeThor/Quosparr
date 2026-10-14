@@ -20,6 +20,9 @@ func TestPanelIdentityWholeRowIsClickable(t *testing.T) {
 			if provider == store.ProviderGrok {
 				label = a.L().Text(l10n.KeyGrokAccountsTitle)
 			}
+			if provider == store.ProviderClaude {
+				label = a.L().Text(l10n.KeyClaudeNotLoggedIn)
+			}
 			row, ok := tt.Find(label)
 			if !ok || row.X+row.W < 389 {
 				t.Fatalf("account hit area does not fill row: %v", row)

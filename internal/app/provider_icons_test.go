@@ -13,7 +13,7 @@ import (
 )
 
 func TestProviderIconsPreserveColorAndFollowTheme(t *testing.T) {
-	for _, data := range [][]byte{codexProviderSVG, grokProviderSVG} {
+	for _, data := range [][]byte{codexProviderSVG, grokProviderSVG, claudeProviderSVG} {
 		svg, err := ui.ParseSVG(data)
 		if err != nil {
 			t.Fatal(err)

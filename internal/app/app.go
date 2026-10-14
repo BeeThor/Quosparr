@@ -60,6 +60,7 @@ type App struct {
 	panel    *mygo.Window
 	settings *Settings
 	setWin   *mygo.Window
+	tierWin  *mygo.Window
 	setUI    *settingsUI
 
 	popover     panelPopoverState
@@ -395,6 +396,18 @@ func (a *App) OpenSettingsTab(tab int) {
 	if a.setUI != nil && tab >= 0 && tab < len(settingsTabs) {
 		a.setUI.tab = settingsTabs[tab]
 		a.setWin.Invalidate()
+	}
+}
+
+// openAccountsSettings opens the accounts tab on one provider: 0 Codex,
+// 1 Grok, 2 Claude. A busy form keeps its provider.
+func (a *App) openAccountsSettings(kind int) {
+	a.OpenSettingsTab(1)
+	if a.setUI == nil {
+		return
+	}
+	if f := accountFormOf(a.setUI); !f.busy && f.kind != kind {
+		f.kind, f.mode, f.paste, f.apiKey, f.selection = kind, "", "", "", nil
 	}
 }
 

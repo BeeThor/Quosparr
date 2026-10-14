@@ -10,12 +10,13 @@ type Provider string
 
 // Provider values.
 const (
-	ProviderCodex Provider = "codex"
-	ProviderGrok  Provider = "grok"
+	ProviderCodex  Provider = "codex"
+	ProviderGrok   Provider = "grok"
+	ProviderClaude Provider = "claude"
 )
 
-// Providers returns every valid Provider.
-func Providers() []Provider { return []Provider{ProviderCodex, ProviderGrok} }
+// Providers returns every valid Provider, in display order.
+func Providers() []Provider { return []Provider{ProviderCodex, ProviderGrok, ProviderClaude} }
 
 // Valid reports whether v is a known value.
 func (v Provider) Valid() bool { return slices.Contains(Providers(), v) }
@@ -164,13 +165,15 @@ type StatusBarProviderScope string
 const (
 	// ProviderScopeSelected follows the main panel's selected provider.
 	ProviderScopeSelected StatusBarProviderScope = "selected"
-	// ProviderScopeBoth shows Codex and Grok together.
+	// ProviderScopeBoth is the legacy value for Codex and Grok together.
 	ProviderScopeBoth StatusBarProviderScope = "both"
+	// ProviderScopeCustom uses StatusBarProviders, one or two providers.
+	ProviderScopeCustom StatusBarProviderScope = "custom"
 )
 
 // StatusBarProviderScopes returns every valid StatusBarProviderScope.
 func StatusBarProviderScopes() []StatusBarProviderScope {
-	return []StatusBarProviderScope{ProviderScopeSelected, ProviderScopeBoth}
+	return []StatusBarProviderScope{ProviderScopeSelected, ProviderScopeBoth, ProviderScopeCustom}
 }
 
 // Valid reports whether v is a known value.

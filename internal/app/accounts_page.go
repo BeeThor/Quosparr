@@ -28,17 +28,128 @@ func renderAccountsPage(c *ui.Context, u *settingsUI) {
 		ui.Text(c, l.Text(l10n.KeyNotLoaded)).FontSize(12).TextColor(c.Theme().TextMuted)
 		return
 	}
-	if f.kind == 0 {
+	switch f.kind {
+	case 0:
 		renderCodexAccounts(c, u, f, rt)
+	case 1:
+		renderGrokAccounts(c, u, f, rt)
+	default:
+		renderClaudeAccounts(c, u, f, rt)
+	}
+}
+
+func renderClaudeAccounts(c *ui.Context, u *settingsUI, f *accountForm, rt *liveApp) {
+	l := u.L()
+	view := rt.svc.Snapshot().Claude.Accounts
+	panelAccountStatus(c, l, view)
+	rows := view.Sidebar
+	folder := accountFolder{l.Text(l10n.KeyProviderClaude), rt.claudeFolder()}
+	accountToolbar(c, u, f, accountCountTitle(l, len(rows)), folder, func(m *ui.Menu) {
+		if m.Item(l.Text(l10n.KeyClaudeLoginCLI)).Chosen() {
+			u.accountNotice(f, rt.claudeLoginHint(l))
+		}
+		if m.Item(l.Text(l10n.KeyClaudePasteHint)).Chosen() {
+			f.mode = "paste"
+		}
+		if m.Item(l.Text(l10n.KeyGrokAccountsAddFile)).Chosen() {
+			u.previewClaudeFile(f, rt)
+		}
+		if m.Item(l.Text(l10n.KeyClaudeImportCurrent)).Chosen() {
+			u.accountAct(f, "", func() string { return rt.importClaudeOfficial(l) })
+		}
+	}, func() string {
+		f.selection = exportAccountSelection(rows)
+		return ""
+	}, func() string {
+		return rt.refreshClaudeAll(context.Background())
+	})
+	accountEditor(c, u, f)
+	if len(rows) == 0 {
+		ui.Text(c, l.Text(l10n.KeyClaudeAccountsEmpty)).FontSize(12).TextColor(c.Theme().TextMuted)
+	}
+	priv := u.s.Prefs().AccountPrivacyModeEnabled
+	accountRows(c, len(rows), func(i int) {
+		renderClaudeAccountRow(c, u, f, rt, rows[i], view.ActiveID, priv)
+	})
+}
+
+func (rt *liveApp) claudeFolder() string {
+	if rt == nil || rt.claudeMod == nil || rt.claudeMod.Store == nil {
+		return ""
+	}
+	return rt.claudeMod.Store.ConfigDir()
+}
+
+func renderClaudeAccountRow(c *ui.Context, u *settingsUI, f *accountForm, rt *liveApp, acc codex.ManagedAccount, current string, priv bool) {
+	l := u.L()
+	name := maskAccount(priv, acc.ResolvedDisplayName())
+	var quota *runway.ClaudeAccountQuota
+	if rt != nil {
+		if q, ok := rt.svc.Snapshot().Claude.AccountQuotas[acc.ID]; ok {
+			quota = &q
+		}
+	}
+	ui.Row(c).Gap(10).Padding(10, 0).AlignItems(ui.Center).Children(func() {
+		ProviderIcon(c, store.ProviderClaude, 20)
+		accountSettingsIdentity(c, l, accountIdentityView{account: acc, current: acc.ID == current, privacy: priv, provider: store.ProviderClaude, claudeQuota: quota})
+		ui.MenuButton(c, l.Text(l10n.KeyAccountsActions), func(m *ui.Menu) {
+			if m.Item(l.Text(l10n.KeyAccountsMakeCurrent)).Disabled(acc.ID == current).Chosen() {
+				f.mode, f.editID, f.switchName = "claude-switch", acc.ID, name
+			}
+			if m.Item(l.Text(l10n.KeyAccountsMoveUp)).Chosen() {
+				u.accountAct(f, "", func() string { return rt.moveClaude(acc.ID, -1) })
+			}
+			if m.Item(l.Text(l10n.KeyAccountsMoveDown)).Chosen() {
+				u.accountAct(f, "", func() string { return rt.moveClaude(acc.ID, 1) })
+			}
+			if m.Item(l.Text(l10n.KeyAccountsDelete)).Disabled(acc.ID == current).Chosen() {
+				u.accountAct(f, "", func() string { return rt.deleteClaude(l, acc.ID) })
+			}
+		}).Disabled(f.busy || rt == nil)
+	})
+}
+
+func (rt *liveApp) moveClaude(id string, delta int) string {
+	if rt.claudeMod == nil || rt.claudeMod.Store == nil {
+		return ""
+	}
+	idx, err := rt.claudeMod.Store.LoadIndex()
+	if err != nil {
+		return err.Error()
+	}
+	rows := idx.OrderedAccounts()
+	ids := make([]string, len(rows))
+	at := -1
+	for i, row := range rows {
+		ids[i] = row.ID
+		if row.ID == id {
+			at = i
+		}
+	}
+	next := at + delta
+	if at < 0 || next < 0 || next >= len(ids) {
+		return ""
+	}
+	ids[at], ids[next] = ids[next], ids[at]
+	return rt.reorderClaude(ids)
+}
+
+func (u *settingsUI) previewClaudeFile(f *accountForm, rt *liveApp) {
+	l := u.L()
+	paths, err := mygo.Dialog.Open(mygo.OpenDialogOptions{Title: l.Text(l10n.KeyGrokAccountsAddFile)})
+	if err != nil || len(paths) == 0 {
 		return
 	}
-	renderGrokAccounts(c, u, f, rt)
+	u.accountAct(f, "", func() string {
+		msg, _ := rt.importClaudeFile(context.Background(), l, paths[0])
+		return msg
+	})
 }
 
 func accountProviderHeader(c *ui.Context, u *settingsUI, f *accountForm) {
 	l := u.L()
 	ui.Row(c).Children(func() {
-		if ProviderTabs(c.Key("accounts-provider"), &f.kind, f.busy, l.Text(l10n.KeyProviderCodex), l.Text(l10n.KeyProviderGrok)) {
+		if ProviderTabs(c.Key("accounts-provider"), &f.kind, f.busy, providerTabLabels(l)...) {
 			f.mode, f.paste, f.apiKey = "", "", ""
 			f.selection = nil
 		}
@@ -84,9 +195,23 @@ func (u *settingsUI) accountAct(f *accountForm, waiting string, fn func() string
 		u.post(func() {
 			f.busy = false
 			f.cancel = nil
-			f.status = msg
+			f.status = ""
+			u.accountNotice(f, msg)
 		})
 	}()
+}
+
+// accountNotice shows the result of an account action in a dialog titled
+// with the provider of the tab, so it never lingers under another tab. A
+// cancelled login needs no answer.
+func (u *settingsUI) accountNotice(f *accountForm, msg string) {
+	l := u.L()
+	if msg == "" || msg == l.Text(l10n.KeyAccountsOAuthCancelled) {
+		return
+	}
+	providers := store.Providers()
+	title := l.Text(providerKey(providers[min(max(f.kind, 0), len(providers)-1)]))
+	u.showNotice(title, msg)
 }
 
 func renderCodexAccounts(c *ui.Context, u *settingsUI, f *accountForm, rt *liveApp) {
@@ -212,14 +337,15 @@ func accountToolbar(c *ui.Context, u *settingsUI, f *accountForm, title string, 
 			u.accountAct(f, "", refresh)
 		}
 		if IconButton(c, icExport, l.Text(l10n.KeyAccountsExport), f.busy).Clicked() {
-			f.status = export()
+			u.accountNotice(f, export())
 		}
 		open := u.opts.Actions.OpenFolder
 		if IconButton(c, icFolder, folder.label, open == nil || folder.path == "").Clicked() {
 			open(folder.path)
 		}
 	})
-	if f.status != "" {
+	// Only progress stays inline; results open a dialog.
+	if f.busy && f.status != "" {
 		ui.Text(c, f.status).FontSize(12).TextColor(c.Theme().TextMuted)
 	}
 }
@@ -615,6 +741,17 @@ func (rt *liveApp) refreshGrok(id string) string {
 	return ""
 }
 
+func (rt *liveApp) deleteClaude(l l10n.Localizer, id string) string {
+	confirmed, err := confirmDialog(l, l.Text(l10n.KeyAccountsDeleteConfirmTitle), l.Text(l10n.KeyClaudeDeleteConfirmMessage), "", l.Text(l10n.KeyAccountsDelete))
+	if err != nil {
+		return l.Text(l10n.KeyStatusError)
+	}
+	if !confirmed {
+		return ""
+	}
+	return rt.removeClaude(l, id)
+}
+
 func (rt *liveApp) deleteGrok(l l10n.Localizer, id string) string {
 	confirmed, err := confirmDialog(l, l.Text(l10n.KeyGrokAccountsDeleteConfirmTitle), l.Text(l10n.KeyGrokAccountsDeleteConfirmMessage), "", l.Text(l10n.KeyGrokAccountsRemove))
 	if err != nil {
@@ -650,6 +787,9 @@ func pasteAccount(l l10n.Localizer, kind int, text string) (string, bool) {
 	}
 	if kind == 1 {
 		return rt.grokPasteText(l, text)
+	}
+	if kind == 2 {
+		return rt.claudePasteText(context.Background(), l, text)
 	}
 	return rt.pasteCodex(l, text)
 }

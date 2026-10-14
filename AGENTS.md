@@ -2,7 +2,7 @@
 
 ## 项目定位
 
-Quosparr 是 macOS、Windows、Linux 原生菜单栏 / 系统托盘应用，用 Go + mygo/ui 实现，读取本机 Codex / Grok 配置和会话数据，展示配额、reset credits、API 等价成本，并修复本机会话索引。
+Quosparr 是 macOS、Windows、Linux 原生菜单栏 / 系统托盘应用，用 Go + mygo/ui 实现，读取本机 Codex / Grok / Claude Code 配置和会话数据，展示配额、reset credits、API 等价成本，并修复本机会话索引。
 
 v1 已正式发布（`v1.0.0`、`v1.0.1`）；macOS 仅保留 Swift WidgetKit 扩展（`Sources/QuosparrWidget`）与系统桥接（`Sources/QuosparrWidgetBridge`）；Swift 主应用、`Package.swift`、`Tests/` 和应急回滚链已移除，不再恢复；后续版本公开发布前仍须完成隔离安装升级验收
 
@@ -30,11 +30,17 @@ v1 已正式发布（`v1.0.0`、`v1.0.1`）；macOS 仅保留 Swift WidgetKit �
 - 刷新非当前托管账号 token 时只写账号库副本，不得写官方 `auth.json`；刷新当前账号时同步官方 auth 与账号库副本。
 - 会话修复只允许处理 `session_index.jsonl`，写入前必须备份。
 - 不删除 `~/.codex/sessions/**`、`~/.codex/archived_sessions/**` 或全局状态文件。
+- 读取官方 Claude 凭据时只取 `claudeAiOauth` 的必要字段；`mcpOAuth` 不解析内容，只在用户主动切号时原样保留。
+- `.claude.json` 只读取 `oauthAccount`。切号时只替换这一个键，其他内容原样保留。
+- 写官方 Claude 凭据只有用户主动切号。当前账号的 token 不由 Quosparr 刷新。
+- Claude 托管副本在 `~/.quosparr/accounts/claude-<stable-id>/auth.json`（目录 `0700`、文件 `0600`、原子写入；Windows 使用 protected ACL 并关闭继承），只保存 `{"claudeAiOauth": {...}}`。索引 `claude-index.json` 不得包含 token。
+- Claude 会话扫描只读 `projects/**`，不写不删，不读取 `last-prompt` 等用户原文。
+- 调用 `/usr/bin/security` 使用绝对路径。密钥只经 stdin 传递，超过上限时报错，不退回 argv。stderr 进入日志前只保留退出码和错误类别。
 
 ## 代码约定
 
 - Go 入口为 `main.go`，原生 UI 与系统协调放在 `internal/app`，后台协调放在 `internal/runway`，存储 / 平台 / 网络 / 本地化边界分别放在 `internal/store`、`internal/platform`、`internal/netx`、`internal/l10n`
-- Go 业务模块放在 `internal/codex`、`internal/codexapi`、`internal/grok`、`internal/usage`、`internal/sessions`、`internal/alerts`、`internal/estimate`、`internal/export`、`internal/resettoday`；UI 经业务 API 读取结果，不直接解析 JSON 或扫描文件
+- Go 业务模块放在 `internal/codex`、`internal/codexapi`、`internal/grok`、`internal/claude`、`internal/usage`、`internal/sessions`、`internal/alerts`、`internal/estimate`、`internal/export`、`internal/resettoday`；UI 经业务 API 读取结果，不直接解析 JSON 或扫描文件
 - 用户可见文案通过 `internal/l10n`（手工维护的 `tables.go`）与现有附加文案入口，新增 key 必须补齐英文、简体中文、繁体中文、韩文、日文、俄文、法文
 - Widget 使用自带的 `Sources/QuosparrWidget/RunwayWidgetL10n.swift` 与快照类型副本，修改共享 key 或快照 schema 时与 Go 侧保持同步，同样遵守七语言完整性
 - 函数保持短小，优先用简单结构体和函数，不做多 provider 抽象。
@@ -71,12 +77,12 @@ V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 
 ### 产品与功能状态
 
-Quosparr v1 面向 macOS、Windows、Linux，主程序使用 Go + mygo/ui 原生菜单栏 / 系统托盘，macOS 保留 Swift WidgetKit 扩展；提供 Codex 与 Grok 额度、重置动态、reset credits、API 等价成本、本机会话和各供应商独立的多账号管理
+Quosparr v1 面向 macOS、Windows、Linux，主程序使用 Go + mygo/ui 原生菜单栏 / 系统托盘，macOS 保留 Swift WidgetKit 扩展；提供 Codex、Grok 与 Claude Code 订阅额度、重置动态、reset credits、API 等价成本、本机会话和各供应商独立的多账号管理
 
 - v1 已正式发布（`v1.0.0`、`v1.0.1`），现有截图展示 v1 在 macOS 与 Windows 上的界面
 - 首次无偏好配置的启动显示设置并保存默认偏好，已有配置或从旧版迁移的用户普通启动时仅驻留菜单栏；主动点击设置或显式传入 `--settings` 才再次打开设置，日常 Dev 重启不附加该参数
-- Codex 支持配额窗口、订阅到期、reset credits、周额度推算与历史对比，Grok 展示官方 CLI chat-proxy 额度及 Build / Imagine / Chat 拆分、周期、预付余额和按需使用情况
-- 两个供应商均保留账号管理、本地 Token 用量图表、API 等价成本与最近会话，图表支持热力图、折线图和柱状图；Codex 另有会话索引修复与公开重置动态
+- Codex 支持配额窗口、订阅到期、reset credits、周额度推算与历史对比，Grok 展示官方 CLI chat-proxy 额度及 Build / Imagine / Chat 拆分、周期、预付余额和按需使用情况，Claude 展示 Claude Code 订阅用量的 5 小时、7 天、按模型周额度和额外用量
+- 三个供应商均保留账号管理、本地 Token 用量图表、API 等价成本与最近会话，图表支持热力图、折线图和柱状图；Codex 另有会话索引修复与公开重置动态。状态栏和 Widget 最多同时显示两个供应商，旧值 `both` 仍是 Codex + Grok
 - 主应用支持浅色、深色、跟随系统，以及英文、简体中文、繁体中文、韩文、日文、俄文、法文
 - 自动测试和交叉编译不能替代三端安装、桌面与迁移验收，待验收项见 [验收清单](docs/v1-acceptance-checklist.md) 与 [发布说明](docs/v1-release.md)
 
@@ -114,6 +120,9 @@ Quosparr v1 面向 macOS、Windows、Linux，主程序使用 Go + mygo/ui 原生
 - Grok 依赖官方 CLI，使用 `GROK_HOME` 或默认 `~/.grok`；多账号与额度只支持 OAuth / SuperGrok 及兼容 legacy session，可通过 `grok login --oauth`、应用内登录、导入当前登录或粘贴凭据添加，API Key 单独登录不加入托管账号
 - Grok 官方凭据为 `$GROK_HOME/auth.json`，托管副本为 `~/.quosparr/accounts/grok-<stable-id>/auth.json`，无 token 的索引为 `~/.quosparr/accounts/grok-index.json`
 - Grok 切号只替换 OAuth / 兼容 legacy scope，保留 API Key 与未知 scope，仅保证新会话使用新账号；不强制终止外部 Grok 进程，切换前提示旧进程可能写回旧账号
+- Claude 使用 `CLAUDE_CONFIG_DIR`，默认 `~/.claude`。macOS 官方凭据在钥匙串条目 `Claude Code-credentials`（设置了 `CLAUDE_CONFIG_DIR` 时 service 名带目录哈希后缀），通过 `/usr/bin/security` 读写；Windows / Linux 为 `<config>/.credentials.json`。托管副本为 `~/.quosparr/accounts/claude-<stable-id>/auth.json`，索引为 `claude-index.json`
+- Claude 切号只替换凭据里的 `claudeAiOauth`，保留 `mcpOAuth`，并只替换 `.claude.json` 的 `oauthAccount`。当前账号不刷新，过期时提示运行一次 `claude`。非当前账号由 Quosparr 刷新，结果只写账号库副本。应用内登录不自建 OAuth，提示在终端执行 `claude auth login`；刷新时自动导入并跟随官方当前登录（`oauthAccount` 缺失时按 token 调用一次 profile 识别身份，无法识别时不入库），外部登出后清除当前标记，只写账号库副本。不强制终止外部 Claude Code 进程
+- macOS 钥匙串写入经 `security -i` 标准输入，单行上限 4095 字节，超限时拒绝而不改用 argv；写入后读回逐字节比对，不一致时回滚到原条目；该条目不存在时写钥匙串，不新建明文 `.credentials.json`
 
 ### 开发运行与 Widget
 
@@ -127,21 +136,22 @@ V1_DEVELOPMENT_PACKAGE=1 bash Scripts/package-v1-app.sh
 ```
 
 - Go 自检不请求网络、不解析凭据，只报告版本 / 平台、自有目录权限与可写性、锁状态、Codex auth 与会话索引是否存在；已有自有目录会创建并移除临时写入探针
-- 脱敏认证摘要、token 有效性、会话 dry-run 摘要、Grok CLI 版本、Grok 认证状态与身份仍明确列为 `not ported yet`，不能描述为完整诊断
-- Go 桌面开发入口为 `bash Scripts/run-dev-app.sh`：以正式身份 `com.quosparr.app` 构建开发包（禁用更新器，`--widget` 时含 Widget）并在前台使用真实 HOME、数据与偏好运行，需先退出已安装实例；`mygo dev` 的 `.dev` 身份与正式应用冲突且无数据，不作为开发入口；隔离运行使用临时 HOME 加 `QUOSPARR_PREFS_DOMAIN=<测试域> go run .`；系统集成与升级验收使用一次性 VM
+- 自检另报告 Claude 配置目录和凭据文件是否存在，不解析、不读取钥匙串内容。脱敏认证摘要、token 有效性、会话 dry-run 摘要、Grok CLI 版本、Grok 认证状态与身份、Claude CLI 版本与认证身份仍明确列为 `not ported yet`，不能描述为完整诊断
+- Go 桌面开发入口为 `bash Scripts/run-dev-app.sh`：以正式身份 `com.quosparr.app` 构建开发包（禁用更新器，`--widget` 时含 Widget，`--tier-badges` 另开窗口预览三家全部订阅徽标的浅色 / 深色样式，即 `QUOSPARR_DEV_TIER_BADGES=1`，仅开发包或测试偏好域生效）并在前台使用真实 HOME、数据与偏好运行，需先退出已安装实例；`mygo dev` 的 `.dev` 身份与正式应用冲突且无数据，不作为开发入口；隔离运行使用临时 HOME 加 `QUOSPARR_PREFS_DOMAIN=<测试域> go run .`；系统集成与升级验收使用一次性 VM
 - macOS 开发包输出到 `build/v1-<arch>/darwin-<goarch>/Quosparr.app` 和 `Quosparr-macos-<arch>-dev.zip`，目前保留正式 bundle 身份；正式打包默认 `V1_DEVELOPMENT_PACKAGE=0`，签名私钥通过发布环境提供
 - Widget 要求 macOS 14+，保留四类组件、供应商选择和深链，Windows / Linux 不提供 WidgetKit；现有桌面组件的升级接续仍需实际验收
 - Widget 快照为 schema 1，位于 `~/.quosparr/widget-snapshot.json`，权限 `0600`，只含非密钥派生数据，不含邮箱、账号 ID、token、完整认证 JSON 或事件原文；主程序是唯一写入者，组件只读
 
 ### 代理、隐私与统计口径
 
-- 代理支持跟随系统、HTTP、SOCKS5 及用户名 / 密码，覆盖应用发起的 Codex / Grok 请求、CLI 操作、公开状态 / 价格源和软件更新；不修改系统代理，浏览器登录页与已经运行的外部 CLI 沿用各自设置
+- 代理支持跟随系统、HTTP、SOCKS5 及用户名 / 密码，覆盖应用发起的 Codex / Grok / Claude 请求、CLI 操作、公开状态 / 价格源和软件更新；不修改系统代理，浏览器登录页与已经运行的外部 CLI 沿用各自设置
 - 代理修改仅在“保存代理设置”后生效，进行中的更新保持启动时配置；“测试连接”只用当前草稿访问测试站点（默认 `https://github.com`，可自定义并保存为偏好，任何非 407 / 5xx 响应视为连通），不发送账号凭据、不保存草稿；错误配置、凭据不可用或自定义代理失败不能自动直连
 - 非密钥派生数据保存在 `~/.quosparr`，Windows / Linux 偏好在自有目录；代理密码分别保存在 macOS Keychain、Windows Credential Manager、Linux Secret Service
 - API 等价成本默认来自本机会话日志，不上传会话内容；周额度推算只保存 `quota-estimate-history.json` 中的派生 Credits 与占用率，不保存 token 或密钥
 - 图表“官方统计（多端）”属于当前账号，可能延迟或修订；“本机日志（全部本机会话）”可能跨账号，不能视为包含关系或相减；Codex 两种按日统计均按 UTC 日界比较
 - Codex 内置 API 价格表版本为 `openai-builtin-2026-09-27`，在线官方价格表采用 `openai-docs-` 版本，未知模型不报告精确费用；订阅额度推算使用 `credits-usd-2026-08-26`，1000 Credits 约对应 40 美元，属于非官方推算
 - Grok 额度只使用官方 CLI chat-proxy `/v1/billing?format=credits`，不读取浏览器 Cookie、不从本地日志伪造额度、不混入 API 账单；API 等价成本使用本地 `turn_completed` 用量和 `xai-builtin-2026-09-27`，区分输入、缓存、输出及长上下文价格，`costUsdTicks` 不作为 API 等价成本
+- Claude 订阅用量来自非公开的 OAuth usage 端点，界面写作 “Claude Code 订阅用量”，不写成官方额度接口。API 等价成本使用本地会话日志和 `anthropic-builtin-2026-10-14`，按 message id 去重，缓存写入分 5 分钟与 1 小时，Fast 档单独计价，未知模型不给精确费用。日界用本地时区。Claude 日志没有首 token 时间，速率按端到端耗时计算
 
 ### 提交与推送边界
 

@@ -45,6 +45,7 @@ type Snapshot struct {
 	Accounts   AccountsView
 	Codex      CodexView
 	Grok       GrokState
+	Claude     ClaudeState
 	ResetToday ResetTodayState
 	Refresh    RefreshView
 	StatusBar  StatusBarView

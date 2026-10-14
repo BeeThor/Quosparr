@@ -86,10 +86,16 @@ func TestDisplayPrivacySwitchUpdatesBothProviderPanels(t *testing.T) {
 		snap := panelFixture()
 		snap.Grok.Accounts = snap.Accounts
 		snap.Grok.Accounts.Display.DisplayName = "Ada Lovelace"
+		snap.Claude.Accounts = snap.Accounts
+		snap.Claude.Accounts.Display.DisplayName = "Ada Lovelace"
+		snap.Claude.Accounts.Display.Email = "ada@example.com"
 		a, panel := newPanel(t, func(p *store.Preferences) { p.SelectedProvider = provider }, snap, PanelActions{})
 		label := a.L().Text(l10n.KeyAccounts)
 		if provider == store.ProviderGrok {
 			label = a.L().Text(l10n.KeyGrokAccountsTitle)
+		}
+		if provider == store.ProviderClaude {
+			label = "Ada Lovelace"
 		}
 		if !panel.HasText("Ada Lovelace") {
 			t.Fatal("main identity missing")

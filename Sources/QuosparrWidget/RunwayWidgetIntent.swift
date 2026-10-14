@@ -7,11 +7,15 @@ import Foundation
 @available(macOS 14.0, *)
 struct RunwayProviderOptions: DynamicOptionsProvider, Sendable {
     func results() async throws -> IntentItemCollection<String> {
-        IntentItemCollection(sections: [
+        let l10n = L10n.system
+        return IntentItemCollection(sections: [
             IntentItemSection(items: [
-                IntentItem("codex", title: "Codex"),
-                IntentItem("grok", title: "Grok"),
-                IntentItem("both", title: "Both"),
+                IntentItem("codex", title: LocalizedStringResource(stringLiteral: l10n.text(.widgetProviderCodex))),
+                IntentItem("grok", title: LocalizedStringResource(stringLiteral: l10n.text(.widgetProviderGrok))),
+                IntentItem("claude", title: LocalizedStringResource(stringLiteral: l10n.text(.widgetProviderClaude))),
+                IntentItem("both", title: LocalizedStringResource(stringLiteral: l10n.text(.widgetProviderBoth))),
+                IntentItem("codex-claude", title: LocalizedStringResource(stringLiteral: l10n.text(.widgetProviderCodexClaude))),
+                IntentItem("grok-claude", title: LocalizedStringResource(stringLiteral: l10n.text(.widgetProviderGrokClaude))),
             ]),
         ])
     }

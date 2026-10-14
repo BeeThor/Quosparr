@@ -53,40 +53,43 @@ func RateLimitResetTodayRefreshIntervalOptions() []int {
 // DecodePreferences and EncodePreferences to read and write the stored form:
 // they keep unknown keys and reject what the Swift app would reject.
 type Preferences struct {
-	SelectedProvider                          Provider               `json:"selectedProvider"`
-	Language                                  Language               `json:"language"`
-	Appearance                                Appearance             `json:"appearance"`
-	MainPanelBackgroundStyle                  PanelBackground        `json:"mainPanelBackgroundStyle"`
-	StatusBarDisplayStyle                     StatusBarStyle         `json:"statusBarDisplayStyle"`
-	StatusBarMetersDetailStyle                MetersDetail           `json:"statusBarMetersDetailStyle"`
-	StatusBarBatteryScope                     BatteryScope           `json:"statusBarBatteryScope"`
-	StatusBarBatteryDetailStyle               BatteryDetail          `json:"statusBarBatteryDetailStyle"`
-	StatusBarProviderScope                    StatusBarProviderScope `json:"statusBarProviderScope"`
-	RefreshIntervalSeconds                    int                    `json:"refreshIntervalSeconds"`
-	WidgetRefreshIntervalSeconds              int                    `json:"widgetRefreshIntervalSeconds"`
-	APICostSummaryRange                       CostRange              `json:"apiCostSummaryRange"`
-	MainPanelHeight                           float64                `json:"mainPanelHeight"`
-	MainPanelModuleOrder                      []Module               `json:"mainPanelModuleOrder"`
-	ShowsQuotaSummary                         bool                   `json:"showsQuotaSummary"`
-	ShowsResetCreditsSummary                  bool                   `json:"showsResetCreditsSummary"`
-	ShowsQuotaEstimateSummary                 bool                   `json:"showsQuotaEstimateSummary"`
-	QuotaEstimateWindowMode                   WindowMode             `json:"quotaEstimateWindowMode"`
-	ShowsCostSummary                          bool                   `json:"showsCostSummary"`
-	ShowsRecentSessions                       bool                   `json:"showsRecentSessions"`
-	ShowsSessionRepairSummary                 bool                   `json:"showsSessionRepairSummary"`
-	ShowsRateLimitResetToday                  bool                   `json:"showsRateLimitResetToday"`
-	ShowsModelSpecificQuotaUsage              bool                   `json:"showsModelSpecificQuotaUsage"`
-	ShowsTokenUsageHeatmap                    bool                   `json:"showsTokenUsageHeatmap"`
-	TokenUsageChartStyle                      ChartStyle             `json:"tokenUsageChartStyle"`
-	RateLimitResetTodayRefreshIntervalSeconds int                    `json:"rateLimitResetTodayRefreshIntervalSeconds"`
-	AutomaticallyChecksForUpdates             bool                   `json:"automaticallyChecksForUpdates"`
-	LaunchAtLoginEnabled                      bool                   `json:"launchAtLoginEnabled"`
-	LaunchAtLoginInitialized                  bool                   `json:"launchAtLoginInitialized"`
-	QuotaAlertsEnabled                        bool                   `json:"quotaAlertsEnabled"`
-	ResetCreditAlertsEnabled                  bool                   `json:"resetCreditAlertsEnabled"`
-	RateLimitResetTodayAlertsEnabled          bool                   `json:"rateLimitResetTodayAlertsEnabled"`
-	ExportsStatusJSON                         bool                   `json:"exportsStatusJSON"`
-	AccountPrivacyModeEnabled                 bool                   `json:"accountPrivacyModeEnabled"`
+	SelectedProvider            Provider               `json:"selectedProvider"`
+	Language                    Language               `json:"language"`
+	Appearance                  Appearance             `json:"appearance"`
+	MainPanelBackgroundStyle    PanelBackground        `json:"mainPanelBackgroundStyle"`
+	StatusBarDisplayStyle       StatusBarStyle         `json:"statusBarDisplayStyle"`
+	StatusBarMetersDetailStyle  MetersDetail           `json:"statusBarMetersDetailStyle"`
+	StatusBarBatteryScope       BatteryScope           `json:"statusBarBatteryScope"`
+	StatusBarBatteryDetailStyle BatteryDetail          `json:"statusBarBatteryDetailStyle"`
+	StatusBarProviderScope      StatusBarProviderScope `json:"statusBarProviderScope"`
+	// StatusBarProviders is the custom status-bar selection, one or two
+	// providers in Providers() order. It is omitted unless the scope is custom.
+	StatusBarProviders                        []Provider `json:"statusBarProviders,omitempty"`
+	RefreshIntervalSeconds                    int        `json:"refreshIntervalSeconds"`
+	WidgetRefreshIntervalSeconds              int        `json:"widgetRefreshIntervalSeconds"`
+	APICostSummaryRange                       CostRange  `json:"apiCostSummaryRange"`
+	MainPanelHeight                           float64    `json:"mainPanelHeight"`
+	MainPanelModuleOrder                      []Module   `json:"mainPanelModuleOrder"`
+	ShowsQuotaSummary                         bool       `json:"showsQuotaSummary"`
+	ShowsResetCreditsSummary                  bool       `json:"showsResetCreditsSummary"`
+	ShowsQuotaEstimateSummary                 bool       `json:"showsQuotaEstimateSummary"`
+	QuotaEstimateWindowMode                   WindowMode `json:"quotaEstimateWindowMode"`
+	ShowsCostSummary                          bool       `json:"showsCostSummary"`
+	ShowsRecentSessions                       bool       `json:"showsRecentSessions"`
+	ShowsSessionRepairSummary                 bool       `json:"showsSessionRepairSummary"`
+	ShowsRateLimitResetToday                  bool       `json:"showsRateLimitResetToday"`
+	ShowsModelSpecificQuotaUsage              bool       `json:"showsModelSpecificQuotaUsage"`
+	ShowsTokenUsageHeatmap                    bool       `json:"showsTokenUsageHeatmap"`
+	TokenUsageChartStyle                      ChartStyle `json:"tokenUsageChartStyle"`
+	RateLimitResetTodayRefreshIntervalSeconds int        `json:"rateLimitResetTodayRefreshIntervalSeconds"`
+	AutomaticallyChecksForUpdates             bool       `json:"automaticallyChecksForUpdates"`
+	LaunchAtLoginEnabled                      bool       `json:"launchAtLoginEnabled"`
+	LaunchAtLoginInitialized                  bool       `json:"launchAtLoginInitialized"`
+	QuotaAlertsEnabled                        bool       `json:"quotaAlertsEnabled"`
+	ResetCreditAlertsEnabled                  bool       `json:"resetCreditAlertsEnabled"`
+	RateLimitResetTodayAlertsEnabled          bool       `json:"rateLimitResetTodayAlertsEnabled"`
+	ExportsStatusJSON                         bool       `json:"exportsStatusJSON"`
+	AccountPrivacyModeEnabled                 bool       `json:"accountPrivacyModeEnabled"`
 	// ThemeColor is the accent of the app's windows as "#RRGGBB", or empty
 	// for the brand brown. Only the Go app knows the key, so it is omitted
 	// while empty and an unreadable value falls back to the brand.
@@ -152,8 +155,43 @@ func DefaultPreferences() Preferences {
 // Clone returns a deep copy.
 func (p Preferences) Clone() Preferences {
 	p.MainPanelModuleOrder = slices.Clone(p.MainPanelModuleOrder)
+	p.StatusBarProviders = slices.Clone(p.StatusBarProviders)
 	p.extra = maps.Clone(p.extra)
 	return p
+}
+
+// StatusBarSelection is the status item's providers. Nil means follow the
+// main panel. Legacy both is Codex then Grok. Custom is the stored list.
+func (p Preferences) StatusBarSelection() []Provider {
+	switch p.StatusBarProviderScope {
+	case ProviderScopeBoth:
+		return []Provider{ProviderCodex, ProviderGrok}
+	case ProviderScopeCustom:
+		return canonicalStatusBarProviders(p.StatusBarProviders)
+	default:
+		return nil
+	}
+}
+
+// canonicalStatusBarProviders keeps one or two known providers, drops
+// duplicates, and sorts them into Providers() order.
+func canonicalStatusBarProviders(in []Provider) []Provider {
+	seen := map[Provider]bool{}
+	for _, p := range in {
+		if p.Valid() {
+			seen[p] = true
+		}
+	}
+	out := make([]Provider, 0, 2)
+	for _, p := range Providers() {
+		if seen[p] {
+			out = append(out, p)
+			if len(out) == 2 {
+				break
+			}
+		}
+	}
+	return out
 }
 
 // Normalize applies the clamping and module-order repair the Swift initializer
@@ -169,6 +207,25 @@ func (p *Preferences) Normalize() {
 		p.QuotaResetTimeFormat = ResetTimeRelative
 	}
 	p.ProxyTestURL = NormalizeProxyTestURL(p.ProxyTestURL)
+	p.normalizeStatusBarProviders()
+}
+
+// normalizeStatusBarProviders applies the custom-list rules. Legacy both is
+// left as both so a frozen settings document still round-trips. An empty or
+// invalid custom list falls back to following the main panel.
+func (p *Preferences) normalizeStatusBarProviders() {
+	switch p.StatusBarProviderScope {
+	case ProviderScopeBoth, ProviderScopeSelected:
+		p.StatusBarProviders = nil
+	case ProviderScopeCustom:
+		p.StatusBarProviders = canonicalStatusBarProviders(p.StatusBarProviders)
+		if len(p.StatusBarProviders) == 0 {
+			p.StatusBarProviderScope = ProviderScopeSelected
+			p.StatusBarProviders = nil
+		}
+	default:
+		p.StatusBarProviders = nil
+	}
 }
 
 // ErrInvalidProxyTestURL rejects a test site that is not an http(s) URL with

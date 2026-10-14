@@ -14,6 +14,7 @@ import (
 
 	"github.com/egoist/mygo"
 	"github.com/licoy/quosparr/internal/alerts"
+	"github.com/licoy/quosparr/internal/claude"
 	"github.com/licoy/quosparr/internal/codex"
 	"github.com/licoy/quosparr/internal/codexapi"
 	"github.com/licoy/quosparr/internal/estimate"
@@ -168,6 +169,8 @@ type liveApp struct {
 	codex          *codex.Store
 	grokMod        *grok.Module
 	grok           *grokBridge
+	claudeMod      *claude.Module
+	claudeB        *claudeBridge
 	reset          *resetBridge
 	repo           *usage.Repository
 	widgets        *widgetCoordinator
@@ -213,6 +216,15 @@ func newRuntime(opts BackgroundOptions) *liveApp {
 		log.Println("grok accounts: load failed")
 	}
 	bridge.reload(false)
+	cstore := claude.NewStore(claude.ResolveConfigDir(os.Getenv("CLAUDE_CONFIG_DIR"), home), platform.RunwayDir(home), home, os.Getenv("CLAUDE_CONFIG_DIR"), "")
+	cmod := claude.NewModule(cstore)
+	cmod.Usage = &claude.UsageClient{Version: claudeCLIVersion(cstore.ConfigDir())}
+	cmod.Tokens = claude.RefreshClient{}
+	cbridge := newClaudeBridge(cmod, prefs, langs)
+	if _, err := cmod.Load(context.Background()); err != nil {
+		log.Println("claude accounts: load failed")
+	}
+	cbridge.reload(false)
 	reset := newResetBridge(opts.Settings, prefs, langs)
 	repo := openUsage(home)
 	widgetRequirements := initialWidgetRequirements(opts.Settings)
@@ -246,6 +258,7 @@ func newRuntime(opts BackgroundOptions) *liveApp {
 		CostCachePath:       usage.DefaultSummaryCachePath(home),
 		StatusPath:          export.DefaultStatusPath(home),
 		Grok:                bridge,
+		Claude:              cbridge,
 		ResetToday:          reset,
 		WidgetRequirements:  widgetRequirements,
 		WidgetSink:          widgets.publish,
@@ -259,7 +272,7 @@ func newRuntime(opts BackgroundOptions) *liveApp {
 		SystemLanguages: langs,
 	})
 	rt := &liveApp{
-		svc: svc, codex: codexStore, grokMod: mod, grok: bridge, reset: reset,
+		svc: svc, codex: codexStore, grokMod: mod, grok: bridge, claudeMod: cmod, claudeB: cbridge, reset: reset,
 		repo: repo, widgets: widgets, dispatch: dispatch, widgetDispatch: widgetUI, alertDispatch: alertUI, version: opts.Version, langs: langs,
 	}
 	widgets.onRequirements = svc.SetWidgetRequirements

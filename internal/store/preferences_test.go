@@ -93,7 +93,7 @@ func TestThirtyFourFieldsAllDifferFromDefaults(t *testing.T) {
 	typ := d.Type()
 	count := 0
 	for i := 0; i < typ.NumField(); i++ {
-		if typ.Field(i).Tag.Get("json") == "" || typ.Field(i).Name == "ThemeColor" || typ.Field(i).Name == "QuotaResetTimeFormat" || typ.Field(i).Name == "ProxyTestURL" || typ.Field(i).Name == "ShowsSpeedAnalysis" {
+		if typ.Field(i).Tag.Get("json") == "" || typ.Field(i).Name == "ThemeColor" || typ.Field(i).Name == "QuotaResetTimeFormat" || typ.Field(i).Name == "ProxyTestURL" || typ.Field(i).Name == "ShowsSpeedAnalysis" || typ.Field(i).Name == "StatusBarProviders" {
 			continue // the unexported extra map, and the keys only Go writes
 		}
 		count++
@@ -231,7 +231,8 @@ func TestEveryEnumValue(t *testing.T) {
 	checkEnum(t, "statusBarMetersDetailStyle", MetersDetails(), MetersDetail.Valid, func(p Preferences) MetersDetail { return p.StatusBarMetersDetailStyle })
 	checkEnum(t, "statusBarBatteryScope", BatteryScopes(), BatteryScope.Valid, func(p Preferences) BatteryScope { return p.StatusBarBatteryScope })
 	checkEnum(t, "statusBarBatteryDetailStyle", BatteryDetails(), BatteryDetail.Valid, func(p Preferences) BatteryDetail { return p.StatusBarBatteryDetailStyle })
-	checkEnum(t, "statusBarProviderScope", StatusBarProviderScopes(), StatusBarProviderScope.Valid, func(p Preferences) StatusBarProviderScope { return p.StatusBarProviderScope })
+	// custom with no list falls back to selected, so it is not a round-trip value here.
+	checkEnum(t, "statusBarProviderScope", []StatusBarProviderScope{ProviderScopeSelected, ProviderScopeBoth}, StatusBarProviderScope.Valid, func(p Preferences) StatusBarProviderScope { return p.StatusBarProviderScope })
 	checkEnum(t, "apiCostSummaryRange", CostRanges(), CostRange.Valid, func(p Preferences) CostRange { return p.APICostSummaryRange })
 	checkEnum(t, "tokenUsageChartStyle", ChartStyles(), ChartStyle.Valid, func(p Preferences) ChartStyle { return p.TokenUsageChartStyle })
 }
@@ -250,7 +251,7 @@ func TestEnumRawValuesMatchSwift(t *testing.T) {
 		got  []string
 		want []string
 	}{
-		"provider":      {conv(Providers()), strs("codex", "grok")},
+		"provider":      {conv(Providers()), strs("codex", "grok", "claude")},
 		"language":      {conv(Languages()), strs("system", "english", "simplifiedChinese", "traditionalChinese", "korean", "japanese", "russian", "french")},
 		"appearance":    {conv(Appearances()), strs("system", "light", "dark")},
 		"background":    {conv(PanelBackgrounds()), strs("translucent", "opaque")},
@@ -258,7 +259,7 @@ func TestEnumRawValuesMatchSwift(t *testing.T) {
 		"metersDetail":  {conv(MetersDetails()), strs("remainingPercent", "resetTime", "both")},
 		"batteryScope":  {conv(BatteryScopes()), strs("fiveHour", "weekly", "both")},
 		"batteryDetail": {conv(BatteryDetails()), strs("countdown", "remainingPercent")},
-		"providerScope": {conv(StatusBarProviderScopes()), strs("selected", "both")},
+		"providerScope": {conv(StatusBarProviderScopes()), strs("selected", "both", "custom")},
 		"costRange":     {conv(CostRanges()), strs("today", "current", "previous", "thisMonth")},
 		"chart":         {conv(ChartStyles()), strs("heatmap", "line", "bar")},
 		"modules":       {conv(Modules()), strs("quota", "tokenUsage", "speedAnalysis", "rateLimitResetToday", "quotaEstimate", "resetCredits", "apiCost", "sessionRepair", "recentSessions")},
@@ -268,6 +269,38 @@ func TestEnumRawValuesMatchSwift(t *testing.T) {
 		if !slices.Equal(tc.got, tc.want) {
 			t.Errorf("%s: %v, want %v", name, tc.got, tc.want)
 		}
+	}
+}
+
+func TestStatusBarProviderSelection(t *testing.T) {
+	both := mustDecode(t, `{"statusBarProviderScope":"both"}`)
+	if both.StatusBarProviderScope != ProviderScopeBoth || !slices.Equal(both.StatusBarSelection(), []Provider{ProviderCodex, ProviderGrok}) {
+		t.Fatalf("both = %+v selection %v", both.StatusBarProviderScope, both.StatusBarSelection())
+	}
+	enc, err := EncodePreferences(both)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(enc), "statusBarProviders") || !strings.Contains(string(enc), `"statusBarProviderScope":"both"`) {
+		t.Fatalf("legacy both must stay both without a provider list: %s", enc)
+	}
+	custom := mustDecode(t, `{"statusBarProviderScope":"custom","statusBarProviders":["claude","codex","nope","codex"]}`)
+	if custom.StatusBarProviderScope != ProviderScopeCustom || !slices.Equal(custom.StatusBarProviders, []Provider{ProviderCodex, ProviderClaude}) {
+		t.Fatalf("custom = %v %v", custom.StatusBarProviderScope, custom.StatusBarProviders)
+	}
+	enc, err = EncodePreferences(custom)
+	if err != nil || !strings.Contains(string(enc), `"statusBarProviders":["codex","claude"]`) {
+		t.Fatalf("encode custom: %v %s", err, enc)
+	}
+	if back := mustDecode(t, string(enc)); !slices.Equal(back.StatusBarProviders, custom.StatusBarProviders) {
+		t.Fatalf("round trip %v", back.StatusBarProviders)
+	}
+	empty := mustDecode(t, `{"statusBarProviderScope":"custom","statusBarProviders":["nope"]}`)
+	if empty.StatusBarProviderScope != ProviderScopeSelected || empty.StatusBarProviders != nil {
+		t.Fatalf("empty custom = %v %v", empty.StatusBarProviderScope, empty.StatusBarProviders)
+	}
+	if _, err := DecodePreferences([]byte(`{"statusBarProviders":"codex"}`)); !errors.Is(err, ErrCorrupt) {
+		t.Fatalf("bad list: %v", err)
 	}
 }
 

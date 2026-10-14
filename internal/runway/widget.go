@@ -98,9 +98,31 @@ func grokWidgetProvider(g GrokState, p store.Preferences) export.ProviderSnapsho
 	})
 }
 
+// claudeWidgetProvider is the Claude block from the live Claude state.
+func claudeWidgetProvider(g ClaudeState, p store.Preferences) export.ProviderSnapshot {
+	if g.Widget != nil {
+		w := *g.Widget
+		if !p.ShowsModelSpecificQuotaUsage {
+			var std []export.WidgetQuota
+			for _, q := range w.Quota {
+				if q.Source == export.QuotaStandard {
+					std = append(std, q)
+				}
+			}
+			w.Quota = std
+		}
+		return export.NewProviderSnapshot(w)
+	}
+	return export.NewProviderSnapshot(export.ProviderSnapshot{
+		Provider: export.ProviderClaude, Availability: export.Unavailable, TokenSource: export.TokensThisMac,
+	})
+}
+
 // makeWidgetSnapshot builds the widget file content from a snapshot.
 func makeWidgetSnapshot(snap Snapshot, p store.Preferences, now time.Time) export.Snapshot {
-	providers := []export.ProviderSnapshot{codexWidgetProvider(snap.Codex), grokWidgetProvider(snap.Grok, p)}
+	providers := []export.ProviderSnapshot{
+		codexWidgetProvider(snap.Codex), grokWidgetProvider(snap.Grok, p), claudeWidgetProvider(snap.Claude, p),
+	}
 	return export.NewSnapshot(now, snap.Language, providers, snap.ResetToday.Widget)
 }
 

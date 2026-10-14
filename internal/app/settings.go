@@ -361,7 +361,41 @@ func (s *Settings) SetStatusBarBatteryDetail(v store.BatteryDetail) bool {
 
 // SetStatusBarProviderScope selects which providers the status item shows.
 func (s *Settings) SetStatusBarProviderScope(v store.StatusBarProviderScope) bool {
-	return s.Update(func(p *store.Preferences) { p.StatusBarProviderScope = v })
+	return s.Update(func(p *store.Preferences) {
+		p.StatusBarProviderScope = v
+		draft := *p
+		draft.StatusBarProviderScope = v
+		if v == store.ProviderScopeCustom && len(draft.StatusBarSelection()) == 0 {
+			pick := p.SelectedProvider
+			if !pick.Valid() {
+				pick = store.ProviderCodex
+			}
+			p.StatusBarProviders = []store.Provider{pick}
+		}
+	})
+}
+
+// SetStatusBarProviders stores a custom status-bar selection of one or two providers.
+func (s *Settings) SetStatusBarProviders(providers []store.Provider) bool {
+	return s.Update(func(p *store.Preferences) {
+		if codexAndGrokOnly(providers) {
+			p.StatusBarProviderScope = store.ProviderScopeBoth
+			p.StatusBarProviders = nil
+			return
+		}
+		p.StatusBarProviderScope = store.ProviderScopeCustom
+		p.StatusBarProviders = append([]store.Provider(nil), providers...)
+	})
+}
+
+func codexAndGrokOnly(providers []store.Provider) bool {
+	seen := map[store.Provider]bool{}
+	for _, p := range providers {
+		if p.Valid() {
+			seen[p] = true
+		}
+	}
+	return len(seen) == 2 && seen[store.ProviderCodex] && seen[store.ProviderGrok]
 }
 
 // SetRefreshInterval sets the refresh interval, limited to 60...1800 s.

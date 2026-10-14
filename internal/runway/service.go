@@ -40,8 +40,9 @@ type Options struct {
 	CostCachePath       string // api-equivalent-cost.json
 	StatusPath          string // status.json (written when ExportsStatusJSON)
 
-	// Grok and ResetToday are optional providers (see providers.go).
+	// Grok, Claude and ResetToday are optional providers (see providers.go).
 	Grok       GrokProvider
+	Claude     ClaudeProvider
 	ResetToday ResetTodayProvider
 
 	// WidgetSink receives the widget snapshot when the widget schedule is
@@ -219,6 +220,9 @@ func New(o Options) *Service {
 	s.bootstrap()
 	if o.Grok != nil {
 		o.Grok.SetOnChange(s.publish)
+	}
+	if o.Claude != nil {
+		o.Claude.SetOnChange(s.publish)
 	}
 	if o.ResetToday != nil {
 		o.ResetToday.SetOnChange(s.publish)
@@ -473,6 +477,8 @@ func (s *Service) SetPreferences(p store.Preferences) {
 		})
 	} else if p.SelectedProvider == store.ProviderGrok && (rangeChanged && p.ShowsCostSummary || costOn || heatOn || (!old.ShowsRecentSessions && p.ShowsRecentSessions) || speedOn) {
 		s.refreshGrok()
+	} else if p.SelectedProvider == store.ProviderClaude && (rangeChanged && p.ShowsCostSummary || costOn || heatOn || (!old.ShowsRecentSessions && p.ShowsRecentSessions) || speedOn) {
+		s.refreshClaude()
 	}
 	if reportOn {
 		s.RefreshSessionReport(true)
@@ -504,7 +510,7 @@ func (s *Service) Preferences() store.Preferences {
 	return s.prefs.Clone()
 }
 
-// SelectProvider switches the panel between Codex and Grok.
+// SelectProvider switches the panel. claude is accepted like codex and grok.
 func (s *Service) SelectProvider(p store.Provider) {
 	prefs := s.Preferences()
 	if prefs.SelectedProvider == p {

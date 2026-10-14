@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/licoy/quosparr/internal/claude"
 	"github.com/licoy/quosparr/internal/platform"
 )
 
@@ -38,6 +39,13 @@ func SelfCheck(w io.Writer, home, version string) {
 		line("codex auth: %s", presence(filepath.Join(codexDir, "auth.json")))
 		line("session index: %s", presence(filepath.Join(codexDir, "session_index.jsonl")))
 	}
+	claudeDir := claude.ResolveConfigDir(os.Getenv("CLAUDE_CONFIG_DIR"), home)
+	if exists(claudeDir) {
+		line("claude config: present")
+	} else {
+		line("claude config: missing")
+	}
+	line("claude credentials file: %s", presence(claude.CredentialsFilePath(claudeDir)))
 	line("not ported yet: %s", strings.Join(NotPortedChecks, ", "))
 }
 
@@ -50,6 +58,8 @@ var NotPortedChecks = []string{
 	"grok cli version",
 	"grok auth status",
 	"grok identity",
+	"claude cli version",
+	"claude auth identity",
 }
 
 func describeRunwayDir(dir, home string) string {

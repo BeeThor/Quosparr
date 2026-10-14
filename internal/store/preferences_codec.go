@@ -50,6 +50,7 @@ func readPreferences(r *reader) Preferences {
 	p.StatusBarBatteryScope = readEnum(r, "statusBarBatteryScope", p.StatusBarBatteryScope, BatteryScope.Valid)
 	p.StatusBarBatteryDetailStyle = readEnum(r, "statusBarBatteryDetailStyle", p.StatusBarBatteryDetailStyle, BatteryDetail.Valid)
 	p.StatusBarProviderScope = readEnum(r, "statusBarProviderScope", p.StatusBarProviderScope, StatusBarProviderScope.Valid)
+	p.StatusBarProviders = readProviders(r, "statusBarProviders")
 	p.RefreshIntervalSeconds = r.int("refreshIntervalSeconds", p.RefreshIntervalSeconds)
 	p.WidgetRefreshIntervalSeconds = r.int("widgetRefreshIntervalSeconds", p.WidgetRefreshIntervalSeconds)
 	p.APICostSummaryRange = readEnum(r, "apiCostSummaryRange", p.APICostSummaryRange, CostRange.Valid)

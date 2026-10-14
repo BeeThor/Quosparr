@@ -15,13 +15,7 @@ func (a *App) OpenWidgetURL(raw string) bool {
 		return false
 	}
 	a.cancelPanelDetails()
-	provider := a.settings.Prefs().SelectedProvider
-	switch link.Provider {
-	case export.ScopeCodex:
-		provider = store.ProviderCodex
-	case export.ScopeGrok:
-		provider = store.ProviderGrok
-	}
+	provider := widgetProvider(link.Provider, a.settings.Prefs().SelectedProvider)
 	if link.Section == export.SectionResetToday {
 		provider = store.ProviderCodex
 	}
@@ -40,6 +34,28 @@ func (a *App) OpenWidgetURL(raw string) bool {
 	a.redrawPanel()
 	RefreshWidgetConfigurations()
 	return true
+}
+
+// widgetProvider opens a single-provider scope on that provider. A combination
+// keeps the current provider when it is one of the pair.
+func widgetProvider(scope export.ProviderScope, current store.Provider) store.Provider {
+	switch scope {
+	case export.ScopeCodex:
+		return store.ProviderCodex
+	case export.ScopeGrok:
+		return store.ProviderGrok
+	case export.ScopeClaude:
+		return store.ProviderClaude
+	}
+	for _, p := range scope.Providers() {
+		if store.Provider(p) == current {
+			return current
+		}
+	}
+	if ps := scope.Providers(); len(ps) > 0 {
+		return store.Provider(ps[0])
+	}
+	return current
 }
 
 func widgetSectionModule(s export.Section) store.Module {

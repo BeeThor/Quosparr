@@ -89,6 +89,67 @@ type GrokProvider interface {
 	SetOnChange(fn func())
 }
 
+// ClaudeAvailability is the state of the Claude panel.
+type ClaudeAvailability int
+
+// ClaudeAvailability values.
+const (
+	ClaudeLoading ClaudeAvailability = iota
+	ClaudeReady
+	ClaudeNotLoggedIn
+	ClaudeAPIKeyMode
+	ClaudeTokenExpired
+	ClaudeReauthRequired
+	ClaudeRateLimited
+	ClaudeCredentialStoreUnavailable
+	ClaudeUsageParseFailed
+	ClaudeFailed
+)
+
+// ClaudeState is the Claude view used by the status bar, widget and panel.
+// It has no reset-credits fields. ExtraUsage is the raw used/limit text.
+type ClaudeState struct {
+	Availability   ClaudeAvailability
+	Accounts       AccountsView
+	AccountQuotas  map[string]ClaudeAccountQuota
+	Plan           string
+	UpdatedAt      time.Time
+	Meters         []Meter
+	LastError      string
+	Refreshing     bool
+	Widget         *export.ProviderSnapshot
+	Detail         any
+	Cost           *usage.Summary
+	Heatmap        HeatmapData
+	RecentSessions []sessions.Item
+	Speed          *speed.Report
+	// ExtraUsage is the unconverted extra-usage line, "" when absent.
+	ExtraUsage string
+	// Gateway is set when settings.json names a gateway env key and a
+	// subscription credential is also present.
+	Gateway bool
+}
+
+// ClaudeAccountQuota is the cached usage line of one managed account.
+// ExtraUsage keeps the raw used / monthly limit text and currency.
+type ClaudeAccountQuota struct {
+	Plan        string
+	Title       string
+	UsedPercent int
+	ResetsAt    time.Time
+	ExtraUsage  string
+	UpdatedAt   time.Time
+}
+
+// ClaudeProvider is the Claude seam. Locking matches GrokProvider: State must
+// be quick and must not call back into the Service, and the onChange callback
+// must run without holding any lock State takes.
+type ClaudeProvider interface {
+	State(now time.Time) ClaudeState
+	Refresh(ctx context.Context) error
+	SetOnChange(fn func())
+}
+
 // ResetTodayState is the display state of the "rate limit reset today" card.
 type ResetTodayState struct {
 	// Text is the one-line summary, Lines the detail rows.

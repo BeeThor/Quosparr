@@ -9,10 +9,22 @@ import (
 // Titles of the option values, as the Swift settings show them.
 
 func providerKey(v store.Provider) l10n.Key {
-	if v == store.ProviderGrok {
+	switch v {
+	case store.ProviderGrok:
 		return l10n.KeyProviderGrok
+	case store.ProviderClaude:
+		return l10n.KeyProviderClaude
+	default:
+		return l10n.KeyProviderCodex
 	}
-	return l10n.KeyProviderCodex
+}
+
+func providerTabLabels(l l10n.Localizer) []string {
+	labels := make([]string, 0, len(store.Providers()))
+	for _, p := range store.Providers() {
+		labels = append(labels, l.Text(providerKey(p)))
+	}
+	return labels
 }
 
 func appearanceKey(v store.Appearance) l10n.Key {
@@ -47,10 +59,14 @@ func statusBarStyleKey(v store.StatusBarStyle) l10n.Key {
 }
 
 func providerScopeKey(v store.StatusBarProviderScope) l10n.Key {
-	if v == store.ProviderScopeBoth {
+	switch v {
+	case store.ProviderScopeBoth:
 		return l10n.KeyStatusBarProviderScopeBoth
+	case store.ProviderScopeCustom:
+		return l10n.KeyStatusBarProviderScopeCustom
+	default:
+		return l10n.KeyStatusBarProviderScopeSelected
 	}
-	return l10n.KeyStatusBarProviderScopeSelected
 }
 
 func metersDetailKey(v store.MetersDetail) l10n.Key {

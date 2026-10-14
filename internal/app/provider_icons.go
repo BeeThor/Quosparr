@@ -14,9 +14,13 @@ var codexProviderSVG []byte
 //go:embed assets/providers/grok.svg
 var grokProviderSVG []byte
 
+//go:embed assets/providers/claude-color.svg
+var claudeProviderSVG []byte
+
 var (
-	codexProviderIcon = ui.MustParseSVG(codexProviderSVG)
-	grokProviderIcon  = ui.MustParseSVG(grokProviderSVG)
+	codexProviderIcon  = ui.MustParseSVG(codexProviderSVG)
+	grokProviderIcon   = ui.MustParseSVG(grokProviderSVG)
+	claudeProviderIcon = ui.MustParseSVG(claudeProviderSVG)
 )
 
 // ProviderIcon preserves the official logo's colors; monochrome SVGs inherit
@@ -27,6 +31,8 @@ func ProviderIcon(c *ui.Context, provider store.Provider, size float32) ui.Eleme
 		return ui.Image(c, codexProviderIcon).Size(size, size)
 	case store.ProviderGrok:
 		return ui.Image(c, grokProviderIcon).Size(size, size)
+	case store.ProviderClaude:
+		return ui.Image(c, claudeProviderIcon).Size(size, size)
 	default:
 		return ui.Icon(c, icPlug).Size(size, size).TextColor(c.Theme().TextMuted)
 	}
@@ -39,16 +45,15 @@ func ProviderTabs(c *ui.Context, selected *int, disabled bool, labels ...string)
 	t := c.Theme()
 	providers := store.Providers()
 	if len(labels) == 0 {
-		labels = []string{"", ""}
+		labels = make([]string, len(providers))
 	}
 	l := l10n.New(l10n.English)
-	names := []string{l.Text(l10n.KeyProviderCodex), l.Text(l10n.KeyProviderGrok)}
 	seg := ui.SegmentedBase(c, selected, len(labels))
 	seg.Track.Padding(3).Gap(2).Radius(7).Background(t.Text.Alpha(0.06)).Children(func() {
 		for i, label := range labels {
 			name := label
-			if name == "" && i < len(names) {
-				name = names[i]
+			if name == "" && i < len(providers) {
+				name = l.Text(providerKey(providers[i]))
 			}
 			s := seg.Segment(i).Padding(5, 7).Gap(5).Radius(5).Disabled(disabled).Label(name).Tooltip(name)
 			col := t.TextMuted

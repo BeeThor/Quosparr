@@ -250,6 +250,13 @@ func run(command app.Command) int {
 			mg.WhenReady(func() { go devScreenshots(ui, base) })
 		}
 	}
+	if os.Getenv(app.TierPreviewEnv) != "" && app.TierPreviewAllowed(dev) {
+		// Dev only: show every subscription badge, light and dark.
+		mg.WhenReady(ui.OpenTierPreview)
+		if base := os.Getenv("QUOSPARR_DEV_SCREENSHOT"); base != "" {
+			mg.WhenReady(func() { go devTierScreenshot(ui, base) })
+		}
+	}
 	if err := ui.RunDesktop(); err != nil {
 		log.Println("run:", err)
 		return 1
@@ -270,6 +277,17 @@ func devScreenshots(ui *app.App, base string) {
 			continue
 		}
 		_ = os.WriteFile(fmt.Sprintf("%s-%d.png", base, tab), png, 0o600)
+	}
+	mygo.App.Quit()
+}
+
+// devTierScreenshot writes the badge preview to base-tiers.png and quits.
+func devTierScreenshot(ui *app.App, base string) {
+	time.Sleep(1500 * time.Millisecond)
+	if png, err := ui.CaptureTierPreview(); err != nil {
+		log.Println("screenshot:", err)
+	} else {
+		_ = os.WriteFile(base+"-tiers.png", png, 0o600)
 	}
 	mygo.App.Quit()
 }

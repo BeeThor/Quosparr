@@ -81,15 +81,29 @@ func (s *Service) NextDueQuotaReset(after, now time.Time) time.Time {
 }
 
 func (s *Service) nextDueResetLocked(after, now time.Time) time.Time {
-	if s.prefs.SelectedProvider == store.ProviderGrok {
-		if s.opts.Grok == nil {
-			return time.Time{}
+	if s.prefs.SelectedProvider == store.ProviderGrok || s.prefs.SelectedProvider == store.ProviderClaude {
+		var meters []Meter
+		if s.prefs.SelectedProvider == store.ProviderGrok {
+			if s.opts.Grok == nil {
+				return time.Time{}
+			}
+			meters = s.opts.Grok.State(now).Meters
+		} else {
+			if s.opts.Claude == nil {
+				return time.Time{}
+			}
+			meters = s.opts.Claude.State(now).Meters
 		}
-		meters := s.opts.Grok.State(now).Meters
 		if len(meters) == 0 {
 			return time.Time{}
 		}
 		r := meters[0].ResetsAt
+		for _, m := range meters {
+			if m.WindowMinutes == FiveHourMinutes && m.HasReset() {
+				r = m.ResetsAt
+				break
+			}
+		}
 		if r.IsZero() || !r.After(after) || now.Sub(r) < time.Second {
 			return time.Time{}
 		}

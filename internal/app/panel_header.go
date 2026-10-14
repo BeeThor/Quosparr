@@ -1,9 +1,11 @@
 package app
 
 import (
+	"strings"
 	"time"
 
 	"github.com/egoist/mygo/ui"
+	"github.com/licoy/quosparr/internal/claude"
 	"github.com/licoy/quosparr/internal/codex"
 	"github.com/licoy/quosparr/internal/grok"
 	"github.com/licoy/quosparr/internal/l10n"
@@ -31,6 +33,10 @@ func panelHeader(c *ui.Context, a *App, l l10n.Localizer, prefs store.Preference
 			grokIdentityRow(c, a, l, prefs, snap)
 			return
 		}
+		if prefs.SelectedProvider == store.ProviderClaude {
+			claudeIdentityRow(c, a, l, prefs, snap)
+			return
+		}
 		codexIdentityRow(c, a, l, prefs, snap)
 		if exp := snap.Accounts.Display.SubscriptionExpiresAt; exp != nil {
 			ui.Row(c).Padding(6, 0, 0, 0).Children(func() { expiryBadge(c, l, *exp, time.Now()) })
@@ -42,6 +48,9 @@ func panelBusy(snap runway.Snapshot, grokView bool) bool {
 	if grokView && snap.Grok.Refreshing {
 		return true
 	}
+	if snap.Provider == store.ProviderClaude && snap.Claude.Refreshing {
+		return true
+	}
 	return snap.Refresh.Refreshing()
 }
 
@@ -49,11 +58,8 @@ func panelBusy(snap runway.Snapshot, grokView bool) bool {
 // picker). With no SelectProvider action it stays disabled.
 func providerMenu(c *ui.Context, a *App, l l10n.Localizer, cur store.Provider, selectFn func(store.Provider)) {
 	t := c.Theme()
-	name := l.Text(l10n.KeyProviderCodex)
-	if cur == store.ProviderGrok {
-		name = l.Text(l10n.KeyProviderGrok)
-	}
-	b := ui.ButtonBase(c).Label(name).Tooltip(l.Text(l10n.KeyProviderCodex)+" / "+l.Text(l10n.KeyProviderGrok)).
+	name := l.Text(providerKey(cur))
+	b := ui.ButtonBase(c).Label(name).Tooltip(strings.Join(providerTabLabels(l), " / ")).
 		Disabled(selectFn == nil).Padding(0, 9, 0, 12).Gap(8).Height(24).Radius(radiusRow).AlignItems(ui.Center).Cursor(ui.CursorPointer)
 	fill := mono(t, 0.07, 0.11)
 	if b.Hovered() {
@@ -66,10 +72,7 @@ func providerMenu(c *ui.Context, a *App, l l10n.Localizer, cur store.Provider, s
 	})
 	b.Menu(func(m *ui.Menu) {
 		for _, p := range store.Providers() {
-			label := l.Text(l10n.KeyProviderCodex)
-			if p == store.ProviderGrok {
-				label = l.Text(l10n.KeyProviderGrok)
-			}
+			label := l.Text(providerKey(p))
 			if m.Item(label).Checked(p == cur).Chosen() && selectFn != nil && p != cur {
 				a.panelState.detail = ""
 				selectFn(p)
@@ -126,6 +129,9 @@ func refreshEverything(a *App, acts PanelActions) {
 func headerIdentity(l l10n.Localizer, prefs store.Preferences, snap runway.Snapshot) string {
 	if prefs.SelectedProvider == store.ProviderGrok {
 		return grokIdentity(l, prefs, snap)
+	}
+	if prefs.SelectedProvider == store.ProviderClaude {
+		return claudeIdentity(l, prefs, snap)
 	}
 	name := snap.Accounts.Display.DisplayName
 	if name == "" {
@@ -191,6 +197,43 @@ func codexIdentityRow(c *ui.Context, a *App, l l10n.Localizer, prefs store.Prefe
 	if row.Clicked() {
 		a.panelState.detail = detailAccounts
 	}
+}
+
+func claudeIdentity(l l10n.Localizer, prefs store.Preferences, snap runway.Snapshot) string {
+	name := snap.Claude.Accounts.Display.DisplayName
+	if name == "" {
+		return l.Text(l10n.KeyClaudeNotLoggedIn)
+	}
+	if prefs.AccountPrivacyModeEnabled {
+		return codex.MaskAccountText(name)
+	}
+	return name
+}
+
+func claudeIdentityRow(c *ui.Context, a *App, l l10n.Localizer, prefs store.Preferences, snap runway.Snapshot) {
+	name := claudeIdentity(l, prefs, snap)
+	t := c.Theme()
+	row := ui.ButtonBase(c).Label(name).Tooltip(name).Padding(3, 6).Gap(6).Radius(radiusRow).AlignItems(ui.Center).Justify(ui.Start).Margin(8, -6, 0, -6).Cursor(ui.CursorPointer)
+	if row.Hovered() {
+		row.Background(hoverNeutral(t))
+	}
+	row.Children(func() {
+		claudePlanBadge(c, l, snap.Claude.Plan)
+		ui.Text(c, name).FontSize(fsCallout).FontWeight(600).SingleLine().Ellipsis("…").MaxWidth(220)
+		identityChevron(c)
+		ui.Spacer(c).Grow(1)
+	})
+	if row.Clicked() {
+		a.panelState.detail = detailAccounts
+	}
+}
+
+func claudePlanBadge(c *ui.Context, l l10n.Localizer, plan string) {
+	if plan == "" {
+		tierBadge(c, plainLook(c.Theme()), l.Text(l10n.KeyProviderClaude))
+		return
+	}
+	tierBadge(c, claudeTierLook(c.Theme(), claude.TierResolve(plan)), plan)
 }
 
 func grokIdentityRow(c *ui.Context, a *App, l l10n.Localizer, prefs store.Preferences, snap runway.Snapshot) {

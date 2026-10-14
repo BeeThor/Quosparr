@@ -205,6 +205,31 @@ func readModules(r *reader, key string, def []Module) []Module {
 	return out
 }
 
+// readProviders decodes a provider list. Unknown names are dropped. A
+// non-array, or a non-string element, is an error. A missing key is nil.
+func readProviders(r *reader, key string) []Provider {
+	raw, ok := r.take(key)
+	if !ok {
+		return nil
+	}
+	var ids []*string
+	if raw[0] != '[' || json.Unmarshal(raw, &ids) != nil {
+		r.fail(key, "expected an array of strings")
+		return nil
+	}
+	out := make([]Provider, 0, len(ids))
+	for _, id := range ids {
+		if id == nil {
+			r.fail(key, "expected an array of strings")
+			return nil
+		}
+		if p := Provider(*id); p.Valid() {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
 // looksNumeric rejects JSON strings, booleans, arrays and objects before a
 // number parser sees them.
 func looksNumeric(raw []byte) bool {

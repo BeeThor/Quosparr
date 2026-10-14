@@ -8,9 +8,9 @@
 
 <sub><i>名称取自 <b>Quo</b>ta（额度）+ <b>Sparr</b>ow（麻雀）</i></sub>
 
-一只停在菜单栏里的小麻雀，替你守着 Codex 与 Grok 的额度。
+一只停在菜单栏里的小麻雀，替你守着 Codex、Grok 与 Claude 的额度。
 
-Quosparr 是面向 macOS、Windows、Linux 的原生菜单栏 / 系统托盘应用，展示 Codex 与 Grok 额度、reset credits、API 等价成本与本机会话，两个供应商各自独立管理账号。
+Quosparr 是面向 macOS、Windows、Linux 的原生菜单栏 / 系统托盘应用，展示 Codex、Grok 与 Claude Code 订阅额度、reset credits、API 等价成本与本机会话，三个供应商各自独立管理账号。
 
 </div>
 
@@ -31,9 +31,16 @@ Quosparr 是面向 macOS、Windows、Linux 的原生菜单栏 / 系统托盘应�
 - 多个 OAuth / SuperGrok 账号：隔离登录、导入当前登录、粘贴凭据、刷新、别名、排序与显式切号
 - 查看本地 Grok CLI 日志中的最近会话
 
-**两个供应商通用**
+**Claude**
 
-- 常驻 `Codex | Grok` 标签切换，菜单栏与右键菜单跟随所选供应商
+- 查看 Claude Code 订阅用量的 5 小时窗口、7 天窗口、按模型的周额度和额外用量。这个读数不是公开的计费接口
+- 从 Claude Code 本机会话日志统计 Token 用量、API 等价成本（`anthropic-builtin-2026-10-14`）、最近会话和输出速率。同一条回复只计一次。未知模型不给精确费用。日志没有首 token 时间，该列显示“—”，速率按端到端耗时计算
+- 订阅账号可导入当前登录、粘贴凭据或从文件导入，然后切号。应用内登录会提示先在终端执行 `claude auth login`，再导入。Quosparr 不刷新当前账号；登录过期时运行一次 `claude`。其他托管账号只把刷新结果写入账号库副本
+- macOS 上官方凭据留在钥匙串，经 `/usr/bin/security` 读写。Windows 与 Linux 使用 `<config>/.credentials.json`。切号只替换 `claudeAiOauth`，保留 MCP 令牌，并只更新 `.claude.json` 里的 `oauthAccount`。正在运行的 Claude Code 不会被结束，可能写回旧登录，切换前会提示
+
+**三个供应商通用**
+
+- 常驻 `Codex | Grok | Claude` 标签切换。菜单栏可跟随主面板，或最多显示两个供应商。已经保存的 “Codex + Grok” 仍是这一对
 - 查看今天、本周期、上周期、本月或自定义范围的 API 等价成本与 Token 用量
 - 年度 Token 用量图表，支持热力图、折线图和柱状图（按日 / 按周 / 累计）
 - 支持浅色、深色、跟随系统外观，以及 English、简体中文、繁體中文、한국어、日本語、Русский、Français
@@ -111,16 +118,17 @@ Linux 需要 GTK3、AppIndicator、支持托盘的桌面，以及可用的 Secre
   ```
 
 - Grok 账号与额度仅支持 OAuth / SuperGrok 及兼容的 legacy session。可执行 `grok login --oauth`、在应用内登录、导入当前登录或粘贴凭据 JSON；仅 API Key 的登录不会加入托管账号。设置了 `GROK_HOME` 时使用该目录，否则使用 `~/.grok`
+- Claude 面板使用官方 Claude Code CLI。设置了 `CLAUDE_CONFIG_DIR` 时使用该目录，否则使用 `~/.claude`。订阅用量需要 Claude.ai 登录。API Key 或网关不提供这份用量。执行 `claude auth login` 后当前登录会自动加入，之后用其他账号登录也会自动加入；也可以粘贴凭据 JSON 或从文件导入
 
 ## 桌面组件
 
-桌面组件需要 macOS 14 或更高版本，Windows 与 Linux 不提供。共有四类组件：额度总览、Token 趋势、关键指标和 Codex 重置动态；每个组件都可在“编辑小组件”中选择 Codex、Grok 或两者，点击后跳转到对应页面
+桌面组件需要 macOS 14 或更高版本，Windows 与 Linux 不提供。共有四类组件：额度总览、Token 趋势、关键指标和 Codex 重置动态；每个组件都可在“编辑小组件”中选择 Codex、Grok、Claude，或一对组合：Codex + Grok、Codex + Claude、Grok + Claude。已经设成 Codex + Grok 的组件保持这一对。点击后跳转到对应页面
 
 快照位于 `~/.quosparr/widget-snapshot.json`，权限为 `0600`，只包含非密钥派生数据，不含邮箱、账号 ID、token、认证 JSON 或事件原文；主程序是唯一写入者，组件只读
 
 ## 网络代理
 
-在 **控制台 → 通用 → 网络** 中选择 **跟随系统**、HTTP 或 SOCKS5，自定义代理支持用户名和密码。设置覆盖应用发起的 Codex 与 Grok 请求、CLI 操作、公开状态与价格源以及软件更新；不修改系统代理，浏览器登录页和已经运行的外部 CLI 沿用各自设置
+在 **控制台 → 通用 → 网络** 中选择 **跟随系统**、HTTP 或 SOCKS5，自定义代理支持用户名和密码。设置覆盖应用发起的 Codex、Grok 与 Claude 请求、CLI 操作、公开状态与价格源以及软件更新；不修改系统代理，浏览器登录页和已经运行的外部 CLI 沿用各自设置
 
 修改仅在点击 **保存代理设置** 后生效。**测试连接** 使用当前草稿访问测试站点（默认 `https://github.com`，可自定义），不发送账号凭据，也不保存草稿。代理密码分别保存在 macOS 钥匙串、Windows 凭据管理器和 Linux Secret Service 中。配置错误、凭据不可用或自定义代理失败时不会自动改为直连
 
@@ -130,6 +138,7 @@ Linux 需要 GTK3、AppIndicator、支持托盘的桌面，以及可用的 Secre
 - 服务商账号凭据是唯一例外，保存在 `~/.quosparr/accounts/<id>/auth.json`（目录 `0700`、文件 `0600`，原子写入；Windows 使用仅当前用户可访问的 ACL），账号索引不包含 token
 - 官方 `~/.codex/auth.json` 仅在 OAuth 刷新回写或你确认切号时写入；刷新非当前账号只更新账号库副本
 - Grok 凭据从 `$GROK_HOME/auth.json` 读取，托管副本位于 `~/.quosparr/accounts/grok-<stable-id>/auth.json`。Grok 切号只替换 OAuth / 兼容 legacy scope，保留 API Key 与未知 scope，且仅保证新会话使用新账号；已运行的 Grok 进程不会被终止，可能写回旧账号，因此切换前会给出提示
+- Claude 凭据在 macOS 上经 `/usr/bin/security` 读取钥匙串，在 Windows 与 Linux 上读取 `<config>/.credentials.json`。托管副本位于 `~/.quosparr/accounts/claude-<stable-id>/auth.json`，只含 `claudeAiOauth`。索引 `claude-index.json` 不含 token。切号保留 MCP 令牌，并只替换 `.claude.json` 的 `oauthAccount`。Quosparr 不刷新当前账号
 - 会话修复只处理 `session_index.jsonl`，写入前先备份；不会删除 `~/.codex/sessions` 与 `~/.codex/archived_sessions` 下的文件
 - API 等价成本基于本机会话日志计算，不上传会话内容
 - token 与 API Key 不会写入日志、自检输出或 issue 模板
@@ -142,6 +151,8 @@ Linux 需要 GTK3、AppIndicator、支持托盘的桌面，以及可用的 Secre
 - **Codex API 等价成本**：基于本机会话日志，使用内置价格表 `openai-builtin-2026-09-27`，在线官方价格表采用 `openai-docs-` 版本；未知模型不报告精确费用
 - **Grok 额度**：只使用官方 CLI chat-proxy `/v1/billing?format=credits` 接口；不读取浏览器 Cookie、不从本地日志伪造额度，也不混入 API 账单
 - **Grok API 等价成本**：基于本地 `turn_completed` 用量和价格表 `xai-builtin-2026-09-27`，区分输入、缓存、输出及长上下文价格；`costUsdTicks` 属于订阅额度记账，不作为 API 等价成本
+- **Claude Code 订阅用量**：来自未公开的 OAuth usage 端点，只表示当前 Claude Code 订阅，不写成官方计费接口。不读取浏览器 Cookie、Claude Desktop 数据或 Console API 账单
+- **Claude API 等价成本**：基于 Claude Code 本机会话日志和价格表 `anthropic-builtin-2026-10-14`。同一条回复按消息 ID 只计一次。缓存写入分为 5 分钟和 1 小时，Fast 档单独计价。未知模型不报告精确费用。按日统计使用本地时区
 - **Codex 重置动态**：来自公开接口 [didcodexreset.com/api/status.json](https://didcodexreset.com/api/status.json)，非官方，仅供参考，可能延迟
 - 图表中的“官方统计（多端）”属于当前账号，“本机日志（全部本机会话）”扫描本机且可能跨账号；两者不是包含关系，也不能相减，Codex 两种按日统计均按 UTC 日界比较
 

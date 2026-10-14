@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 usage() {
   cat <<'EOF'
-Usage: Scripts/run-dev-app.sh [--widget] [app options]
+Usage: Scripts/run-dev-app.sh [--widget] [--tier-badges] [app options]
 
 Build the Go (mygo) app with the release identity (Quosparr,
 com.quosparr.app) and run it in the foreground with the real HOME, data and
@@ -20,6 +20,10 @@ Options:
       Build the full development package with the WidgetKit extension
       (V1_DEVELOPMENT_PACKAGE=1 Scripts/package-v1-app.sh) and run that.
 
+  --tier-badges
+      Also open a window with every Codex, Grok and Claude subscription
+      badge in the light and the dark look (QUOSPARR_DEV_TIER_BADGES=1).
+
 Other options go to the app, e.g. --settings or --self-check.
 Env: ARCH=arm64|x86_64 (default: this Mac).
 
@@ -27,6 +31,7 @@ Examples:
   Scripts/run-dev-app.sh
   Scripts/run-dev-app.sh --settings
   Scripts/run-dev-app.sh --widget
+  Scripts/run-dev-app.sh --tier-badges
 EOF
 }
 
@@ -36,6 +41,7 @@ for arg in "$@"; do
   case "$arg" in
     -h|--help) usage; exit 0 ;;
     --widget) WIDGET=1 ;;
+    --tier-badges) export QUOSPARR_DEV_TIER_BADGES=1 ;;
     *) APP_ARGS+=("$arg") ;;
   esac
 done

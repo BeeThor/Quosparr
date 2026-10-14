@@ -707,7 +707,7 @@ func TestWidgetSnapshotIsWrittenForActiveWidgets(t *testing.T) {
 	if codexBlock == nil || codexBlock.Availability != export.Available || len(codexBlock.Quota) == 0 {
 		t.Fatalf("codex block: %+v", codexBlock)
 	}
-	if got := s.WidgetSnapshot(f.clk.Now()); len(got.Providers) != 2 {
+	if got := s.WidgetSnapshot(f.clk.Now()); len(got.Providers) != 3 {
 		t.Errorf("providers: %d", len(got.Providers))
 	}
 }

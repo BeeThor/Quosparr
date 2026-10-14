@@ -76,11 +76,11 @@ func (u *settingsUI) previewAccountFiles(f *accountForm, rt *liveApp) {
 		u.post(func() {
 			f.busy = false
 			if err != nil {
-				f.status = l.Text(l10n.KeyAccountsImportFailed)
+				u.accountNotice(f, l.Text(l10n.KeyAccountsImportFailed))
 				return
 			}
 			if selection != nil && len(selection.rows) == 0 {
-				f.status = l.Text(l10n.KeyAccountsImportNoCredentials)
+				u.accountNotice(f, l.Text(l10n.KeyAccountsImportNoCredentials))
 				return
 			}
 			f.selection = selection

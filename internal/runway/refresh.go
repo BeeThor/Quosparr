@@ -277,14 +277,28 @@ func closedChan() <-chan struct{} {
 	return c
 }
 
+func (s *Service) providerWantedLocked(p store.Provider) bool {
+	if s.prefs.SelectedProvider == p {
+		return true
+	}
+	for _, item := range s.prefs.StatusBarSelection() {
+		if item == p {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *Service) needsGrokDataLocked() bool {
-	return s.prefs.StatusBarProviderScope == store.ProviderScopeBoth ||
-		s.prefs.SelectedProvider == store.ProviderGrok || s.widgetNeedsLocked()
+	return s.providerWantedLocked(store.ProviderGrok) || s.widgetNeedsLocked()
+}
+
+func (s *Service) needsClaudeDataLocked() bool {
+	return s.providerWantedLocked(store.ProviderClaude) || s.widgetNeedsLocked()
 }
 
 func (s *Service) needsCodexDataLocked() bool {
-	return s.prefs.StatusBarProviderScope == store.ProviderScopeBoth ||
-		s.prefs.SelectedProvider == store.ProviderCodex || s.widgetNeedsLocked()
+	return s.providerWantedLocked(store.ProviderCodex) || s.widgetNeedsLocked()
 }
 
 func (s *Service) widgetNeedsLocked() bool {
@@ -300,6 +314,17 @@ func (s *Service) refreshGrok() {
 	g := s.opts.Grok
 	s.spawn(func() {
 		_ = g.Refresh(s.root)
+		s.publish()
+	})
+}
+
+func (s *Service) refreshClaude() {
+	if s.opts.Claude == nil {
+		return
+	}
+	c := s.opts.Claude
+	s.spawn(func() {
+		_ = c.Refresh(s.root)
 		s.publish()
 	})
 }
@@ -346,7 +371,9 @@ func (s *Service) startFull(policy usage.RefreshPolicy, widgets bool) <-chan str
 		defer close(done)
 		s.mu.Lock()
 		grokPanel := s.prefs.SelectedProvider == store.ProviderGrok
+		claudePanel := s.prefs.SelectedProvider == store.ProviderClaude
 		needsGrok := s.needsGrokDataLocked()
+		needsClaude := s.needsClaudeDataLocked()
 		needsCodex := s.needsCodexDataLocked()
 		fullWidgets := s.widgetReqs.Has(export.RequireTokenTrend) || s.widgetReqs.Has(export.RequireCost)
 		s.mu.Unlock()
@@ -358,7 +385,15 @@ func (s *Service) startFull(policy usage.RefreshPolicy, widgets bool) <-chan str
 				s.mu.Unlock()
 			}
 		}
-		if !grokPanel || fullWidgets {
+		if needsClaude && s.opts.Claude != nil {
+			if err := s.opts.Claude.Refresh(ctx); err != nil && ctx.Err() == nil {
+				s.mu.Lock()
+				s.lastErr = s.errTextLocked(err)
+				s.publishLocked()
+				s.mu.Unlock()
+			}
+		}
+		if (!grokPanel && !claudePanel) || fullWidgets {
 			s.refreshNow(ctx, policy)
 		} else if needsCodex {
 			s.refreshQuotaNow(ctx)
@@ -781,14 +816,19 @@ func (s *Service) applyEstimateLocked(q codexapi.QuotaSnapshot, daily usage.Summ
 func (s *Service) RefreshQuota() <-chan struct{} {
 	s.mu.Lock()
 	grokPanel := s.prefs.SelectedProvider == store.ProviderGrok
+	claudePanel := s.prefs.SelectedProvider == store.ProviderClaude
 	needsGrok := s.needsGrokDataLocked()
+	needsClaude := s.needsClaudeDataLocked()
 	needsCodex := s.needsCodexDataLocked()
 	busy := s.allBusy
 	s.mu.Unlock()
 	if needsGrok {
 		s.refreshGrok()
 	}
-	if busy || (grokPanel && !needsCodex) {
+	if needsClaude {
+		s.refreshClaude()
+	}
+	if busy || ((grokPanel || claudePanel) && !needsCodex) {
 		return closedChan()
 	}
 	return s.runAccountScoped(s.refreshQuotaNow)

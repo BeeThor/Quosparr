@@ -10,13 +10,19 @@ public enum RunwayWidgetKind: String, Codable, CaseIterable, Sendable {
 public enum RunwayWidgetProviderScope: String, Codable, CaseIterable, Sendable {
     case codex
     case grok
+    case claude
     case both
+    case codexClaude = "codex-claude"
+    case grokClaude = "grok-claude"
 
     public var providers: [RunwayProvider] {
         switch self {
         case .codex: [.codex]
         case .grok: [.grok]
+        case .claude: [.claude]
         case .both: [.codex, .grok]
+        case .codexClaude: [.codex, .claude]
+        case .grokClaude: [.grok, .claude]
         }
     }
 }

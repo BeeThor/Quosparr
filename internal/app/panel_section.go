@@ -25,12 +25,14 @@ func panelBody(c *ui.Context, l l10n.Localizer, prefs store.Preferences, snap ru
 	snap.Provider = prefs.SelectedProvider
 	snap.Codex = providerView(l, snap, prefs.APICostSummaryRange)
 	grok := prefs.SelectedProvider == store.ProviderGrok
+	claude := prefs.SelectedProvider == store.ProviderClaude
+	local := grok || claude
 	first := true
 	for _, m := range store.NormalizeModuleOrder(prefs.MainPanelModuleOrder) {
-		if grok && m == store.ModuleResetCredits && snap.Grok.ResetCreditSummary == nil {
+		if local && m == store.ModuleResetCredits && !(grok && snap.Grok.ResetCreditSummary != nil) {
 			continue
 		}
-		if panelModuleOn(m, prefs, grok) {
+		if panelModuleOn(m, prefs, local) {
 			panelModule(c, l, m, prefs, snap, acts, &first, state)
 		}
 	}
@@ -66,11 +68,15 @@ func panelModuleOn(m store.Module, p store.Preferences, grok bool) bool {
 
 func panelModule(c *ui.Context, l l10n.Localizer, m store.Module, prefs store.Preferences, snap runway.Snapshot, acts PanelActions, first *bool, state *panelState) {
 	grok := prefs.SelectedProvider == store.ProviderGrok
+	claude := prefs.SelectedProvider == store.ProviderClaude
 	switch m {
 	case store.ModuleQuota:
-		if grok {
+		switch {
+		case claude:
+			panelClaudeQuota(c, l, snap, acts, first, state, state.resetSwitch(prefs.QuotaResetTimeFormat))
+		case grok:
 			panelGrokQuota(c, l, snap, acts, first, state, state.resetSwitch(prefs.QuotaResetTimeFormat))
-		} else {
+		default:
 			panelCodexQuota(c, l, snap, acts, first, state, state.resetSwitch(prefs.QuotaResetTimeFormat))
 		}
 	case store.ModuleTokenUsage:
@@ -88,7 +94,7 @@ func panelModule(c *ui.Context, l l10n.Localizer, m store.Module, prefs store.Pr
 	case store.ModuleSessionRepair:
 		panelRepair(c, l, snap, acts, first, state)
 	case store.ModuleRecentSessions:
-		panelRecent(c, l, snap, grok, acts, first, state)
+		panelRecent(c, l, snap, grok || claude, acts, first, state)
 	}
 }
 
