@@ -91,28 +91,45 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: python3 Scripts/check-v1-build-number.py --config mygo.json
 
-  v1-test:
+  # The tagged commit's CI run already covers vet, race, native Windows/Linux
+  # tests and six-target builds; running them again here only doubled the
+  # chance of a timing flake blocking the release. Re-run failed CI jobs, then
+  # re-run this workflow.
+  ci-gate:
     needs: v1-preflight
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      actions: read
+      contents: read
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-      - name: Vet, race tests and six target compilation
+      - name: Wait for CI on the tagged commit
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          go vet ./...
-          go test -race -count=1 ./...
-          python3 Scripts/Tests/test-v1-release.py
-          python3 Scripts/Tests/test-v1-homebrew.py
-          python3 Scripts/Tests/test-v1-platform.py
-          python3 Scripts/Tests/test-workflow-drafts.py
-          for target in darwin/arm64 darwin/amd64 windows/amd64 windows/arm64 linux/amd64 linux/arm64; do
-            GOOS="${target%/*}" GOARCH="${target#*/}" CGO_ENABLED=0 go build ./...
+          api="repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&event=push"
+          for attempt in $(seq 1 220); do
+            runs="$(gh api "$api" --jq '[.workflow_runs[] | {status, conclusion, html_url}]')"
+            if jq -e 'any(.[]; .conclusion == "success")' <<<"$runs" >/dev/null; then
+              echo "CI passed for $GITHUB_SHA"
+              exit 0
+            fi
+            if jq -e 'length > 0 and all(.[]; .status == "completed")' <<<"$runs" >/dev/null; then
+              jq -r '.[] | "CI \(.conclusion): \(.html_url)"' <<<"$runs"
+              echo "::error::CI did not pass for $GITHUB_SHA; re-run its failed jobs, then re-run this workflow"
+              exit 1
+            fi
+            if [[ "$attempt" -ge 20 ]] && jq -e 'length == 0' <<<"$runs" >/dev/null; then
+              echo "::error::No CI push run for $GITHUB_SHA; push the commit to main before tagging"
+              exit 1
+            fi
+            sleep 30
           done
+          echo "::error::Timed out waiting for CI on $GITHUB_SHA"
+          exit 1
 
   v1-macos:
-    needs: [v1-preflight, v1-test]
+    needs: [v1-preflight, ci-gate]
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v7
@@ -141,7 +158,7 @@ jobs:
           if-no-files-found: error
 
   v1-platforms:
-    needs: [v1-preflight, v1-test]
+    needs: [v1-preflight, ci-gate]
     strategy:
       fail-fast: false
       matrix:
@@ -172,8 +189,6 @@ jobs:
       - name: Install Linux desktop dependencies
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libayatana-appindicator3-dev fonts-noto-cjk
-      - name: Test without desktop interaction
-        run: go test -count=1 ./...
       - name: Package both architectures
         shell: bash
         env:
