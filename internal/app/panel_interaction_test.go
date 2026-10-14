@@ -222,9 +222,9 @@ func TestViewsKeepTranslatedControlsWithinWindow(t *testing.T) {
 			u := newSettingsUI(a.settings, SettingsOptions{})
 			settings := ui.NewTester(u.view, settingsWidth, settingsHeight)
 			for _, tab := range settingsTabs {
-				r, ok := settings.Find(u.L().Text(tab.key()))
+				r, ok := settings.Find(tab.title(u.L()))
 				if !ok || r.X < 0 || r.X+r.W > settingsWidth {
-					t.Fatalf("settings tab %s overflow: %+v", tab.key(), r)
+					t.Fatalf("settings tab %s overflow: %+v", tab.title(u.L()), r)
 				}
 			}
 		})

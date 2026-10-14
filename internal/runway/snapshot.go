@@ -49,6 +49,7 @@ type Snapshot struct {
 	ResetToday ResetTodayState
 	Refresh    RefreshView
 	StatusBar  StatusBarView
+	Floating   FloatingView
 }
 
 // AccountsView is the managed account list and the signed-in identity.

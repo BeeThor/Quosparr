@@ -20,18 +20,18 @@ func TestSettingsSidebarSelectionAndTitlebarInsets(t *testing.T) {
 		if bar.Left > 0 {
 			top = 52
 		}
-		first, ok := tt.Find(u.text(tabGeneral.key()))
+		first, ok := tt.Find(tabGeneral.title(u.L()))
 		if !ok || first.Y < top || first.X < 0 || first.X+first.W > settingsSidebarWidth {
 			t.Fatalf("sidebar window controls %+v overlap first item %+v", bar, first)
 		}
 		for _, tab := range settingsTabs {
-			if err := tt.Click(u.text(tab.key())); err != nil {
+			if err := tt.Click(tab.title(u.L())); err != nil {
 				t.Fatal(err)
 			}
 			if u.tab != tab {
 				t.Fatalf("selected %v, want %v", u.tab, tab)
 			}
-			r, _ := tt.Find(u.text(tab.key()))
+			r, _ := tt.Find(tab.title(u.L()))
 			pixel := tt.Image().RGBAAt(int(r.X+r.W-3), int(r.Y+r.H/2))
 			expected := buildTheme(false).Accent
 			if pixel.R != expected.R || pixel.G != expected.G || pixel.B != expected.B {
@@ -40,7 +40,7 @@ func TestSettingsSidebarSelectionAndTitlebarInsets(t *testing.T) {
 			before := r
 			// Content scrolling must keep the navigation fixed.
 			tt.Scroll(settingsSidebarWidth+200, 300, 0, 500)
-			r, ok = tt.Find(u.text(tab.key()))
+			r, ok = tt.Find(tab.title(u.L()))
 			if !ok || r != before {
 				t.Fatal("navigation moved with page content")
 			}
@@ -89,7 +89,7 @@ func TestSettingsSidebarWritesPreferencesAcrossPages(t *testing.T) {
 		{tabAdvanced, l.Text(l10n.KeyExportStatusJSON)},
 		{tabAbout, l.Text(l10n.KeyAutomaticallyCheckForUpdates)},
 	} {
-		if err := tt.Click(u.text(change.tab.key())); err != nil {
+		if err := tt.Click(change.tab.title(u.L())); err != nil {
 			t.Fatal(err)
 		}
 		// Some row labels are static text, so click the corresponding switch at the right.
@@ -119,7 +119,7 @@ func TestSettingsPageHeaderReservesRightWindowControls(t *testing.T) {
 	for _, bar := range []ui.TitleBar{{Height: 32, Right: 130}, {Height: 64, Left: 80}, {}} {
 		tt := ui.NewTester(func(c *ui.Context) { applyTheme(c); ui.Column(c).Fill().Children(func() { u.pageHeader(c) }) }, width, 100)
 		tt.SetTitleBar(bar)
-		r, ok := tt.Find(u.text(tabGeneral.key()))
+		r, ok := tt.Find(tabGeneral.title(u.L()))
 		height := max(bar.Height, 52)
 		if !ok || r.X != 24 || r.X+r.W > float32(width)-bar.Right-16 || r.Y < 0 || r.Y+r.H > height {
 			t.Fatalf("header overlaps window controls %+v: %+v", bar, r)

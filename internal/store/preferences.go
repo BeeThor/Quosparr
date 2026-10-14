@@ -106,6 +106,9 @@ type Preferences struct {
 	// ShowsSpeedAnalysis is Go-only: the speed analysis module, on by default
 	// and written only when turned off.
 	ShowsSpeedAnalysis bool `json:"showsSpeedAnalysis"`
+	// FloatingWindow is Go-only: the desktop floating window, omitted while
+	// it is at its default.
+	FloatingWindow FloatingWindow `json:"floatingWindow,omitzero"`
 
 	// extra holds keys this version does not know, written back unchanged so
 	// that older and newer apps sharing the domain do not erase each other's
@@ -159,6 +162,7 @@ func DefaultPreferences() Preferences {
 func (p Preferences) Clone() Preferences {
 	p.MainPanelModuleOrder = slices.Clone(p.MainPanelModuleOrder)
 	p.StatusBarProviders = slices.Clone(p.StatusBarProviders)
+	p.FloatingWindow = p.FloatingWindow.clone()
 	p.extra = maps.Clone(p.extra)
 	return p
 }
@@ -178,18 +182,22 @@ func (p Preferences) StatusBarSelection() []Provider {
 
 // canonicalStatusBarProviders keeps one or two known providers, drops
 // duplicates, and sorts them into Providers() order.
-func canonicalStatusBarProviders(in []Provider) []Provider {
+func canonicalStatusBarProviders(in []Provider) []Provider { return canonicalProviders(in, 2) }
+
+// canonicalProviders keeps up to limit known providers, drops duplicates,
+// and sorts them into Providers() order.
+func canonicalProviders(in []Provider, limit int) []Provider {
 	seen := map[Provider]bool{}
 	for _, p := range in {
 		if p.Valid() {
 			seen[p] = true
 		}
 	}
-	out := make([]Provider, 0, 2)
+	out := make([]Provider, 0, limit)
 	for _, p := range Providers() {
 		if seen[p] {
 			out = append(out, p)
-			if len(out) == 2 {
+			if len(out) == limit {
 				break
 			}
 		}
@@ -212,6 +220,7 @@ func (p *Preferences) Normalize() {
 	}
 	p.ProxyTestURL = NormalizeProxyTestURL(p.ProxyTestURL)
 	p.normalizeStatusBarProviders()
+	p.FloatingWindow.normalize()
 }
 
 // normalizeStatusBarProviders applies the custom-list rules. Legacy both is

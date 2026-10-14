@@ -81,6 +81,7 @@ func readPreferences(r *reader) Preferences {
 	p.QuotaResetTimeFormat = readResetTimeFormat(r, "quotaResetTimeFormat")
 	p.ProxyTestURL = readProxyTestURL(r, "proxyTestURL")
 	p.ShowsSpeedAnalysis = r.bool("showsSpeedAnalysis", p.ShowsSpeedAnalysis)
+	p.FloatingWindow = readFloatingWindow(r, "floatingWindow")
 	return p
 }
 

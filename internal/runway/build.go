@@ -37,11 +37,15 @@ func (s *Service) buildLocked(now time.Time) Snapshot {
 	if s.opts.ResetToday != nil {
 		snap.ResetToday = s.opts.ResetToday.State(now)
 	}
-	snap.StatusBar = BuildStatusBar(lc, StatusInputs{
+	in := StatusInputs{
 		Prefs: s.prefs, Provider: s.prefs.SelectedProvider,
 		CodexText: snap.Codex.StatusText, CodexMeters: snap.Codex.Meters,
 		Grok: snap.Grok, Claude: snap.Claude, Now: now,
-	})
+	}
+	snap.StatusBar = BuildStatusBar(lc, in)
+	if s.prefs.FloatingWindow.Enabled {
+		snap.Floating = BuildFloating(lc, in)
+	}
 	return snap
 }
 

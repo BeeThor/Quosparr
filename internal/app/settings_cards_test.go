@@ -168,9 +168,9 @@ func TestSettingsPageHeadingsKeepNormalTextColor(t *testing.T) {
 			u.tab = tab
 			tt := ui.NewTester(func(c *ui.Context) { applyTheme(c); u.pageHeader(c) }, 600, 64)
 			tt.SetDark(dark)
-			r, ok := tt.Find(u.text(tab.key()))
+			r, ok := tt.Find(tab.title(u.L()))
 			if !ok || countHeaderColor(tt.Image(), r, buildTheme(dark).Text) < 3 {
-				t.Fatalf("page heading %s does not use normal text color", tab.key())
+				t.Fatalf("page heading %s does not use normal text color", tab.title(u.L()))
 			}
 		}
 	}

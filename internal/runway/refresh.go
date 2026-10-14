@@ -3,6 +3,7 @@ package runway
 import (
 	"context"
 	"errors"
+	"slices"
 	"sync"
 	"time"
 
@@ -273,12 +274,10 @@ func (s *Service) providerWantedLocked(p store.Provider) bool {
 	if s.prefs.SelectedProvider == p {
 		return true
 	}
-	for _, item := range s.prefs.StatusBarSelection() {
-		if item == p {
-			return true
-		}
+	if slices.Contains(s.prefs.StatusBarSelection(), p) {
+		return true
 	}
-	return false
+	return s.prefs.FloatingWindow.Enabled && slices.Contains(s.prefs.FloatingSelection(), p)
 }
 
 // showsProviderLocked reports whether the panel, the status item or a widget

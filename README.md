@@ -41,6 +41,7 @@ Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. I
 **All providers**
 
 - Always-visible `Codex | Claude | Grok` tabs. The menu bar can follow the panel or show up to two providers. An existing “Codex + Grok” choice stays that pair.
+- An optional always-on-top desktop floating window shows the remaining quota of up to three providers in four styles: capsule, card, rings, or battery. Click it to open the panel, drag it to move it, and right-click it for more options. Opacity, position lock, and whether it stays above full-screen apps are configurable.
 - API-equivalent cost and token usage for today, the current cycle, the previous cycle, this month, or a custom range.
 - Year-to-date token usage chart as a heatmap, line, or bar chart (daily / weekly / cumulative).
 - Light, dark, and system appearance; English, 简体中文, 繁體中文, 한국어, 日本語, Русский, Français.

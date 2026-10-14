@@ -41,6 +41,7 @@ Quosparr est une application native de barre de menus / zone de notification pou
 **Tous les fournisseurs**
 
 - Onglets `Codex | Claude | Grok` toujours visibles. La barre de menus peut suivre le panneau ou afficher au plus deux fournisseurs. Un widget ou un choix déjà enregistré « Codex + Grok » conserve cette paire.
+- Une fenêtre flottante facultative, toujours au premier plan, affiche le quota restant d’au plus trois fournisseurs dans quatre styles : capsule, carte, anneaux ou batterie. Un clic ouvre le panneau, un glisser la déplace et un clic droit affiche plus d’options. L’opacité, le verrouillage de la position et l’affichage au-dessus des apps en plein écran sont réglables.
 - Coût équivalent API et usage de jetons pour aujourd’hui, le cycle actuel, le cycle précédent, ce mois-ci ou une plage personnalisée.
 - Graphique d’usage des jetons depuis le début de l’année, en carte de chaleur, en ligne ou en barres (quotidien / hebdomadaire / cumulé).
 - Apparences claire, sombre et système ; English, 简体中文, 繁體中文, 한국어, 日本語, Русский, Français.

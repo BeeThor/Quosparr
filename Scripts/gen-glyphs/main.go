@@ -59,6 +59,7 @@ var glyphs = map[string]string{
 	"icUpDown":   "expand-up-down-line",
 	"icUsers":    "group-line",
 	"icWindow":   "window-line",
+	"icFloating": "picture-in-picture-2-line",
 	"icLanguage": "translate-2",
 	"icTerminal": "terminal-box-line",
 	"icPlug":     "plug-line",

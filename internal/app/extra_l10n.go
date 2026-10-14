@@ -46,6 +46,22 @@ const (
 	xColorGreen                textKey = "themeColorGreen"
 	xColorGraphite             textKey = "themeColorGraphite"
 	xColorCustom               textKey = "themeColorCustom"
+	xFloatingSection           textKey = "floatingWindowSection"
+	xFloatingEnabled           textKey = "floatingWindow"
+	xFloatingEnabledHint       textKey = "floatingWindowDescription"
+	xFloatingStyle             textKey = "floatingWindowStyle"
+	xFloatingStyleCapsule      textKey = "floatingWindowStyleCapsule"
+	xFloatingStyleCard         textKey = "floatingWindowStyleCard"
+	xFloatingStyleRings        textKey = "floatingWindowStyleRings"
+	xFloatingStyleBattery      textKey = "floatingWindowStyleBattery"
+	xFloatingProviders         textKey = "floatingWindowProviders"
+	xFloatingOpacity           textKey = "floatingWindowOpacity"
+	xFloatingLocked            textKey = "floatingWindowLocked"
+	xFloatingLockedHint        textKey = "floatingWindowLockedDescription"
+	xFloatingFullScreen        textKey = "floatingWindowOverFullScreen"
+	xFloatingFullScreenHint    textKey = "floatingWindowOverFullScreenDescription"
+	xFloatingHide              textKey = "floatingWindowHide"
+	xFloatingWayland           textKey = "floatingWindowWayland"
 	xDisplayFont               textKey = "displayFont"
 	xDisplayFontHint           textKey = "displayFontDescription"
 	xDisplayFontDefault        textKey = "displayFontDefault"
@@ -100,6 +116,78 @@ var extraTexts = map[textKey][7]string{
 	xColorGreen:    {"Green", "绿色", "綠色", "초록색", "グリーン", "Зелёный", "Vert"},
 	xColorGraphite: {"Graphite", "石墨色", "石墨色", "그래파이트", "グラファイト", "Графит", "Graphite"},
 	xColorCustom:   {"Custom", "自定义", "自訂", "사용자 지정", "カスタム", "Свой цвет", "Personnalisée"},
+	xFloatingSection: {
+		"Floating window", "桌面悬浮窗", "桌面浮動視窗", "플로팅 창", "フローティングウインドウ", "Плавающее окно", "Fenêtre flottante",
+	},
+	xFloatingEnabled: {
+		"Show floating window", "显示悬浮窗", "顯示浮動視窗", "플로팅 창 표시", "フローティングウインドウを表示", "Показывать плавающее окно", "Afficher la fenêtre flottante",
+	},
+	xFloatingEnabledHint: {
+		"Keeps the remaining quota on top of other windows. Click to open the main panel, drag to move it, right-click for more",
+		"置顶显示剩余额度；单击打开主面板，拖动可移动，右键查看更多选项",
+		"置頂顯示剩餘額度；按一下開啟主面板，拖曳可移動，按右鍵查看更多選項",
+		"남은 한도를 다른 창 위에 표시합니다. 클릭하면 메인 패널이 열리고, 드래그로 이동하며, 오른쪽 클릭으로 더 많은 옵션을 봅니다",
+		"残りの使用枠を最前面に表示します。クリックでメインパネルを開き、ドラッグで移動、右クリックでその他の操作",
+		"Показывает остаток лимита поверх других окон. Нажмите, чтобы открыть главную панель, перетащите, чтобы переместить, правый щелчок — другие действия",
+		"Garde le quota restant au-dessus des autres fenêtres. Cliquez pour ouvrir le panneau principal, faites glisser pour la déplacer, clic droit pour plus d’options",
+	},
+	xFloatingStyle: {
+		"Floating window style", "悬浮窗样式", "浮動視窗樣式", "플로팅 창 스타일", "フローティングウインドウのスタイル", "Стиль плавающего окна", "Style de la fenêtre flottante",
+	},
+	xFloatingStyleCapsule: {
+		"Capsule", "胶囊", "膠囊", "캡슐", "カプセル", "Капсула", "Capsule",
+	},
+	xFloatingStyleCard: {
+		"Card", "卡片", "卡片", "카드", "カード", "Карточка", "Carte",
+	},
+	xFloatingStyleRings: {
+		"Rings", "圆环", "圓環", "링", "リング", "Кольца", "Anneaux",
+	},
+	xFloatingStyleBattery: {
+		"Battery", "电池", "電池", "배터리", "バッテリー", "Батарея", "Batterie",
+	},
+	xFloatingProviders: {
+		"Floating window providers", "悬浮窗服务商", "浮動視窗服務商", "플로팅 창 공급자", "フローティングウインドウのプロバイダー", "Провайдеры в плавающем окне", "Fournisseurs de la fenêtre flottante",
+	},
+	xFloatingOpacity: {
+		"Opacity", "不透明度", "不透明度", "불투명도", "不透明度", "Непрозрачность", "Opacité",
+	},
+	xFloatingLocked: {
+		"Lock position", "锁定位置", "鎖定位置", "위치 고정", "位置を固定", "Закрепить положение", "Verrouiller la position",
+	},
+	xFloatingLockedHint: {
+		"Dragging no longer moves the floating window",
+		"锁定后拖动不会移动悬浮窗",
+		"鎖定後拖曳不會移動浮動視窗",
+		"고정하면 드래그해도 플로팅 창이 움직이지 않습니다",
+		"固定するとドラッグしてもフローティングウインドウは動きません",
+		"Перетаскивание больше не перемещает плавающее окно",
+		"Le glisser ne déplace plus la fenêtre flottante",
+	},
+	xFloatingFullScreen: {
+		"Show over full-screen apps", "全屏应用上方也显示", "全螢幕 App 上方也顯示", "전체 화면 앱 위에도 표시", "フルスクリーンのアプリの上にも表示", "Показывать поверх полноэкранных приложений", "Afficher au-dessus des apps en plein écran",
+	},
+	xFloatingFullScreenHint: {
+		"When off, the floating window steps aside while another app is full screen",
+		"关闭时，其他应用全屏期间悬浮窗自动让开",
+		"關閉時，其他 App 全螢幕期間浮動視窗會自動讓開",
+		"끄면 다른 앱이 전체 화면일 때 플로팅 창이 비켜 줍니다",
+		"オフのときは、ほかのアプリがフルスクリーンの間フローティングウインドウを隠します",
+		"Если выключено, плавающее окно скрывается, пока другое приложение в полноэкранном режиме",
+		"Désactivé, la fenêtre flottante s’efface tant qu’une autre app est en plein écran",
+	},
+	xFloatingHide: {
+		"Hide floating window", "隐藏悬浮窗", "隱藏浮動視窗", "플로팅 창 숨기기", "フローティングウインドウを隠す", "Скрыть плавающее окно", "Masquer la fenêtre flottante",
+	},
+	xFloatingWayland: {
+		"On Wayland, the desktop may not let apps stay on top or choose where their windows go",
+		"Wayland 桌面可能不允许应用置顶或指定窗口位置",
+		"Wayland 桌面可能不允許 App 置頂或指定視窗位置",
+		"Wayland 데스크톱에서는 앱이 항상 위에 표시되거나 창 위치를 지정하지 못할 수 있습니다",
+		"Wayland のデスクトップでは、アプリの最前面表示やウインドウ位置の指定ができない場合があります",
+		"В Wayland рабочий стол может не позволять приложениям оставаться поверх других окон или выбирать их положение",
+		"Sous Wayland, le bureau peut empêcher les apps de rester au premier plan ou de choisir la position de leurs fenêtres",
+	},
 	xDisplayFont: {
 		"Display font", "显示字体", "顯示字體", "표시 글꼴", "表示フォント", "Шрифт интерфейса", "Police d’affichage",
 	},

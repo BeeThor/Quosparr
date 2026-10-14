@@ -71,7 +71,7 @@ func (u *settingsUI) sidebar(c *ui.Context) {
 
 func (u *settingsUI) sidebarItem(c *ui.Context, tab settingsTab) bool {
 	t := c.Theme()
-	title, selected := u.text(tab.key()), u.tab == tab
+	title, selected := tab.title(u.L()), u.tab == tab
 	b := ui.ButtonBase(c.Key(fmt.Sprintf("tab-%d", tab))).Label(title).Padding(5, 6).Gap(8).Radius(6).AlignItems(ui.Center)
 	b.Role(ui.RoleTab).Selected(selected)
 	col := t.Text
@@ -123,6 +123,6 @@ func managedAccountCount(snap runway.Snapshot) int {
 func (u *settingsUI) pageHeader(c *ui.Context) {
 	bar := c.TitleBar()
 	ui.Row(c).Height(max(bar.Height, 52)).Padding(0, bar.Right+16, 0, 24).AlignItems(ui.Center).DragWindow().Children(func() {
-		ui.Text(c, u.text(u.tab.key())).FontSize(15).FontWeight(700).SingleLine().Grow(1).Basis(0)
+		ui.Text(c, u.tab.title(u.L())).FontSize(15).FontWeight(700).SingleLine().Grow(1).Basis(0)
 	})
 }

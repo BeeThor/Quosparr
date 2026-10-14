@@ -92,7 +92,7 @@ func TestSettingsViewTabs(t *testing.T) {
 	u, tt := openSettingsView(t, e, tabGeneral)
 	l := e.s.L()
 	for _, tab := range settingsTabs {
-		if err := tt.Click(l.Text(tab.key())); err != nil {
+		if err := tt.Click(tab.title(l)); err != nil {
 			t.Fatalf("tab %v: %v", tab, err)
 		}
 		tt.Frame()
@@ -171,7 +171,7 @@ func TestSettingsProxyTestMessageClears(t *testing.T) {
 	}
 	u.setProxyMsg("failed", true)
 	tt.Frame()
-	if err := tt.Click(e.s.L().Text(tabAbout.key())); err != nil {
+	if err := tt.Click(tabAbout.title(e.s.L())); err != nil {
 		t.Fatal(err)
 	}
 	if u.proxyMsg != "" {

@@ -55,24 +55,29 @@ const (
 	tabGeneral settingsTab = iota
 	tabAccounts
 	tabDisplay
+	tabFloating
 	tabModules
 	tabNotifications
 	tabAdvanced
 	tabAbout
 )
 
-var settingsTabs = []settingsTab{tabGeneral, tabAccounts, tabDisplay, tabModules, tabNotifications, tabAdvanced, tabAbout}
+var settingsTabs = []settingsTab{tabGeneral, tabAccounts, tabDisplay, tabFloating, tabModules, tabNotifications, tabAdvanced, tabAbout}
 
-func (t settingsTab) key() l10n.Key {
-	return [...]l10n.Key{l10n.KeyGeneral, l10n.KeyAccounts, l10n.KeyDisplay, l10n.KeyPanelModules, l10n.KeyNotificationSettings, l10n.KeyAdvanced, l10n.KeyAbout}[t]
+// title is the tab's name in the sidebar and above its page.
+func (t settingsTab) title(l l10n.Localizer) string {
+	if t == tabFloating {
+		return tx(l, xFloatingSection)
+	}
+	return l.Text([...]l10n.Key{l10n.KeyGeneral, l10n.KeyAccounts, l10n.KeyDisplay, "", l10n.KeyPanelModules, l10n.KeyNotificationSettings, l10n.KeyAdvanced, l10n.KeyAbout}[t])
 }
 
 func (t settingsTab) icon() *ui.SVG {
-	return [...]*ui.SVG{icGear, icUsers, icEye, icLayout, icBell, icSliders, icInfo}[t]
+	return [...]*ui.SVG{icGear, icUsers, icEye, icFloating, icLayout, icBell, icSliders, icInfo}[t]
 }
 
 func (t settingsTab) tint() Tint {
-	return [...]Tint{TintGray, TintGreen, TintBlue, TintPurple, TintRed, TintOrange, TintIndigo}[t]
+	return [...]Tint{TintGray, TintGreen, TintBlue, TintTeal, TintPurple, TintRed, TintOrange, TintIndigo}[t]
 }
 
 //go:embed assets/app-icon.png
@@ -181,6 +186,8 @@ func (u *settingsUI) pageContent(c *ui.Context) {
 			ui.Column(c).Gap(10).Children(func() { u.accountsPage(c) })
 		case tabDisplay:
 			u.displayPage(c)
+		case tabFloating:
+			u.floatingPage(c)
 		case tabModules:
 			u.modulesGroup(c)
 		case tabNotifications:

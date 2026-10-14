@@ -131,21 +131,21 @@ func TestAccountRowsKeepCurrentTagByNameAndMaskIdentity(t *testing.T) {
 								t.Fatalf("%q outside %d window: %+v", text, width, r)
 							}
 						}
-						if err := tt.Click(u.text(tabDisplay.key())); err != nil {
+						if err := tt.Click(tabDisplay.title(u.L())); err != nil {
 							t.Fatal(err)
 						}
 						clickAccountPrivacySwitch(t, u, tt)
-						if err := tt.Click(u.text(tabAccounts.key())); err != nil {
+						if err := tt.Click(tabAccounts.title(u.L())); err != nil {
 							t.Fatal(err)
 						}
 						if tt.HasText(account.DisplayName) || tt.HasText(account.Email) || !hasExact(tt, maskAccount(true, account.Email)) {
 							t.Fatal("privacy toggle left unmasked account labels or did not redraw")
 						}
-						if err := tt.Click(u.text(tabDisplay.key())); err != nil {
+						if err := tt.Click(tabDisplay.title(u.L())); err != nil {
 							t.Fatal(err)
 						}
 						clickAccountPrivacySwitch(t, u, tt)
-						if err := tt.Click(u.text(tabAccounts.key())); err != nil {
+						if err := tt.Click(tabAccounts.title(u.L())); err != nil {
 							t.Fatal(err)
 						}
 						if !tt.HasText(account.DisplayName) || !tt.HasText(account.Email) {
