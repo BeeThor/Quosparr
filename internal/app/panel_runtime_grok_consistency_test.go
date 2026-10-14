@@ -50,11 +50,13 @@ func TestPanelRuntimeGrokRangeChangeDoesNotRelabelOldCost(t *testing.T) {
 	rt := &liveApp{svc: svc, grok: g, reset: newResetBridge(nil, p, nil)}
 	a, tt := newPanel(t, func(prefs *store.Preferences) { *prefs = p }, svc.Snapshot(), PanelActions{})
 	a.settings.OnChange(func() { rt.pushPreferences(a.settings) })
-	g.refreshMu.Lock()
+	// A range change only rescans local sessions; hold that scan so the pending
+	// snapshot is observed before the new window lands.
+	g.scanMu.Lock()
 	var released bool
 	defer func() {
 		if !released {
-			g.refreshMu.Unlock()
+			g.scanMu.Unlock()
 		}
 		rt.closePreferences()
 	}()
@@ -74,7 +76,7 @@ func TestPanelRuntimeGrokRangeChangeDoesNotRelabelOldCost(t *testing.T) {
 	if !tt.HasText(a.L().Text(l10n.KeyNotLoaded)) {
 		t.Fatal("cost did not show the waiting state for the new range")
 	}
-	g.refreshMu.Unlock()
+	g.scanMu.Unlock()
 	released = true
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
