@@ -159,9 +159,9 @@ func TestSwitchRestartOnlyAfterSuccessfulSwitchAndPreciseIdentity(t *testing.T) 
 	if err := switchAndRestartCodex(func() error { return nil }, func() error { calls++; return errors.New("failed") }); !errors.Is(err, errRestartCodex) || calls != 1 {
 		t.Fatal("restart error hidden")
 	}
-	fake := restartableCodex{bundleID: "com.openai.codex", path: "/fake/Codex.app", terminate: func() bool { calls++; return true }, stopped: func() bool { return true }}
-	unrelated := restartableCodex{bundleID: "com.example.editor", name: "Editor", terminate: func() bool { t.Fatal("unrelated app terminated"); return false }}
-	if err := runCodexRestart([]restartableCodex{unrelated, fake}, "", func(path string) error {
+	fake := runningApp{bundleID: "com.openai.codex", path: "/fake/Codex.app", terminate: func() bool { calls++; return true }, stopped: func() bool { return true }}
+	unrelated := runningApp{bundleID: "com.example.editor", name: "Editor", terminate: func() bool { t.Fatal("unrelated app terminated"); return false }}
+	if err := runCodexRestart([]runningApp{unrelated, fake}, "", func(path string) error {
 		if path != "/fake/Codex.app" {
 			t.Fatal("wrong launch path")
 		}
@@ -170,7 +170,7 @@ func TestSwitchRestartOnlyAfterSuccessfulSwitchAndPreciseIdentity(t *testing.T) 
 		t.Fatal(err)
 	}
 	fake.terminate = func() bool { return false }
-	if err := runCodexRestart([]restartableCodex{fake}, "", func(string) error { t.Fatal("opened app after rejected termination"); return nil }); !errors.Is(err, errRestartCodex) {
+	if err := runCodexRestart([]runningApp{fake}, "", func(string) error { t.Fatal("opened app after rejected termination"); return nil }); !errors.Is(err, errRestartCodex) {
 		t.Fatal("termination failure hidden")
 	}
 }

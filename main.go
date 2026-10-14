@@ -100,6 +100,15 @@ func run(command app.Command) int {
 		legacyLock, err := platform.AcquireLegacyLock(home, func(path string) (*platform.Lock, error) {
 			return app.AcquireInstanceLock(path, relaunched)
 		})
+		if errors.Is(err, platform.ErrLocked) {
+			// CodexRunway runs: explain it (and offer to quit it) instead of
+			// exiting silently. Nothing has been read or written yet.
+			if err := app.RunLegacyBlocked(); err != nil {
+				log.Println("previous app running:", err)
+				return 1
+			}
+			return 0
+		}
 		if err != nil {
 			log.Println("previous app lock:", err)
 			return 1

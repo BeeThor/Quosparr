@@ -67,6 +67,11 @@ const (
 	xSpeedLatest               textKey = "speedAnalysisLatest"
 	xSpeedEmpty                textKey = "speedAnalysisEmpty"
 	xSpeedRange                textKey = "speedAnalysisRange"
+	xLegacyRunningTitle        textKey = "legacyRunningTitle"
+	xLegacyRunningDetail       textKey = "legacyRunningDetail"
+	xLegacyRunningManual       textKey = "legacyRunningManual"
+	xLegacyQuitAndContinue     textKey = "legacyQuitAndContinue"
+	xLegacyQuitFailed          textKey = "legacyQuitFailed"
 )
 
 // extraTexts is indexed by textKey, then by position in l10n.Languages():
@@ -312,6 +317,36 @@ var extraTexts = map[textKey][7]string{
 		"このシステムではまだパスワードを安全に保存できないため、認証付きのプロキシは保存できません。",
 		"Пока невозможно безопасно сохранить пароль в этой системе, поэтому прокси с аутентификацией сохранить нельзя.",
 		"Le mot de passe ne peut pas encore être stocké de façon sécurisée sur ce système ; un proxy avec authentification ne peut donc pas être enregistré.",
+	},
+	xLegacyRunningTitle: {
+		"CodexRunway is running", "CodexRunway 正在运行", "CodexRunway 正在執行", "CodexRunway가 실행 중입니다",
+		"CodexRunway が実行中です", "CodexRunway запущен", "CodexRunway est en cours d’exécution",
+	},
+	xLegacyRunningDetail: {
+		"Quosparr and the previous CodexRunway refresh and switch the same Codex and Grok sign-ins; running both can sign you out, so they cannot run together. Quosparr starts once CodexRunway quits. The data of CodexRunway is kept.",
+		"Quosparr 与旧版 CodexRunway 会刷新和切换同一份 Codex、Grok 登录凭据，同时运行可能导致账号被登出，因此不能同时运行。退出 CodexRunway 后 Quosparr 会继续启动，旧版数据会保留。",
+		"Quosparr 與舊版 CodexRunway 會重新整理和切換同一份 Codex、Grok 登入憑證，同時執行可能導致帳號被登出，因此不能同時執行。結束 CodexRunway 後 Quosparr 會繼續啟動，舊版資料會保留。",
+		"Quosparr와 이전 CodexRunway는 같은 Codex, Grok 로그인 정보를 갱신하고 전환하므로 함께 실행하면 로그아웃될 수 있어 동시에 실행할 수 없습니다. CodexRunway를 종료하면 Quosparr가 이어서 시작되며, CodexRunway의 데이터는 유지됩니다.",
+		"Quosparr と以前の CodexRunway は同じ Codex、Grok のログイン情報を更新・切り替えるため、同時に実行するとログアウトされることがあり、同時には実行できません。CodexRunway を終了すると Quosparr が起動を続けます。CodexRunway のデータは保持されます。",
+		"Quosparr и прежний CodexRunway обновляют и переключают одни и те же входы Codex и Grok; при одновременной работе возможен выход из аккаунта, поэтому их нельзя запускать вместе. Quosparr продолжит запуск после выхода из CodexRunway. Данные CodexRunway сохранятся.",
+		"Quosparr et l’ancien CodexRunway actualisent et changent les mêmes connexions Codex et Grok ; les exécuter ensemble peut vous déconnecter, ils ne peuvent donc pas fonctionner en même temps. Quosparr démarre dès que CodexRunway est quitté. Les données de CodexRunway sont conservées.",
+	},
+	xLegacyRunningManual: {
+		"Quosparr cannot run while CodexRunway is running, because both manage the same sign-ins. Quit CodexRunway, then open Quosparr again.",
+		"CodexRunway 运行期间无法启动 Quosparr，因为两者会管理同一份登录凭据。请先退出 CodexRunway，再重新打开 Quosparr。",
+		"CodexRunway 執行期間無法啟動 Quosparr，因為兩者會管理同一份登入憑證。請先結束 CodexRunway，再重新開啟 Quosparr。",
+		"CodexRunway가 실행 중일 때는 두 앱이 같은 로그인 정보를 관리하므로 Quosparr를 시작할 수 없습니다. CodexRunway를 종료한 뒤 Quosparr를 다시 여세요.",
+		"CodexRunway の実行中は、両方が同じログイン情報を管理するため Quosparr を起動できません。CodexRunway を終了してから、Quosparr をもう一度開いてください。",
+		"Quosparr нельзя запустить, пока работает CodexRunway: оба управляют одними и теми же входами. Закройте CodexRunway и снова откройте Quosparr.",
+		"Quosparr ne peut pas démarrer tant que CodexRunway est en cours d’exécution, car les deux gèrent les mêmes connexions. Quittez CodexRunway, puis rouvrez Quosparr.",
+	},
+	xLegacyQuitAndContinue: {
+		"Quit CodexRunway and Continue", "退出 CodexRunway 并继续", "結束 CodexRunway 並繼續", "CodexRunway 종료 후 계속",
+		"CodexRunway を終了して続ける", "Закрыть CodexRunway и продолжить", "Quitter CodexRunway et continuer",
+	},
+	xLegacyQuitFailed: {
+		"CodexRunway did not quit", "CodexRunway 没有退出", "CodexRunway 沒有結束", "CodexRunway가 종료되지 않았습니다",
+		"CodexRunway が終了しませんでした", "CodexRunway не закрылся", "CodexRunway ne s’est pas fermé",
 	},
 }
 
