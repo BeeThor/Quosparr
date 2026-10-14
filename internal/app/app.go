@@ -399,8 +399,8 @@ func (a *App) OpenSettingsTab(tab int) {
 	}
 }
 
-// openAccountsSettings opens the accounts tab on one provider: 0 Codex,
-// 1 Grok, 2 Claude. A busy form keeps its provider.
+// openAccountsSettings opens the accounts tab on one provider kind
+// (accountKindCodex and so on). A busy form keeps its provider.
 func (a *App) openAccountsSettings(kind int) {
 	a.OpenSettingsTab(1)
 	if a.setUI == nil {

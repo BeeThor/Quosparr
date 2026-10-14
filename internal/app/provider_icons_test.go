@@ -68,7 +68,7 @@ func coloredProviderPixels(img *image.RGBA, box ui.Rect) int {
 
 func TestProviderTabsSelectDisableAndCompactNames(t *testing.T) {
 	l := l10n.New(l10n.English)
-	labels := []string{l.Text(l10n.KeyProviderCodex), l.Text(l10n.KeyProviderGrok)}
+	labels := []string{l.Text(l10n.KeyProviderCodex), l.Text(l10n.KeyProviderClaude)}
 	for _, compact := range []bool{false, true} {
 		selected, changes, disabled := 0, 0, false
 		args := labels

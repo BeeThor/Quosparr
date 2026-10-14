@@ -8,9 +8,9 @@ English · [简体中文](./README_ZH.md) · [繁體中文](./README_ZH_HANT.md)
 
 <sub><i>Named from <b>Quo</b>ta + <b>Sparr</b>ow</i></sub>
 
-A small sparrow perched in your menu bar, keeping watch over your Codex, Grok, and Claude quota.
+A small sparrow perched in your menu bar, keeping watch over your Codex, Claude, and Grok quota.
 
-Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. It shows Codex, Grok, and Claude Code subscription quota, reset credits, API-equivalent cost, and local sessions, with separate account management for each provider.
+Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. It shows Codex, Claude Code, and Grok subscription quota, reset credits, API-equivalent cost, and local sessions, with separate account management for each provider.
 
 </div>
 
@@ -25,12 +25,6 @@ Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. I
 - Provider accounts: browser sign-in, import local `auth.json`, paste token / JSON (including `/auth/session`), import files, or add an API key. Switching after confirmation atomically writes `~/.codex/auth.json`.
 - Recent sessions, projects, and status, plus repair of the local session index.
 
-**Grok**
-
-- Included quota, Build / Imagine / Chat breakdown, weekly / monthly periods, prepaid balance, and on-demand usage via the official CLI chat-proxy billing API.
-- Multiple OAuth / SuperGrok accounts with isolated sign-in, current-login import, credential paste, refresh, aliases, ordering, and explicit switching.
-- Recent sessions from local Grok CLI logs.
-
 **Claude**
 
 - Claude Code subscription usage for the 5-hour window, the 7-day window, per-model weekly windows, and extra usage. This reading is not a documented public billing API.
@@ -38,9 +32,15 @@ Quosparr is a native menu bar / system tray app for macOS, Windows, and Linux. I
 - Subscription accounts: import the current login, paste credentials, or import a file, then switch. In-app login asks you to run `claude auth login` and import again. Quosparr does not refresh the current account; run `claude` once if the login expires. Other managed accounts refresh into their library copies only.
 - On macOS the official credential stays in the Keychain and is read and written through `/usr/bin/security`. On Windows and Linux it is `<config>/.credentials.json`. A switch replaces only `claudeAiOauth`, keeps MCP tokens, and updates only `oauthAccount` in `.claude.json`. A running Claude Code process is not terminated and may write the previous login back, so the app warns before switching.
 
+**Grok**
+
+- Included quota, Build / Imagine / Chat breakdown, weekly / monthly periods, prepaid balance, and on-demand usage via the official CLI chat-proxy billing API.
+- Multiple OAuth / SuperGrok accounts with isolated sign-in, current-login import, credential paste, refresh, aliases, ordering, and explicit switching.
+- Recent sessions from local Grok CLI logs.
+
 **All providers**
 
-- Always-visible `Codex | Grok | Claude` tabs. The menu bar can follow the panel or show up to two providers. An existing “Codex + Grok” choice stays that pair.
+- Always-visible `Codex | Claude | Grok` tabs. The menu bar can follow the panel or show up to two providers. An existing “Codex + Grok” choice stays that pair.
 - API-equivalent cost and token usage for today, the current cycle, the previous cycle, this month, or a custom range.
 - Year-to-date token usage chart as a heatmap, line, or bar chart (daily / weekly / cumulative).
 - Light, dark, and system appearance; English, 简体中文, 繁體中文, 한국어, 日本語, Русский, Français.
@@ -111,6 +111,7 @@ Linux needs GTK3, AppIndicator, a desktop with tray support, and a working Secre
 
 - Codex installed and used on this machine is recommended. Codex data comes from `CODEX_HOME` (default `~/.codex`, or `%USERPROFILE%\.codex` on Windows).
 - Only the `file` credential store is supported (the default when `cli_auth_credentials_store` is unset in Codex `config.toml`). `keyring`, `auto`, and `ephemeral` are reported as unsupported and block importing and switching accounts.
+- The Claude panel uses the official Claude Code CLI. `CLAUDE_CONFIG_DIR` is used when set, otherwise `~/.claude`. Subscription usage needs a Claude.ai login. An API key or gateway does not provide that usage. After `claude auth login` the current login is added automatically, and a later login with another account is added as well. You can also paste credential JSON or import a file.
 - The Grok panel requires the [official Grok CLI](https://docs.x.ai/build/overview):
 
   ```bash
@@ -118,17 +119,16 @@ Linux needs GTK3, AppIndicator, a desktop with tray support, and a working Secre
   ```
 
 - Grok accounts and quota support OAuth / SuperGrok and compatible legacy sessions only. Run `grok login --oauth`, sign in from the app, import the current login, or paste credential JSON. API-key-only logins are not added as managed accounts. `GROK_HOME` is used when set, otherwise `~/.grok`.
-- The Claude panel uses the official Claude Code CLI. `CLAUDE_CONFIG_DIR` is used when set, otherwise `~/.claude`. Subscription usage needs a Claude.ai login. An API key or gateway does not provide that usage. After `claude auth login` the current login is added automatically, and a later login with another account is added as well. You can also paste credential JSON or import a file.
 
 ## Desktop Widgets
 
-Widgets require macOS 14 or later; Windows and Linux do not have them. Four widget types are available: quota overview, token trend, a key metric, and Codex Reset Updates. Each widget can select Codex, Grok, Claude, or a pair: Codex + Grok, Codex + Claude, or Grok + Claude. A widget already set to Codex + Grok keeps that pair. Tapping it opens the matching page.
+Widgets require macOS 14 or later; Windows and Linux do not have them. Four widget types are available: quota overview, token trend, a key metric, and Codex Reset Updates. Each widget can select Codex, Claude, Grok, or a pair: Codex + Claude, Codex + Grok, or Grok + Claude. A widget already set to Codex + Grok keeps that pair. Tapping it opens the matching page.
 
 The snapshot lives at `~/.quosparr/widget-snapshot.json` with `0600` permissions and contains only non-secret derived data: no email, account ID, token, auth JSON, or raw event text. The main app is the only writer; widgets only read it.
 
 ## Network Proxy
 
-In **Control Panel → General → Network**, choose **Follow System**, HTTP, or SOCKS5; custom proxies support username and password. The setting covers app-initiated Codex, Grok, and Claude requests, CLI operations, public status and pricing feeds, and software updates. The system proxy is not changed, and browser sign-in pages and already-running external CLIs keep their own settings.
+In **Control Panel → General → Network**, choose **Follow System**, HTTP, or SOCKS5; custom proxies support username and password. The setting covers app-initiated Codex, Claude, and Grok requests, CLI operations, public status and pricing feeds, and software updates. The system proxy is not changed, and browser sign-in pages and already-running external CLIs keep their own settings.
 
 Changes apply only after **Save Proxy Settings**. **Test Connection** fetches the test site (default `https://github.com`, customizable) with the current draft, without sending account credentials or saving the draft. Proxy passwords are stored in the macOS Keychain, Windows Credential Manager, or Linux Secret Service. Invalid settings, unavailable credentials, or a failed custom proxy never fall back to a direct connection.
 
@@ -137,8 +137,8 @@ Changes apply only after **Save Proxy Settings**. **Test Connection** fetches th
 - Quosparr keeps its own data in `~/.quosparr` and writes no app cache into `~/.codex`. Only non-secret derived data is stored by default.
 - Provider account credentials are the only exception: they are stored under `~/.quosparr/accounts/<id>/auth.json` (directory `0700`, file `0600`, written atomically; Windows uses an ACL that only the current user can access). The account index contains no tokens.
 - Official `~/.codex/auth.json` is written only for an OAuth refresh or when you confirm an account switch. Refreshing a non-current account updates only its library copy.
-- Grok credentials are read from `$GROK_HOME/auth.json`; managed copies live at `~/.quosparr/accounts/grok-<stable-id>/auth.json`. A Grok switch replaces only OAuth / compatible legacy scopes and keeps API-key and unknown scopes. It is guaranteed only for new sessions; running Grok processes are not terminated and may write the previous account back, so the app warns before switching.
 - Claude credentials are read from the macOS Keychain through `/usr/bin/security`, or from `<config>/.credentials.json` on Windows and Linux. Managed copies live at `~/.quosparr/accounts/claude-<stable-id>/auth.json` and contain only `claudeAiOauth`. The index `claude-index.json` has no tokens. A switch keeps MCP tokens and replaces only `oauthAccount` in `.claude.json`. The current account is not refreshed by Quosparr.
+- Grok credentials are read from `$GROK_HOME/auth.json`; managed copies live at `~/.quosparr/accounts/grok-<stable-id>/auth.json`. A Grok switch replaces only OAuth / compatible legacy scopes and keeps API-key and unknown scopes. It is guaranteed only for new sessions; running Grok processes are not terminated and may write the previous account back, so the app warns before switching.
 - Session repair only touches `session_index.jsonl` and backs it up first. Files under `~/.codex/sessions` and `~/.codex/archived_sessions` are never deleted.
 - API-equivalent cost is computed from local session logs. Session contents are not uploaded.
 - Tokens and API keys are never written to logs, self-check output, or issue templates.
@@ -149,10 +149,10 @@ Changes apply only after **Save Proxy Settings**. **Test Connection** fetches th
 - **Codex quota / reset credits / official usage**: official ChatGPT / Codex backend APIs, using your local credentials. Official usage belongs to the current account and may lag or be revised.
 - **Weekly quota estimate**: unofficial, extrapolated from the weekly percent and daily Credits (1000 Credits ≈ $40, version `credits-usd-2026-08-26`). Only derived Credits and percents are saved in `quota-estimate-history.json`.
 - **Codex API-equivalent cost**: local session logs priced with the built-in table `openai-builtin-2026-09-27`; the online official table uses `openai-docs-` versions. Unknown models are not reported as exact costs.
-- **Grok quota**: only the official CLI chat-proxy `/v1/billing?format=credits` endpoint. No browser cookies, no quota inferred from local logs, and no API billing mixed in.
-- **Grok API-equivalent cost**: local `turn_completed` usage priced with `xai-builtin-2026-09-27`, covering input, cached, output, and long-context rates. `costUsdTicks` is subscription accounting and is not used as API-equivalent cost.
 - **Claude Code subscription usage**: an undocumented OAuth usage endpoint for the signed-in Claude Code subscription. It is not described as an official billing API. No browser cookies, no Claude Desktop data, and no Console API bill.
 - **Claude API-equivalent cost**: local Claude Code session logs priced with `anthropic-builtin-2026-10-14`. Replies are counted once by message id. Cache writes are split into 5-minute and 1-hour rates, and Fast mode has its own rates. Unknown models are not reported as exact costs. Days use the local time zone.
+- **Grok quota**: only the official CLI chat-proxy `/v1/billing?format=credits` endpoint. No browser cookies, no quota inferred from local logs, and no API billing mixed in.
+- **Grok API-equivalent cost**: local `turn_completed` usage priced with `xai-builtin-2026-09-27`, covering input, cached, output, and long-context rates. `costUsdTicks` is subscription accounting and is not used as API-equivalent cost.
 - **Codex Reset Updates**: the public feed at [didcodexreset.com/api/status.json](https://didcodexreset.com/api/status.json). Unofficial, advisory only, and may be delayed.
 - In the chart, “Official stats (all devices)” belongs to the current account, while “Local logs (all sessions)” scans this machine and may span accounts. They are not a subset of each other and should not be subtracted; Codex daily values for both use UTC days.
 

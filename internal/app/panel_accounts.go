@@ -59,7 +59,7 @@ func (a *App) codexAccountsPage(c *ui.Context, l l10n.Localizer, prefs store.Pre
 			}
 		}, nil, func() {
 			if accentButton(c, icPlus, l.Text(l10n.KeyAccountsAdd), false).Clicked() {
-				a.openAccountsSettings(0)
+				a.openAccountsSettings(accountKindCodex)
 			}
 		})
 		a.accountsList(c, func() {

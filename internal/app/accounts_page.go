@@ -18,6 +18,13 @@ import (
 	"github.com/licoy/quosparr/internal/store"
 )
 
+// Account form kinds index the provider tabs, in store.Providers() order.
+const (
+	accountKindCodex = iota
+	accountKindClaude
+	accountKindGrok
+)
+
 // accountsPage is wired from settings_view.go.
 func renderAccountsPage(c *ui.Context, u *settingsUI) {
 	l := u.L()
@@ -29,9 +36,9 @@ func renderAccountsPage(c *ui.Context, u *settingsUI) {
 		return
 	}
 	switch f.kind {
-	case 0:
+	case accountKindCodex:
 		renderCodexAccounts(c, u, f, rt)
-	case 1:
+	case accountKindGrok:
 		renderGrokAccounts(c, u, f, rt)
 	default:
 		renderClaudeAccounts(c, u, f, rt)
@@ -785,10 +792,10 @@ func pasteAccount(l l10n.Localizer, kind int, text string) (string, bool) {
 	if rt == nil {
 		return tx(l, xDetailUnavailable), false
 	}
-	if kind == 1 {
+	if kind == accountKindGrok {
 		return rt.grokPasteText(l, text)
 	}
-	if kind == 2 {
+	if kind == accountKindClaude {
 		return rt.claudePasteText(context.Background(), l, text)
 	}
 	return rt.pasteCodex(l, text)
@@ -807,7 +814,7 @@ func saveAccountMeta(l l10n.Localizer, kind int, mode, id, alias, note string) s
 	if rt == nil {
 		return tx(l, xDetailUnavailable)
 	}
-	if kind == 1 {
+	if kind == accountKindGrok {
 		return rt.setGrokAlias(l, id, alias)
 	}
 	if mode == "note" {

@@ -25,7 +25,7 @@ func accountEditorTitle(l l10n.Localizer, f *accountForm) string {
 	case "note":
 		key = l10n.KeyAccountsNote
 	case "paste":
-		if f.kind == 1 {
+		if f.kind == accountKindGrok {
 			key = l10n.KeyGrokAccountsAddPaste
 		}
 	}
@@ -80,10 +80,10 @@ func accountEditorFields(c *ui.Context, u *settingsUI, f *accountForm) {
 		ui.Text(c, l.Text(l10n.KeyClaudeSwitchRisk)).FontSize(12).TextColor(c.Theme().TextMuted)
 	case "paste":
 		hint := l.Text(l10n.KeyAccountsPasteHint)
-		if f.kind == 1 {
+		if f.kind == accountKindGrok {
 			hint = l.Text(l10n.KeyGrokAccountsPasteHint)
 		}
-		if f.kind == 2 {
+		if f.kind == accountKindClaude {
 			hint = l.Text(l10n.KeyClaudePasteHint)
 		}
 		ui.Text(c, hint).FontSize(12).TextColor(c.Theme().TextMuted)

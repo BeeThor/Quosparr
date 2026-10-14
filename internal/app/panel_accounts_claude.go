@@ -22,7 +22,7 @@ func (a *App) claudeAccountsPage(c *ui.Context, l l10n.Localizer, prefs store.Pr
 			}
 		}, nil, func() {
 			if accentButton(c, icPlus, l.Text(l10n.KeyAccountsAdd), false).Clicked() {
-				a.openAccountsSettings(2)
+				a.openAccountsSettings(accountKindClaude)
 			}
 		})
 		a.accountsList(c, func() {

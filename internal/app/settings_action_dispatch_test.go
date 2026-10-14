@@ -87,11 +87,12 @@ func TestSettingsFolderAndExternalLinksDispatch(t *testing.T) {
 	var opened string
 	u.opts.Actions.OpenFolder = func(path string) { opened = path }
 	tt.Frame()
-	for i, folder := range []struct {
+	for _, folder := range []struct {
+		kind int
 		key  l10n.Key
 		path string
-	}{{l10n.KeyCodexFolder, codexHome}, {l10n.KeyGrokFolder, grokHome}} {
-		accountFormOf(u).kind = i
+	}{{accountKindCodex, l10n.KeyCodexFolder, codexHome}, {accountKindGrok, l10n.KeyGrokFolder, grokHome}} {
+		accountFormOf(u).kind = folder.kind
 		tt.Frame()
 		focusSettingsAction(t, tt, e.s.L().Text(folder.key))
 		start := time.Now()

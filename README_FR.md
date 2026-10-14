@@ -8,9 +8,9 @@
 
 <sub><i>Nom formé de <b>Quo</b>ta (quota) + <b>Sparr</b>ow (moineau)</i></sub>
 
-Un petit moineau perché dans votre barre de menus, qui veille sur vos quotas Codex, Grok et Claude.
+Un petit moineau perché dans votre barre de menus, qui veille sur vos quotas Codex, Claude et Grok.
 
-Quosparr est une application native de barre de menus / zone de notification pour macOS, Windows et Linux. Elle affiche les quotas Codex, Grok et d’abonnement Claude Code, les reset credits, le coût équivalent API et les sessions locales, avec une gestion des comptes séparée pour chaque fournisseur.
+Quosparr est une application native de barre de menus / zone de notification pour macOS, Windows et Linux. Elle affiche les quotas Codex, d’abonnement Claude Code et Grok, les reset credits, le coût équivalent API et les sessions locales, avec une gestion des comptes séparée pour chaque fournisseur.
 
 </div>
 
@@ -25,12 +25,6 @@ Quosparr est une application native de barre de menus / zone de notification pou
 - Comptes fournisseurs : connexion navigateur, import du `auth.json` local, collage de jeton / JSON (y compris `/auth/session`), import de fichiers ou ajout d’une clé API. Le basculement, après confirmation, écrit atomiquement `~/.codex/auth.json`.
 - Sessions récentes, projets et statut, ainsi que la réparation de l’index de session local.
 
-**Grok**
-
-- Quota inclus, répartition Build / Imagine / Chat, périodes hebdomadaires / mensuelles, solde prépayé et usage à la demande via l’API de facturation officielle CLI chat-proxy.
-- Plusieurs comptes OAuth / SuperGrok avec connexion isolée, import de la connexion actuelle, collage d’identifiants, actualisation, alias, ordre et basculement explicite.
-- Sessions récentes issues des journaux locaux du CLI Grok.
-
 **Claude**
 
 - Usage d’abonnement Claude Code : fenêtre de 5 heures, fenêtre de 7 jours, fenêtres hebdomadaires par modèle et usage supplémentaire. Cette lecture n’est pas une API de facturation publique documentée.
@@ -38,9 +32,15 @@ Quosparr est une application native de barre de menus / zone de notification pou
 - Comptes d’abonnement : importer la connexion actuelle, coller les identifiants ou importer un fichier, puis basculer. La connexion dans l’app demande d’exécuter `claude auth login` puis d’importer. Quosparr n’actualise pas le compte actuel ; si la connexion expire, lancez `claude` une fois. Les autres comptes gérés ne sont actualisés que dans leurs copies de bibliothèque.
 - Sur macOS, l’identifiant officiel reste dans le trousseau et passe par `/usr/bin/security`. Sous Windows et Linux, c’est `<config>/.credentials.json`. Un basculement ne remplace que `claudeAiOauth`, conserve les jetons MCP et ne met à jour que `oauthAccount` dans `.claude.json`. Un processus Claude Code en cours n’est pas arrêté et peut réécrire l’ancienne connexion ; l’app prévient avant le basculement.
 
+**Grok**
+
+- Quota inclus, répartition Build / Imagine / Chat, périodes hebdomadaires / mensuelles, solde prépayé et usage à la demande via l’API de facturation officielle CLI chat-proxy.
+- Plusieurs comptes OAuth / SuperGrok avec connexion isolée, import de la connexion actuelle, collage d’identifiants, actualisation, alias, ordre et basculement explicite.
+- Sessions récentes issues des journaux locaux du CLI Grok.
+
 **Tous les fournisseurs**
 
-- Onglets `Codex | Grok | Claude` toujours visibles. La barre de menus peut suivre le panneau ou afficher au plus deux fournisseurs. Un widget ou un choix déjà enregistré « Codex + Grok » conserve cette paire.
+- Onglets `Codex | Claude | Grok` toujours visibles. La barre de menus peut suivre le panneau ou afficher au plus deux fournisseurs. Un widget ou un choix déjà enregistré « Codex + Grok » conserve cette paire.
 - Coût équivalent API et usage de jetons pour aujourd’hui, le cycle actuel, le cycle précédent, ce mois-ci ou une plage personnalisée.
 - Graphique d’usage des jetons depuis le début de l’année, en carte de chaleur, en ligne ou en barres (quotidien / hebdomadaire / cumulé).
 - Apparences claire, sombre et système ; English, 简体中文, 繁體中文, 한국어, 日本語, Русский, Français.
@@ -111,6 +111,7 @@ Linux nécessite GTK3, AppIndicator, un bureau prenant en charge la zone de noti
 
 - Codex installé et utilisé sur cette machine est recommandé. Les données Codex proviennent de `CODEX_HOME` (par défaut `~/.codex`, ou `%USERPROFILE%\.codex` sous Windows).
 - Seul le magasin d’identifiants `file` est pris en charge (valeur par défaut lorsque `cli_auth_credentials_store` n’est pas défini dans le `config.toml` de Codex). `keyring`, `auto` et `ephemeral` sont signalés comme non pris en charge et bloquent l’import et le basculement de comptes.
+- Le panneau Claude utilise le CLI officiel Claude Code. `CLAUDE_CONFIG_DIR` est utilisé s’il est défini, sinon `~/.claude`. L’usage d’abonnement exige une connexion Claude.ai ; une clé API ou une passerelle ne le fournit pas. Après `claude auth login`, la connexion actuelle est ajoutée automatiquement, et une connexion ultérieure avec un autre compte l’est aussi. Vous pouvez aussi coller un JSON d’identifiants ou importer un fichier.
 - Le panneau Grok nécessite le [CLI Grok officiel](https://docs.x.ai/build/overview) :
 
   ```bash
@@ -118,17 +119,16 @@ Linux nécessite GTK3, AppIndicator, un bureau prenant en charge la zone de noti
   ```
 
 - Les comptes et le quota Grok ne prennent en charge que OAuth / SuperGrok et les sessions legacy compatibles. Exécutez `grok login --oauth`, connectez-vous depuis l’app, importez la connexion actuelle ou collez un JSON d’identifiants. Les connexions par clé API seule ne sont pas ajoutées comme comptes gérés. `GROK_HOME` est utilisé s’il est défini, sinon `~/.grok`.
-- Le panneau Claude utilise le CLI officiel Claude Code. `CLAUDE_CONFIG_DIR` est utilisé s’il est défini, sinon `~/.claude`. L’usage d’abonnement exige une connexion Claude.ai ; une clé API ou une passerelle ne le fournit pas. Après `claude auth login`, la connexion actuelle est ajoutée automatiquement, et une connexion ultérieure avec un autre compte l’est aussi. Vous pouvez aussi coller un JSON d’identifiants ou importer un fichier.
 
 ## Widgets bureau
 
-Les widgets nécessitent macOS 14 ou plus ; Windows et Linux n’en disposent pas. Quatre types de widgets sont proposés : aperçu des quotas, tendance des jetons, un indicateur clé et Actualités des réinitialisations Codex. Chaque widget peut choisir Codex, Grok, Claude ou une paire : Codex + Grok, Codex + Claude, Grok + Claude. Un widget déjà réglé sur Codex + Grok conserve cette paire. Un clic ouvre la page correspondante.
+Les widgets nécessitent macOS 14 ou plus ; Windows et Linux n’en disposent pas. Quatre types de widgets sont proposés : aperçu des quotas, tendance des jetons, un indicateur clé et Actualités des réinitialisations Codex. Chaque widget peut choisir Codex, Claude, Grok ou une paire : Codex + Claude, Codex + Grok, Grok + Claude. Un widget déjà réglé sur Codex + Grok conserve cette paire. Un clic ouvre la page correspondante.
 
 L’instantané se trouve dans `~/.quosparr/widget-snapshot.json` avec les droits `0600` et ne contient que des données dérivées non secrètes : ni e-mail, ni ID de compte, ni jeton, ni JSON d’authentification, ni texte brut d’événement. L’app principale est la seule à écrire ; les widgets ne font que lire.
 
 ## Proxy réseau
 
-Dans **Panneau de configuration → Général → Réseau**, choisissez **Réglages système**, HTTP ou SOCKS5 ; les proxys personnalisés acceptent un nom d’utilisateur et un mot de passe. Le réglage couvre les requêtes Codex et Grok lancées par l’app, les opérations CLI, les flux publics de statut et de prix, ainsi que les mises à jour du logiciel. Le proxy système n’est pas modifié, et les pages de connexion du navigateur ainsi que les CLI externes déjà lancées gardent leurs propres réglages.
+Dans **Panneau de configuration → Général → Réseau**, choisissez **Réglages système**, HTTP ou SOCKS5 ; les proxys personnalisés acceptent un nom d’utilisateur et un mot de passe. Le réglage couvre les requêtes Codex, Claude et Grok lancées par l’app, les opérations CLI, les flux publics de statut et de prix, ainsi que les mises à jour du logiciel. Le proxy système n’est pas modifié, et les pages de connexion du navigateur ainsi que les CLI externes déjà lancées gardent leurs propres réglages.
 
 Les changements ne s’appliquent qu’après **Enregistrer le proxy**. **Tester la connexion** accède au site de test (par défaut `https://github.com`, personnalisable) avec les réglages en cours de saisie, sans envoyer d’identifiants de compte ni enregistrer ces réglages. Les mots de passe du proxy sont stockés dans le trousseau macOS, le Gestionnaire d’informations d’identification Windows ou le Secret Service de Linux. Des réglages invalides, des identifiants indisponibles ou l’échec d’un proxy personnalisé ne provoquent jamais de repli sur une connexion directe.
 
@@ -137,8 +137,8 @@ Les changements ne s’appliquent qu’après **Enregistrer le proxy**. **Tester
 - Quosparr conserve ses propres données dans `~/.quosparr` et n’écrit aucun cache d’application dans `~/.codex`. Par défaut, seules des données dérivées non secrètes sont stockées.
 - Les identifiants des comptes fournisseurs sont la seule exception : ils sont stockés sous `~/.quosparr/accounts/<id>/auth.json` (répertoire `0700`, fichier `0600`, écriture atomique ; sous Windows, une ACL accessible uniquement à l’utilisateur actuel). L’index des comptes ne contient aucun jeton.
 - Le `~/.codex/auth.json` officiel n’est écrit que lors d’une actualisation OAuth ou lorsque vous confirmez un basculement de compte. Actualiser un compte non actuel ne met à jour que sa copie dans la bibliothèque.
-- Les identifiants Grok sont lus depuis `$GROK_HOME/auth.json` ; les copies gérées se trouvent dans `~/.quosparr/accounts/grok-<stable-id>/auth.json`. Un basculement Grok ne remplace que les portées OAuth / legacy compatibles et conserve la clé API et les portées inconnues. Il n’est garanti que pour les nouvelles sessions ; les processus Grok en cours ne sont pas arrêtés et peuvent réécrire le compte précédent, c’est pourquoi l’app avertit avant de basculer.
 - Les identifiants Claude sont lus sur macOS depuis le trousseau via `/usr/bin/security`, et sous Windows et Linux depuis `<config>/.credentials.json`. Les copies gérées sont dans `~/.quosparr/accounts/claude-<stable-id>/auth.json` et ne contiennent que `claudeAiOauth`. L’index `claude-index.json` ne contient pas de jetons. Un basculement conserve les jetons MCP et ne remplace que `oauthAccount` dans `.claude.json`. Quosparr n’actualise pas le compte actuel.
+- Les identifiants Grok sont lus depuis `$GROK_HOME/auth.json` ; les copies gérées se trouvent dans `~/.quosparr/accounts/grok-<stable-id>/auth.json`. Un basculement Grok ne remplace que les portées OAuth / legacy compatibles et conserve la clé API et les portées inconnues. Il n’est garanti que pour les nouvelles sessions ; les processus Grok en cours ne sont pas arrêtés et peuvent réécrire le compte précédent, c’est pourquoi l’app avertit avant de basculer.
 - La réparation des sessions ne touche que `session_index.jsonl` et en crée d’abord une sauvegarde. Les fichiers sous `~/.codex/sessions` et `~/.codex/archived_sessions` ne sont jamais supprimés.
 - Le coût équivalent API est calculé à partir des journaux de session locaux. Le contenu des sessions n’est pas téléversé.
 - Les jetons et les clés API ne sont jamais écrits dans les journaux, la sortie d’auto-diagnostic ou les modèles d’issue.
@@ -149,10 +149,10 @@ Les changements ne s’appliquent qu’après **Enregistrer le proxy**. **Tester
 - **Quota Codex / reset credits / usage officiel** : API backend officielles ChatGPT / Codex, avec vos identifiants locaux. L’usage officiel appartient au compte actuel et peut être en retard ou révisé.
 - **Estimation du quota hebdomadaire** : non officielle, extrapolée à partir du pourcentage hebdomadaire et des Credits journaliers (1000 Credits ≈ 40 $, version `credits-usd-2026-08-26`). Seuls les Credits et pourcentages dérivés sont enregistrés dans `quota-estimate-history.json`.
 - **Coût équivalent API Codex** : journaux de session locaux valorisés avec la table intégrée `openai-builtin-2026-09-27` ; la table officielle en ligne utilise des versions `openai-docs-`. Les modèles inconnus ne sont pas présentés comme des coûts exacts.
-- **Quota Grok** : uniquement le point d’accès officiel CLI chat-proxy `/v1/billing?format=credits`. Ni cookies du navigateur, ni quota déduit des journaux locaux, ni facturation API mélangée.
-- **Coût équivalent API Grok** : usage local `turn_completed` valorisé avec `xai-builtin-2026-09-27`, couvrant les tarifs d’entrée, de cache, de sortie et de long contexte. `costUsdTicks` relève de la comptabilité d’abonnement et n’est pas utilisé comme coût équivalent API.
 - **Usage d’abonnement Claude Code** : un point d’accès OAuth usage non documenté. Il ne concerne que l’abonnement Claude Code actuel et n’est pas présenté comme une API de facturation officielle. Ni cookies du navigateur, ni données Claude Desktop, ni facture API de la Console.
 - **Coût équivalent API Claude** : journaux de session locaux de Claude Code et table `anthropic-builtin-2026-10-14`. Une réponse n’est comptée qu’une fois, par identifiant de message. Les écritures de cache sont séparées en 5 minutes et 1 heure, et le tarif Fast est distinct. Les modèles inconnus n’ont pas de coût exact. Les jours suivent le fuseau local.
+- **Quota Grok** : uniquement le point d’accès officiel CLI chat-proxy `/v1/billing?format=credits`. Ni cookies du navigateur, ni quota déduit des journaux locaux, ni facturation API mélangée.
+- **Coût équivalent API Grok** : usage local `turn_completed` valorisé avec `xai-builtin-2026-09-27`, couvrant les tarifs d’entrée, de cache, de sortie et de long contexte. `costUsdTicks` relève de la comptabilité d’abonnement et n’est pas utilisé comme coût équivalent API.
 - **Actualités des réinitialisations Codex** : le flux public [didcodexreset.com/api/status.json](https://didcodexreset.com/api/status.json). Non officiel, indicatif seulement et parfois en retard.
 - Dans le graphique, « Stats officielles (tous les appareils) » appartient au compte actuel, tandis que « Journaux locaux (toutes les sessions) » analyse cette machine et peut couvrir plusieurs comptes. L’une n’est pas un sous-ensemble de l’autre et elles ne doivent pas être soustraites ; les valeurs quotidiennes Codex des deux utilisent des jours UTC.
 

@@ -17,7 +17,7 @@ func TestSettingsAccountResultOpensDialog(t *testing.T) {
 	}
 	u := newSettingsUI(e.s, SettingsOptions{})
 	f := accountFormOf(u)
-	f.kind = 2
+	f.kind = accountKindClaude
 	u.accountAct(f, "", func() string { return u.L().Text(l10n.KeyClaudeNotLoggedIn) })
 	deadline := time.Now().Add(time.Second)
 	for f.busy && time.Now().Before(deadline) {

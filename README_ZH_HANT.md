@@ -8,9 +8,9 @@
 
 <sub><i>名稱取自 <b>Quo</b>ta（額度）+ <b>Sparr</b>ow（麻雀）</i></sub>
 
-一隻停在選單列裡的小麻雀，替你守著 Codex、Grok 與 Claude 的額度。
+一隻停在選單列裡的小麻雀，替你守著 Codex、Claude 與 Grok 的額度。
 
-Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應用程式，顯示 Codex、Grok 與 Claude Code 訂閱額度、reset credits、API 等價成本與本機工作階段，三個供應商各自獨立管理帳號。
+Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應用程式，顯示 Codex、Claude Code 與 Grok 訂閱額度、reset credits、API 等價成本與本機工作階段，三個供應商各自獨立管理帳號。
 
 </div>
 
@@ -25,12 +25,6 @@ Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應�
 - 服務商帳號：瀏覽器登入、匯入本機 `auth.json`、貼上 token / JSON（含 `/auth/session`）、匯入檔案或新增 API Key。確認後以原子方式寫入 `~/.codex/auth.json` 完成切換帳號。
 - 查看最近的工作階段、專案與狀態，並修復本機工作階段索引。
 
-**Grok**
-
-- 透過官方 CLI chat-proxy 計費介面，查看包含額度、Build / Imagine / Chat 拆分、週 / 月週期、預付餘額和按需使用量。
-- 多個 OAuth / SuperGrok 帳號：隔離登入、匯入目前登入、貼上憑證、重新整理、別名、排序與明確切換帳號。
-- 查看本機 Grok CLI 日誌中的最近工作階段。
-
 **Claude**
 
 - 查看 Claude Code 訂閱用量的 5 小時視窗、7 天視窗、按模型的週額度與額外用量。這個讀數不是公開的計費介面。
@@ -38,9 +32,15 @@ Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應�
 - 訂閱帳號可匯入目前登入、貼上憑證或從檔案匯入，然後切換。應用內登入會提示先在終端機執行 `claude auth login`，再匯入。Quosparr 不重新整理目前帳號；登入過期時執行一次 `claude`。其他託管帳號只把重新整理結果寫入帳號庫複本。
 - macOS 上官方憑證留在鑰匙圈，經 `/usr/bin/security` 讀寫。Windows 與 Linux 使用 `<config>/.credentials.json`。切換只替換 `claudeAiOauth`，保留 MCP 權杖，並只更新 `.claude.json` 裡的 `oauthAccount`。正在執行的 Claude Code 不會被結束，可能寫回舊登入，切換前會提示。
 
+**Grok**
+
+- 透過官方 CLI chat-proxy 計費介面，查看包含額度、Build / Imagine / Chat 拆分、週 / 月週期、預付餘額和按需使用量。
+- 多個 OAuth / SuperGrok 帳號：隔離登入、匯入目前登入、貼上憑證、重新整理、別名、排序與明確切換帳號。
+- 查看本機 Grok CLI 日誌中的最近工作階段。
+
 **三個供應商通用**
 
-- 常駐的 `Codex | Grok | Claude` 頁籤。選單列可跟隨主面板，或最多顯示兩個供應商。已經儲存的「Codex + Grok」仍是這一對。
+- 常駐的 `Codex | Claude | Grok` 頁籤。選單列可跟隨主面板，或最多顯示兩個供應商。已經儲存的「Codex + Grok」仍是這一對。
 - 查看今天、本週期、上週期、本月或自訂範圍的 API 等價成本與 token 用量。
 - 年度 token 用量圖表，支援熱力圖、折線圖和長條圖（每日 / 每週 / 累計）。
 - 支援淺色、深色、跟隨系統外觀，以及 English、简体中文、繁體中文、한국어、日本語、Русский、Français。
@@ -111,6 +111,7 @@ Linux 需要 GTK3、AppIndicator、支援系統匣的桌面環境，以及可用
 
 - 建議本機已安裝並使用 Codex。Codex 資料來自 `CODEX_HOME`，預設為 `~/.codex`，Windows 上預設為 `%USERPROFILE%\.codex`。
 - 僅支援 `file` 憑證儲存方式（Codex `config.toml` 中未設定 `cli_auth_credentials_store` 時即為此方式）。`keyring`、`auto`、`ephemeral` 會顯示不支援，並阻止匯入與切換帳號。
+- Claude 面板使用官方 Claude Code CLI。若已設定 `CLAUDE_CONFIG_DIR` 則使用該目錄，否則使用 `~/.claude`。訂閱用量需要 Claude.ai 登入。API Key 或閘道不提供這份用量。執行 `claude auth login` 後目前登入會自動加入，之後以其他帳號登入也會自動加入；也可以貼上憑證 JSON 或從檔案匯入。
 - 使用 Grok 面板前需要安裝[官方 Grok CLI](https://docs.x.ai/build/overview)：
 
   ```bash
@@ -118,17 +119,16 @@ Linux 需要 GTK3、AppIndicator、支援系統匣的桌面環境，以及可用
   ```
 
 - Grok 帳號與額度僅支援 OAuth / SuperGrok 及相容的 legacy session。可執行 `grok login --oauth`、在應用程式內登入、匯入目前登入，或貼上憑證 JSON。僅使用 API Key 的登入不會加入託管帳號。若已設定 `GROK_HOME` 則使用該目錄，否則使用 `~/.grok`。
-- Claude 面板使用官方 Claude Code CLI。若已設定 `CLAUDE_CONFIG_DIR` 則使用該目錄，否則使用 `~/.claude`。訂閱用量需要 Claude.ai 登入。API Key 或閘道不提供這份用量。執行 `claude auth login` 後目前登入會自動加入，之後以其他帳號登入也會自動加入；也可以貼上憑證 JSON 或從檔案匯入。
 
 ## 桌面小工具
 
-桌面小工具需要 macOS 14 或更新版本，Windows 與 Linux 不提供。共有四種小工具：額度總覽、token 趨勢、關鍵指標和 Codex 重設動態。每個小工具都可在「編輯小工具」中選擇 Codex、Grok、Claude，或一對組合：Codex + Grok、Codex + Claude、Grok + Claude。已經設成 Codex + Grok 的小工具保持這一對。點一下即可前往對應頁面。
+桌面小工具需要 macOS 14 或更新版本，Windows 與 Linux 不提供。共有四種小工具：額度總覽、token 趨勢、關鍵指標和 Codex 重設動態。每個小工具都可在「編輯小工具」中選擇 Codex、Claude、Grok，或一對組合：Codex + Claude、Codex + Grok、Grok + Claude。已經設成 Codex + Grok 的小工具保持這一對。點一下即可前往對應頁面。
 
 快照位於 `~/.quosparr/widget-snapshot.json`，權限為 `0600`，只包含非機密的衍生資料，不含電子郵件、帳號 ID、token、認證 JSON 或事件原文。主程式是唯一的寫入者，小工具只讀取。
 
 ## 網路代理
 
-在 **控制台 → 通用 → 網路** 中選擇 **跟隨系統**、HTTP 或 SOCKS5，自訂代理支援使用者名稱與密碼。此設定涵蓋應用程式發起的 Codex 與 Grok 請求、CLI 操作、公開的狀態與價格來源，以及軟體更新。不會修改系統代理，瀏覽器登入頁面與已在執行的外部 CLI 沿用各自的設定。
+在 **控制台 → 通用 → 網路** 中選擇 **跟隨系統**、HTTP 或 SOCKS5，自訂代理支援使用者名稱與密碼。此設定涵蓋應用程式發起的 Codex、Claude 與 Grok 請求、CLI 操作、公開的狀態與價格來源，以及軟體更新。不會修改系統代理，瀏覽器登入頁面與已在執行的外部 CLI 沿用各自的設定。
 
 修改須在點選 **儲存代理設定** 後才會生效。**測試連線** 以目前的草稿存取測試站點（預設 `https://github.com`，可自訂），不會傳送帳號憑證，也不會儲存草稿。代理密碼分別儲存在 macOS 鑰匙圈、Windows 認證管理員或 Linux Secret Service 中。設定無效、憑證無法取得或自訂代理失敗時，絕不會自動改為直接連線。
 
@@ -137,8 +137,8 @@ Linux 需要 GTK3、AppIndicator、支援系統匣的桌面環境，以及可用
 - Quosparr 的自有資料存放在 `~/.quosparr`，不會在 `~/.codex` 中寫入應用程式快取。預設只儲存非機密的衍生資料。
 - 服務商帳號憑證是唯一的例外，儲存在 `~/.quosparr/accounts/<id>/auth.json`（目錄 `0700`、檔案 `0600`，以原子方式寫入；Windows 使用僅限目前使用者存取的 ACL）。帳號索引不含 token。
 - 官方 `~/.codex/auth.json` 只會在 OAuth 重新整理回寫，或你確認切換帳號時寫入。重新整理非目前帳號只會更新帳號庫中的副本。
-- Grok 憑證從 `$GROK_HOME/auth.json` 讀取，託管副本位於 `~/.quosparr/accounts/grok-<stable-id>/auth.json`。Grok 切換帳號只會取代 OAuth / 相容 legacy scope，並保留 API Key 與未知 scope。此操作僅保證新的工作階段使用新帳號；已在執行的 Grok 行程不會被終止，且可能寫回舊帳號，因此切換前應用程式會顯示警告。
 - Claude 憑證在 macOS 上經 `/usr/bin/security` 讀取鑰匙圈，在 Windows 與 Linux 上讀取 `<config>/.credentials.json`。託管副本位於 `~/.quosparr/accounts/claude-<stable-id>/auth.json`，只含 `claudeAiOauth`。索引 `claude-index.json` 不含 token。切換保留 MCP 權杖，並只替換 `.claude.json` 的 `oauthAccount`。Quosparr 不重新整理目前帳號。
+- Grok 憑證從 `$GROK_HOME/auth.json` 讀取，託管副本位於 `~/.quosparr/accounts/grok-<stable-id>/auth.json`。Grok 切換帳號只會取代 OAuth / 相容 legacy scope，並保留 API Key 與未知 scope。此操作僅保證新的工作階段使用新帳號；已在執行的 Grok 行程不會被終止，且可能寫回舊帳號，因此切換前應用程式會顯示警告。
 - 工作階段修復只處理 `session_index.jsonl`，寫入前會先備份。`~/.codex/sessions` 與 `~/.codex/archived_sessions` 下的檔案絕不會被刪除。
 - API 等價成本依本機工作階段日誌計算，不會上傳工作階段內容。
 - token 與 API Key 絕不會寫入日誌、自我檢查輸出或 issue 範本。
@@ -149,10 +149,10 @@ Linux 需要 GTK3、AppIndicator、支援系統匣的桌面環境，以及可用
 - **Codex 額度 / reset credits / 官方用量**：使用本機憑證請求 ChatGPT / Codex 官方後端介面。官方用量屬於目前帳號，可能延遲或被修訂。
 - **週額度推算**：非官方，依週用量百分比與每日 Credits 外推（1000 Credits ≈ $40，版本 `credits-usd-2026-08-26`）。`quota-estimate-history.json` 只儲存衍生的 Credits 與占用率。
 - **Codex API 等價成本**：依本機工作階段日誌，使用內建價格表 `openai-builtin-2026-09-27` 計算；線上官方價格表採用 `openai-docs-` 版本。未知模型不會回報精確費用。
-- **Grok 額度**：僅使用官方 CLI chat-proxy 的 `/v1/billing?format=credits` 端點。不讀取瀏覽器 Cookie，不從本機日誌推算額度，也不混入 API 帳單。
-- **Grok API 等價成本**：依本機 `turn_completed` 用量與價格表 `xai-builtin-2026-09-27` 計算，區分輸入、快取、輸出及長上下文費率。`costUsdTicks` 屬於訂閱額度記帳，不作為 API 等價成本。
 - **Claude Code 訂閱用量**：來自未公開的 OAuth usage 端點，只表示目前的 Claude Code 訂閱，不寫成官方計費介面。不讀取瀏覽器 Cookie、Claude Desktop 資料或 Console API 帳單。
 - **Claude API 等價成本**：依 Claude Code 本機工作階段日誌與價格表 `anthropic-builtin-2026-10-14` 計算。同一則回覆按訊息 ID 只計一次。快取寫入分為 5 分鐘與 1 小時，Fast 檔單獨計價。未知模型不報告精確費用。按日統計使用本地時區。
+- **Grok 額度**：僅使用官方 CLI chat-proxy 的 `/v1/billing?format=credits` 端點。不讀取瀏覽器 Cookie，不從本機日誌推算額度，也不混入 API 帳單。
+- **Grok API 等價成本**：依本機 `turn_completed` 用量與價格表 `xai-builtin-2026-09-27` 計算，區分輸入、快取、輸出及長上下文費率。`costUsdTicks` 屬於訂閱額度記帳，不作為 API 等價成本。
 - **Codex 重設動態**：來自公開來源 [didcodexreset.com/api/status.json](https://didcodexreset.com/api/status.json)。非官方，僅供參考，可能延遲。
 - 圖表中的「官方統計（多端）」屬於目前帳號，「本機日誌（全部本機工作階段）」掃描本機，可能跨越多個帳號。兩者並非包含關係，不應相減；Codex 兩種每日數值皆以 UTC 日界計算。
 
