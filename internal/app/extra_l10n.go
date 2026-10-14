@@ -46,6 +46,10 @@ const (
 	xColorGreen                textKey = "themeColorGreen"
 	xColorGraphite             textKey = "themeColorGraphite"
 	xColorCustom               textKey = "themeColorCustom"
+	xResetTimeFormat           textKey = "quotaResetTimeFormat"
+	xResetTimeFormatHint       textKey = "quotaResetTimeFormatDescription"
+	xResetTimeRelative         textKey = "quotaResetTimeRelative"
+	xResetTimeExact            textKey = "quotaResetTimeExact"
 )
 
 // extraTexts is indexed by textKey, then by position in l10n.Languages():
@@ -67,6 +71,20 @@ var extraTexts = map[textKey][7]string{
 	xColorGreen:    {"Green", "绿色", "綠色", "초록색", "グリーン", "Зелёный", "Vert"},
 	xColorGraphite: {"Graphite", "石墨色", "石墨色", "그래파이트", "グラファイト", "Графит", "Graphite"},
 	xColorCustom:   {"Custom", "自定义", "自訂", "사용자 지정", "カスタム", "Свой цвет", "Personnalisée"},
+	xResetTimeFormat: {
+		"Next reset time", "下次重置时间格式", "下次重置時間格式", "다음 리셋 시간 형식", "次のリセット時刻の表示", "Время следующего сброса", "Heure de la prochaine réinit.",
+	},
+	xResetTimeFormatHint: {
+		"Click the reset time in the main panel to switch.",
+		"在主面板中点击重置时间也可切换。",
+		"在主面板中點按重置時間也可切換。",
+		"메인 패널에서 리셋 시간을 클릭해도 전환됩니다.",
+		"メインパネルでリセット時刻をクリックしても切り替えられます。",
+		"Нажмите на время сброса в главной панели, чтобы переключить.",
+		"Cliquez sur l’heure de réinit. dans le panneau principal pour basculer.",
+	},
+	xResetTimeRelative: {"Relative time", "相对时间", "相對時間", "상대 시간", "相対時間", "Относительное время", "Temps relatif"},
+	xResetTimeExact:    {"Exact time", "精准时间", "精準時間", "정확한 시간", "正確な時刻", "Точное время", "Heure exacte"},
 	xAccountCount: {
 		"%@ accounts", "%@ 个账号", "%@ 個帳號", "계정 %@개", "%@ アカウント", "Аккаунтов: %@", "%@ comptes",
 	},

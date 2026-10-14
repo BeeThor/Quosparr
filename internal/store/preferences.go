@@ -87,6 +87,9 @@ type Preferences struct {
 	// for the brand brown. Only the Go app knows the key, so it is omitted
 	// while empty and an unreadable value falls back to the brand.
 	ThemeColor string `json:"themeColor,omitempty"`
+	// QuotaResetTimeFormat is Go-only too: omitted for the relative countdown,
+	// and an unreadable value falls back to it.
+	QuotaResetTimeFormat ResetTimeFormat `json:"quotaResetTimeFormat,omitempty"`
 
 	// extra holds keys this version does not know, written back unchanged so
 	// that older and newer apps sharing the domain do not erase each other's
@@ -151,6 +154,9 @@ func (p *Preferences) Normalize() {
 	p.RateLimitResetTodayRefreshIntervalSeconds =
 		ClampRateLimitResetTodayRefreshInterval(p.RateLimitResetTodayRefreshIntervalSeconds)
 	p.ThemeColor = NormalizeThemeColor(p.ThemeColor)
+	if !p.QuotaResetTimeFormat.Valid() {
+		p.QuotaResetTimeFormat = ResetTimeRelative
+	}
 }
 
 // NormalizeThemeColor returns color as an upper-case "#RRGGBB", or empty

@@ -23,6 +23,7 @@ func (a *App) panelView(c *ui.Context) {
 	snap.Provider = prefs.SelectedProvider
 	a.syncPanelAccount(snap, prefs)
 	a.panelState.setChartStyle = func(s store.ChartStyle) { a.settings.SetTokenUsageChartStyle(s) }
+	a.panelState.setResetTimeFormat = func(f store.ResetTimeFormat) { a.settings.SetQuotaResetTimeFormat(f) }
 	a.panelState.startReaction = a.startReaction
 	ui.Column(c).Fill().Background(t.Background).Children(func() {
 		if a.panelState.detail != "" {

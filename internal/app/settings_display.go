@@ -186,7 +186,7 @@ func (u *settingsUI) moduleCard(c *ui.Context, p store.Preferences, m store.Modu
 				})
 			})
 			if info.config && (shown || info.configWhenHidden) {
-				ui.Column(c).Padding(0, 0, 0, 40).Children(func() { u.moduleConfig(c, m, p) })
+				ui.Column(c).Gap(12).Padding(0, 0, 0, 40).Children(func() { u.moduleConfig(c, m, p) })
 			}
 		})
 	})
@@ -213,6 +213,12 @@ func (u *settingsUI) moduleConfig(c *ui.Context, m store.Module, p store.Prefere
 		line(l.Text(l10n.KeyShowModelSpecificQuotaUsage), l.Text(l10n.KeyModelSpecificQuotaUsageDescription), func() {
 			if v, ok := toggle(c, "model-quota", l.Text(l10n.KeyShowModelSpecificQuotaUsage), p.ShowsModelSpecificQuotaUsage, ro); ok {
 				s.SetShowsModelSpecificQuotaUsage(v)
+			}
+		})
+		line(tx(l, xResetTimeFormat), tx(l, xResetTimeFormatHint), func() {
+			if v, ok := choose(c, "reset-time-format", tx(l, xResetTimeFormat), p.QuotaResetTimeFormat, store.ResetTimeFormats(),
+				func(v store.ResetTimeFormat) string { return resetTimeFormatName(l, v) }, ro); ok {
+				s.SetQuotaResetTimeFormat(v)
 			}
 		})
 	case store.ModuleTokenUsage:

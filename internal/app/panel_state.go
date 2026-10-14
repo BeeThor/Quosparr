@@ -22,6 +22,8 @@ type panelState struct {
 	info              string // id of the open (i) popover
 	// setChartStyle saves the chart style; panelView points it at Settings.
 	setChartStyle func(store.ChartStyle)
+	// setResetTimeFormat saves the reset time format; panelView points it at Settings.
+	setResetTimeFormat func(store.ResetTimeFormat)
 	// startReaction runs the reaction task; panelView points it at App.
 	startReaction func(PanelActions, bool)
 }

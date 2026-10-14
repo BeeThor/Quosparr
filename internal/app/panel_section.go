@@ -67,9 +67,9 @@ func panelModule(c *ui.Context, l l10n.Localizer, m store.Module, prefs store.Pr
 	switch m {
 	case store.ModuleQuota:
 		if grok {
-			panelGrokQuota(c, l, snap, acts, first, state)
+			panelGrokQuota(c, l, snap, acts, first, state, state.resetSwitch(prefs.QuotaResetTimeFormat))
 		} else {
-			panelCodexQuota(c, l, snap, acts, first, state)
+			panelCodexQuota(c, l, snap, acts, first, state, state.resetSwitch(prefs.QuotaResetTimeFormat))
 		}
 	case store.ModuleTokenUsage:
 		panelToken(c, l, prefs.TokenUsageChartStyle, snap, acts, first, state)

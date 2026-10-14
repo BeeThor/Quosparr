@@ -91,8 +91,8 @@ func TestThirtyFourFieldsAllDifferFromDefaults(t *testing.T) {
 	typ := d.Type()
 	count := 0
 	for i := 0; i < typ.NumField(); i++ {
-		if typ.Field(i).Tag.Get("json") == "" || typ.Field(i).Name == "ThemeColor" {
-			continue // the unexported extra map, and the key only Go writes
+		if typ.Field(i).Tag.Get("json") == "" || typ.Field(i).Name == "ThemeColor" || typ.Field(i).Name == "QuotaResetTimeFormat" {
+			continue // the unexported extra map, and the keys only Go writes
 		}
 		count++
 		if reflect.DeepEqual(d.Field(i).Interface(), a.Field(i).Interface()) {
@@ -616,5 +616,41 @@ func TestThemeColorIsGoOnlyAndLenient(t *testing.T) {
 	}
 	if got := mustDecode(t, string(enc)); got.ThemeColor != "#62BA46" {
 		t.Errorf("round trip = %q", got.ThemeColor)
+	}
+}
+
+func TestQuotaResetTimeFormatIsGoOnlyAndLenient(t *testing.T) {
+	enc, err := EncodePreferences(DefaultPreferences())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(enc), "quotaResetTimeFormat") {
+		t.Errorf("the relative format is written: %s", enc)
+	}
+	for raw, want := range map[string]ResetTimeFormat{
+		`"exact"`:    ResetTimeExact,
+		`"relative"`: ResetTimeRelative,
+		`"Exact"`:    ResetTimeRelative,
+		`1`:          ResetTimeRelative,
+		`null`:       ResetTimeRelative,
+	} {
+		if got := mustDecode(t, `{"quotaResetTimeFormat":`+raw+`}`); got.QuotaResetTimeFormat != want {
+			t.Errorf("quotaResetTimeFormat %s decoded to %q, want %q", raw, got.QuotaResetTimeFormat, want)
+		}
+	}
+	p := DefaultPreferences()
+	p.QuotaResetTimeFormat = ResetTimeExact
+	if enc, err = EncodePreferences(p); err != nil {
+		t.Fatal(err)
+	}
+	if got := mustDecode(t, string(enc)); got.QuotaResetTimeFormat != ResetTimeExact {
+		t.Errorf("round trip = %q", got.QuotaResetTimeFormat)
+	}
+	p.QuotaResetTimeFormat = "bogus"
+	if p.Normalize(); p.QuotaResetTimeFormat != ResetTimeRelative {
+		t.Errorf("normalized bogus format = %q", p.QuotaResetTimeFormat)
+	}
+	if ResetTimeExact.Toggled() != ResetTimeRelative || ResetTimeRelative.Toggled() != ResetTimeExact {
+		t.Error("Toggled does not flip the format")
 	}
 }

@@ -157,6 +157,17 @@ func readThemeColor(r *reader, key string) string {
 	return NormalizeThemeColor(s)
 }
 
+// readResetTimeFormat decodes the Go-only reset time format leniently, as
+// readThemeColor: anything but a known value is the relative countdown.
+func readResetTimeFormat(r *reader, key string) ResetTimeFormat {
+	raw, ok := r.take(key)
+	var s string
+	if !ok || json.Unmarshal(raw, &s) != nil || !ResetTimeFormat(s).Valid() {
+		return ResetTimeRelative
+	}
+	return ResetTimeFormat(s)
+}
+
 // readModules decodes the module order. Unknown module names are dropped (a
 // newer app may know more modules); a non-array, or a non-string element, is
 // an error.

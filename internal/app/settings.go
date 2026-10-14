@@ -405,6 +405,11 @@ func (s *Settings) SetQuotaEstimateWindowMode(v store.WindowMode) bool {
 	return s.Update(func(p *store.Preferences) { p.QuotaEstimateWindowMode = v })
 }
 
+// SetQuotaResetTimeFormat selects how the quota rows show the next reset.
+func (s *Settings) SetQuotaResetTimeFormat(v store.ResetTimeFormat) bool {
+	return s.Update(func(p *store.Preferences) { p.QuotaResetTimeFormat = v })
+}
+
 // SetTokenUsageChartStyle selects the token usage chart style.
 func (s *Settings) SetTokenUsageChartStyle(v store.ChartStyle) bool {
 	return s.Update(func(p *store.Preferences) { p.TokenUsageChartStyle = v })

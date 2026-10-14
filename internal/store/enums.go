@@ -213,6 +213,32 @@ func ChartStyles() []ChartStyle {
 // Valid reports whether v is a known value.
 func (v ChartStyle) Valid() bool { return slices.Contains(ChartStyles(), v) }
 
+// ResetTimeFormat is how the quota rows show the next reset. Only the Go app
+// knows it, so the relative countdown is the empty value and is not written.
+type ResetTimeFormat string
+
+// ResetTimeFormat values.
+const (
+	ResetTimeRelative ResetTimeFormat = ""
+	ResetTimeExact    ResetTimeFormat = "exact"
+)
+
+// ResetTimeFormats returns every valid ResetTimeFormat.
+func ResetTimeFormats() []ResetTimeFormat {
+	return []ResetTimeFormat{ResetTimeRelative, ResetTimeExact}
+}
+
+// Valid reports whether v is a known value.
+func (v ResetTimeFormat) Valid() bool { return slices.Contains(ResetTimeFormats(), v) }
+
+// Toggled is the other format.
+func (v ResetTimeFormat) Toggled() ResetTimeFormat {
+	if v == ResetTimeExact {
+		return ResetTimeRelative
+	}
+	return ResetTimeExact
+}
+
 // Module is a section of the main panel.
 type Module string
 
