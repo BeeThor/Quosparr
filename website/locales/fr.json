@@ -47,9 +47,12 @@
     "commonTitle": "Pour tous les fournisseurs",
     "common": [
       { "title": "La barre de menus en un coup d’œil", "text": "Suivez l’onglet actif ou affichez jusqu’à deux fournisseurs dans la barre de menus." },
+      { "title": "Fenêtre flottante", "text": "Une fenêtre toujours au premier plan sur les trois plateformes, avec jusqu’à trois fournisseurs en style capsule, carte, anneaux ou batterie, opacité réglable et position verrouillable." },
+      { "title": "Panneau principal épuré", "text": "Masquez les fournisseurs inutilisés du panneau principal ; s’il n’en reste qu’un, les onglets disparaissent." },
       { "title": "Coût équivalent API", "text": "Aujourd’hui, ce cycle, le cycle précédent, ce mois-ci ou une période personnalisée, calculé à partir des journaux locaux." },
       { "title": "Graphiques de tokens", "text": "Utilisation de l’année en carte de chaleur, courbe ou barres, par jour, par semaine ou en cumul." },
       { "title": "Thèmes et langues", "text": "Apparence claire, sombre ou selon le système, en sept langues." },
+      { "title": "Police d’affichage", "text": "Police système ou toute police installée, pour le panneau principal et les réglages." },
       { "title": "Mises à jour et widgets", "text": "Mises à jour intégrées et vérifiées par signature sur les trois plateformes, widgets de bureau sur macOS 14+." },
       { "title": "Proxy réseau", "text": "Selon le système, HTTP ou SOCKS5. Les mots de passe du proxy restent dans le magasin d’identifiants du système." }
     ]
