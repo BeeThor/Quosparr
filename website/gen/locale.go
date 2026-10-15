@@ -107,7 +107,10 @@ type Strings struct {
 		MacNote     string
 		MacFix      string
 		WinReq      string
+		WinPortable string
+		WinSetup    string
 		WinNote     string
+		PortNote    string // HTML
 		LinuxReq    string
 		LinuxNote   string // HTML
 		AllReleases string

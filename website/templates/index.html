@@ -202,11 +202,14 @@ if(c){if(c!=="en")location.replace("/"+c+"/"+location.hash);return}}})();</scrip
           <h3>{{icon "windows-fill"}}Windows</h3>
           <p class="req">{{.T.Download.WinReq}}</p>
           <div class="arch"><span>x64</span><div class="links">
-            {{template "dl" dict "asset" $dl.WinX64 "key" "win-x64" "label" ".exe" "name" "Windows (x64)" "primary" true}}
+            {{template "dl" dict "asset" $dl.WinX64Portable "key" "win-x64" "label" .T.Download.WinPortable "name" "Windows (x64)" "primary" true}}
+            {{template "dl" dict "asset" $dl.WinX64 "key" "win-x64-setup" "label" .T.Download.WinSetup "name" "" "primary" false}}
           </div></div>
           <div class="arch"><span>ARM64</span><div class="links">
-            {{template "dl" dict "asset" $dl.WinArm64 "key" "win-arm64" "label" ".exe" "name" "Windows (ARM64)" "primary" true}}
+            {{template "dl" dict "asset" $dl.WinArm64Portable "key" "win-arm64" "label" .T.Download.WinPortable "name" "Windows (ARM64)" "primary" true}}
+            {{template "dl" dict "asset" $dl.WinArm64 "key" "win-arm64-setup" "label" .T.Download.WinSetup "name" "" "primary" false}}
           </div></div>
+          <p class="note">{{html .T.Download.PortNote}}</p>
           <p class="note">{{.T.Download.WinNote}}</p>
         </article>
         <article class="platform" id="download-linux" data-os="linux">

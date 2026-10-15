@@ -26,6 +26,7 @@ func (a Asset) HumanSize() string {
 type Downloads struct {
 	MacArm64DMG, MacArm64ZIP, MacX64DMG, MacX64ZIP Asset
 	WinX64, WinArm64                               Asset
+	WinX64Portable, WinArm64Portable               Asset
 	LinuxX64Deb, LinuxArm64Deb                     Asset
 	LinuxX64Tar, LinuxArm64Tar                     Asset
 	InstallScript, Checksums                       Asset
@@ -62,6 +63,8 @@ func (d *Downloads) rules() []assetRule {
 		{&d.MacX64ZIP, `^Quosparr-macos-x86_64\.zip$`, "Quosparr-macos-x86_64.zip"},
 		{&d.WinX64, `^Quosparr[. ]Setup[. ].+[. ]amd64\.exe$`, "Quosparr.Setup.%s.amd64.exe"},
 		{&d.WinArm64, `^Quosparr[. ]Setup[. ].+[. ]arm64\.exe$`, "Quosparr.Setup.%s.arm64.exe"},
+		{&d.WinX64Portable, `^quosparr-.+-windows-amd64\.tar\.gz$`, "quosparr-%s-windows-amd64.tar.gz"},
+		{&d.WinArm64Portable, `^quosparr-.+-windows-arm64\.tar\.gz$`, "quosparr-%s-windows-arm64.tar.gz"},
 		{&d.LinuxX64Deb, `^quosparr_.+_amd64\.deb$`, "quosparr_%s_amd64.deb"},
 		{&d.LinuxArm64Deb, `^quosparr_.+_arm64\.deb$`, "quosparr_%s_arm64.deb"},
 		{&d.LinuxX64Tar, `^quosparr-.+-linux-amd64\.tar\.gz$`, "quosparr-%s-linux-amd64.tar.gz"},
