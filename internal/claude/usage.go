@@ -82,7 +82,8 @@ func (e ExtraUsage) FormatAmount(n *RawNumber) string {
 
 // UsageSnapshot is a parsed usage response. Windows prefer the limits field,
 // including an explicit empty array or object. Unrecognized non-empty limits
-// fall back to the flat keys.
+// fall back to the flat keys; if neither contains a valid window, parsing
+// returns ErrUsageParse.
 type UsageSnapshot struct {
 	Windows   []UsageWindow
 	Extra     *ExtraUsage
@@ -104,6 +105,9 @@ func ParseUsageSnapshot(raw []byte) (UsageSnapshot, error) {
 		windows := parseLimits(limits)
 		if len(windows) == 0 && !emptyLimits(limits) {
 			windows = parseFlat(root)
+			if len(windows) == 0 {
+				return UsageSnapshot{}, ErrUsageParse
+			}
 		}
 		snap.Windows = orderWindows(windows)
 		return snap, nil
@@ -158,8 +162,9 @@ func parseFlat(root map[string]any) []UsageWindow {
 			out = append(out, UsageWindow{Key: key, Kind: kind, Model: model, Null: true})
 		case map[string]any:
 			obj := value.(map[string]any)
-			w := windowFromMap(key, obj)
-			out = append(out, w)
+			if w, ok := windowFromMap(key, obj); ok {
+				out = append(out, w)
+			}
 		}
 	}
 	return out
@@ -179,7 +184,7 @@ func windowFromItem(obj map[string]any) (UsageWindow, bool) {
 	if key == "" {
 		return UsageWindow{}, false
 	}
-	return windowFromMap(key, obj), true
+	return windowFromMap(key, obj)
 }
 
 func windowItemKey(obj map[string]any) string {
@@ -192,15 +197,17 @@ func windowItemKey(obj map[string]any) string {
 	return ""
 }
 
-func windowFromMap(key string, obj map[string]any) UsageWindow {
+func windowFromMap(key string, obj map[string]any) (UsageWindow, bool) {
 	kind, model := classifyWindow(key)
 	w := UsageWindow{Key: key, Kind: kind, Model: model, ResetsAt: parseResets(obj)}
 	if f, ok, isNull := utilOf(obj); isNull {
 		w.Null = true
+		return w, true
 	} else if ok {
 		w.UsedPercent = &f
+		return w, true
 	}
-	return w
+	return UsageWindow{}, false
 }
 
 func utilOf(obj map[string]any) (float64, bool, bool) {
