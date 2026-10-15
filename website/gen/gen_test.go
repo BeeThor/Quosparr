@@ -109,7 +109,10 @@ func TestBuildWritesEveryLanguage(t *testing.T) {
 			`data-asset="mac-arm64"`,
 			`data-asset="win-x64" data-name="Windows (x64)"`,
 			`data-asset="win-x64-setup"`,
-			`src="/img/shot-` + mainShot(l) + `.webp"`,
+			`role="tablist"`,
+			`id="app-codex" role="tabpanel"`,
+			`id="app-grok" role="tabpanel" aria-labelledby="app-tab-grok" hidden`,
+			`<rect `,
 		} {
 			if !strings.Contains(html, want) {
 				t.Errorf("%s: missing %s", l.Code, want)

@@ -56,6 +56,90 @@
 
 {{define "dl"}}<a class="btn{{if .primary}} primary{{end}}" href="{{.asset.URL}}" data-asset="{{.key}}" data-name="{{.name}}">{{icon "download-2-line"}}<span>{{.label}}</span>{{with .asset.HumanSize}}<small>{{.}}</small>{{end}}</a>{{end}}
 
+{{define "panel"}}<figure class="hero-app">
+  <div class="app" data-app role="group" aria-label="{{.T.Shots.Main}}">
+    <div class="app-top">
+      <div class="app-title"><img src="/img/logo-192.png" width="20" height="20" alt=""><span>Quosparr</span>
+        <span class="app-acts" aria-hidden="true">
+          <span class="app-act on" title="{{.T.Panel.Privacy}}">{{icon "eye-off-line"}}</span>
+          <span class="app-act" title="{{.T.Panel.Updates}}">{{icon "download-cloud-2-line"}}</span>
+          <span class="app-act" title="GitHub">{{icon "github-fill"}}</span>
+          <span class="app-act" title="{{.T.Panel.Refresh}}">{{icon "refresh-line"}}</span>
+        </span>
+      </div>
+      <div class="app-tabs" role="tablist" aria-label="{{.T.Panel.Providers}}">
+        {{- range $i, $p := .Panel.Providers}}
+        <button type="button" role="tab" id="app-tab-{{.Key}}" aria-controls="app-{{.Key}}" aria-selected="{{if $i}}false{{else}}true{{end}}" tabindex="{{if $i}}-1{{else}}0{{end}}">
+          <span class="app-tab-name">{{if eq .Key "grok"}}{{provider "grok"}}{{else}}<span class="logo-c">{{logo (printf "%s-color" .Key)}}</span><span class="logo-m">{{provider .Key}}</span>{{end}}{{.Name}}</span>
+          <span class="meter {{.Health}}"><i style="width: {{.Remaining}}%"></i></span>
+        </button>
+        {{- end}}
+      </div>
+    </div>
+    {{- range $i, $p := .Panel.Providers}}
+    <div class="app-view" id="app-{{.Key}}" role="tabpanel" aria-labelledby="app-tab-{{.Key}}"{{if $i}} hidden{{end}}>
+      <div class="app-id">
+        <span class="app-who"><span class="tier {{.TierClass}}">{{.Tier}}</span><span class="acct{{if .Gilded}} gilded{{end}}">{{.Account}}</span>{{icon "arrow-right-s-line"}}</span>
+        {{- with .Expiry}}
+        <span class="expiry"><span class="exp-k"><svg class="ring" viewBox="0 0 11 11" aria-hidden="true"><circle cx="5.5" cy="5.5" r="4.5"/><circle class="arc" cx="5.5" cy="5.5" r="4.5" stroke-dasharray="{{.Dash}}"/></svg>{{$.T.Panel.ValidUntil}}</span><span class="exp-v">{{.Date}} · {{.Left}}</span></span>
+        {{- end}}
+      </div>
+      <div class="app-body">
+        <div class="sec">
+          <div class="sec-h"><p class="sec-t">{{.QuotaHead}}</p><span class="sec-b">{{icon "refresh-line"}}</span></div>
+          {{- range .Rows}}
+          <div class="q">
+            <div class="q-top"><span>{{.Title}}</span><b class="{{.Health}}">{{.Left}}</b></div>
+            <span class="qbar {{.Health}}"><i style="width: {{.Pct}}%"></i></span>
+            <div class="q-foot"><span>{{.Pace}}</span><button type="button" class="reset" title="{{$.T.Panel.ResetSwitch}}"><span class="rel">{{.ResetRel}}</span><span class="abs">{{.ResetAbs}}</span>{{icon "arrow-left-right-line"}}</button></div>
+          </div>
+          {{- end}}
+          {{- range .Slim}}
+          <div class="slim">
+            <div class="q-top"><span>{{.Title}}</span><b class="{{.Health}}">{{.Used}}</b></div>
+            <span class="qbar {{.Health}}"><i style="width: {{.Pct}}%"></i></span>
+          </div>
+          {{- end}}
+          {{- with .Extra}}
+          <p class="slim extra"><b>{{$.T.Panel.ExtraUsage}}</b><span>{{.}}</span></p>
+          {{- end}}
+        </div>
+        <div class="sec">
+          <div class="sec-h"><div><p class="sec-t">{{$.T.Panel.TokenUsage}}</p>{{with .Official}}<p class="sec-c">{{.}}</p>{{end}}</div><span class="sec-b">{{icon "error-warning-line"}}</span><span class="sec-b">{{icon "refresh-line"}}</span></div>
+          <div class="seg" role="group" aria-label="{{$.T.Panel.TokenUsage}}">
+            <button type="button" aria-pressed="true" data-view="day">{{$.T.Panel.Daily}}</button><button type="button" aria-pressed="false" data-view="week">{{$.T.Panel.WeeklyChart}}</button><button type="button" aria-pressed="false" data-view="total">{{$.T.Panel.Total}}</button>
+          </div>
+          <div class="chart" data-view="day">
+            <div class="hm" style="--cols: {{.Chart.Cols}}">{{range .Chart.Cells}}<i class="l{{.}}"></i>{{end}}</div>
+            <div class="months" style="--cols: {{.Chart.Cols}}">{{range .Chart.Months}}<span style="grid-column: {{.Col}}">{{.Text}}</span>{{end}}</div>
+          </div>
+          <div class="chart xy" data-view="week" hidden><div class="axis"><span>{{index .Chart.Weekly 0}}</span><span>{{index .Chart.Weekly 1}}</span><span>0</span></div>{{.Chart.Bars}}</div>
+          <div class="chart xy" data-view="total" hidden><div class="axis"><span>{{index .Chart.Total 0}}</span><span>{{index .Chart.Total 1}}</span><span>0</span></div>{{.Chart.Line}}</div>
+        </div>
+        <div class="sec">
+          <div class="sec-h"><p class="sec-t">{{$.T.Panel.Speed}}</p><span class="sec-b">{{icon "error-warning-line"}}</span><span class="sec-b">{{icon "refresh-line"}}</span></div>
+          <div class="speed">
+            {{- range .Speed}}
+            <div class="sp-row"><span class="sp-m">{{.Model}}{{with .Effort}} <span class="dim">{{.}}</span>{{end}}</span>{{if $p.TTFT}}<span class="sp-t"><span class="dim">{{$.T.Panel.TTFT}}</span> {{.TTFT}}</span>{{end}}<span class="sp-r">{{.Rate}}</span></div>
+            {{- end}}
+          </div>
+          <p class="sp-note">{{.Basis}}</p>
+          <p class="disc">{{$.T.Panel.Details}}{{icon "arrow-right-s-line"}}</p>
+        </div>
+        <div class="sec">
+          <div class="sec-h"><p class="sec-t">{{$.T.Panel.APICost}}</p><span class="sec-b">{{icon "refresh-line"}}</span></div>
+          <p class="cost">{{.Cost}}</p>
+          <p class="disc">{{$.T.Panel.Details}}{{icon "arrow-right-s-line"}}</p>
+        </div>
+      </div>
+    </div>
+    {{- end}}
+    <div class="app-foot" aria-hidden="true"><span>{{icon "equalizer-line"}}{{.T.Panel.Settings}}</span><span>{{icon "shut-down-line"}}{{.T.Panel.Quit}}</span></div>
+  </div>
+  <figcaption>{{.T.Panel.Caption}}</figcaption>
+</figure>
+{{end}}
+
 {{define "index.html"}}<!doctype html>
 <html lang="{{.Locale.Lang}}">
 <head>
@@ -110,9 +194,7 @@ if(c){if(c!=="en")location.replace("/"+c+"/"+location.hash);return}}})();</scrip
       </div>
       <p class="meta">v{{.Release.Version}} · macOS 12+ · Windows 10 / 11 · Linux · {{.T.Hero.License}}</p>
     </div>
-    <figure class="hero-shot">
-      <img src="{{.Hero.Src}}" width="{{.Hero.W}}" height="{{.Hero.H}}" alt="{{.Hero.Alt}}" fetchpriority="high">
-    </figure>
+    {{template "panel" .}}
   </section>
 
   <section id="features" class="section">

@@ -70,6 +70,47 @@
     });
   });
 
+  // Hero panel replica: provider tabs, chart views and the reset clock.
+  document.querySelectorAll("[data-app]").forEach(function (app) {
+    var tabs = Array.prototype.slice.call(app.querySelectorAll('[role="tab"]'));
+    function select(tab) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute("aria-selected", on ? "true" : "false");
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      });
+    }
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener("click", function () { select(tab); });
+      tab.addEventListener("keydown", function (event) {
+        var step = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
+        var next = step ? tabs[(i + step + tabs.length) % tabs.length]
+          : event.key === "Home" ? tabs[0] : event.key === "End" ? tabs[tabs.length - 1] : null;
+        if (!next) return;
+        event.preventDefault();
+        select(next);
+        next.focus();
+      });
+    });
+
+    // Chart and reset choices are shared by every provider, as in the app.
+    app.querySelectorAll(".seg button").forEach(function (button) {
+      button.addEventListener("click", function () {
+        var view = button.dataset.view;
+        app.querySelectorAll(".seg button").forEach(function (b) {
+          b.setAttribute("aria-pressed", b.dataset.view === view ? "true" : "false");
+        });
+        app.querySelectorAll(".chart").forEach(function (chart) {
+          chart.hidden = chart.dataset.view !== view;
+        });
+      });
+    });
+    app.querySelectorAll(".reset").forEach(function (button) {
+      button.addEventListener("click", function () { app.classList.toggle("exact"); });
+    });
+  });
+
   // Recommend a download. Architecture is only trusted when the browser
   // states it; otherwise the hero button jumps to the platform card.
   function detectOS() {

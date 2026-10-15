@@ -10,6 +10,7 @@ Quosparr 官网的源码。`website/gen` 用 Go 标准库把模板和七种语�
 - `static/img/og-<code>.png`：各语言 1200×630 分享图，使用思源宋体排入该语言的 `hero.etymology` 与 `hero.tagline`；修改这两项文案后需同步重新生成
 - `icons/`：从 Remix Icon v4.9.1 复制的 SVG，构建时内联，不依赖 CDN
 - 截图直接取自 `docs/images/*.webp`，供应商图标取自 `internal/app/assets/providers/`
+- 首页右侧的主面板由 `gen/panel.go` 生成示例数据、`templates/index.html` 的 `panel` 模板以 HTML 还原，配色随站点深浅色切换，标签名沿用应用文案（`locales/*.json` 的 `panel`）；应用主面板布局或文案变化时同步调整
 
 英文位于 `/`（同时为 `x-default`），其他语言位于 `/zh-hans/`、`/zh-hant/`、`/ko/`、`/ja/`、`/ru/`、`/fr/`。首次访问根路径时按浏览器语言跳转，用户手动选择语言后不再跳转。
 

@@ -119,6 +119,42 @@ type Strings struct {
 		Copy        string
 		Copied      string
 	}
+	// Panel labels mirror the app's own translations in internal/l10n and
+	// internal/app/extra_l10n.go; {n} and {date} are filled in by buildPanel.
+	Panel struct {
+		Caption       string
+		Providers     string
+		Privacy       string
+		Updates       string
+		Refresh       string
+		Quota         string
+		FiveHour      string
+		Weekly        string
+		Left          string
+		Used          string
+		BurnRate      string
+		ExhaustsIn    string
+		Projected     string
+		NextReset     string
+		ResetSwitch   string
+		ValidUntil    string
+		TokenUsage    string
+		Daily         string
+		WeeklyChart   string
+		Total         string
+		Official      string
+		Speed         string
+		TTFT          string
+		Basis         string
+		Details       string
+		APICost       string
+		APIEquivalent string
+		ExtraUsage    string
+		GrokIncluded  string
+		GrokWeekly    string
+		Settings      string
+		Quit          string
+	}
 	Footer struct {
 		Source     string
 		Releases   string
