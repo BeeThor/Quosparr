@@ -50,10 +50,7 @@ func (a *App) syncPanelContext(prefs store.Preferences) {
 
 // syncPanelAccount cancels detail work when the account or its state generation changed.
 func (a *App) syncPanelAccount(snap runway.Snapshot, prefs store.Preferences) {
-	account := snap.Accounts.ActiveID
-	if prefs.SelectedProvider == store.ProviderGrok {
-		account = snap.Grok.Accounts.ActiveID
-	}
+	account := activePanelAccount(snap, prefs.SelectedProvider)
 	generation := activePanelGeneration(snap, prefs.SelectedProvider)
 	if a.panelState.account != account || a.panelState.accountGeneration != generation {
 		a.cancelPanelDetails()
