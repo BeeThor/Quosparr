@@ -80,8 +80,9 @@ func (e ExtraUsage) FormatAmount(n *RawNumber) string {
 	return sign + digits[:cut] + "." + digits[cut:]
 }
 
-// UsageSnapshot is a parsed usage response. Windows prefer the limits field
-// when it is present (including an empty array). Flat keys are the fallback.
+// UsageSnapshot is a parsed usage response. Windows prefer the limits field,
+// including an explicit empty array or object. Unrecognized non-empty limits
+// fall back to the flat keys.
 type UsageSnapshot struct {
 	Windows   []UsageWindow
 	Extra     *ExtraUsage
@@ -89,8 +90,8 @@ type UsageSnapshot struct {
 }
 
 // ParseUsageSnapshot accepts the limits array (or object) and the flat
-// five_hour / seven_day / seven_day_sonnet / seven_day_opus form. limits wins
-// when the key is present and not null. Unknown windows keep their key.
+// five_hour / seven_day / seven_day_sonnet / seven_day_opus form. Recognized
+// limits win over flat keys. Unknown windows keep their key.
 func ParseUsageSnapshot(raw []byte) (UsageSnapshot, error) {
 	dec := json.NewDecoder(bytes.NewReader(raw))
 	dec.UseNumber()
@@ -100,11 +101,28 @@ func ParseUsageSnapshot(raw []byte) (UsageSnapshot, error) {
 	}
 	snap := UsageSnapshot{Extra: parseExtra(root["extra_usage"])}
 	if limits, ok := root["limits"]; ok && limits != nil {
-		snap.Windows = orderWindows(parseLimits(limits))
+		windows := parseLimits(limits)
+		if len(windows) == 0 && !emptyLimits(limits) {
+			windows = parseFlat(root)
+		}
+		snap.Windows = orderWindows(windows)
 		return snap, nil
 	}
 	snap.Windows = orderWindows(parseFlat(root))
 	return snap, nil
+}
+
+// An explicit empty collection is authoritative, unlike a non-empty limits
+// response whose entries we could not recognize.
+func emptyLimits(v any) bool {
+	switch n := v.(type) {
+	case []any:
+		return len(n) == 0
+	case map[string]any:
+		return len(n) == 0
+	default:
+		return false
+	}
 }
 
 func parseLimits(v any) []UsageWindow {
@@ -165,7 +183,7 @@ func windowFromItem(obj map[string]any) (UsageWindow, bool) {
 }
 
 func windowItemKey(obj map[string]any) string {
-	for _, key := range []string{"key", "name", "id", "window", "type"} {
+	for _, key := range []string{"key", "name", "id", "window", "type", "kind"} {
 		s, ok := obj[key].(string)
 		if ok && strings.TrimSpace(s) != "" {
 			return strings.TrimSpace(s)
@@ -186,7 +204,7 @@ func windowFromMap(key string, obj map[string]any) UsageWindow {
 }
 
 func utilOf(obj map[string]any) (float64, bool, bool) {
-	for _, key := range []string{"utilization", "used_percent", "usedPercent"} {
+	for _, key := range []string{"utilization", "used_percent", "usedPercent", "percent"} {
 		v, ok := obj[key]
 		if !ok {
 			continue
@@ -234,9 +252,9 @@ func classifyWindow(key string) (WindowKind, string) {
 	k := strings.ToLower(strings.TrimSpace(key))
 	k = strings.ReplaceAll(k, "-", "_")
 	switch k {
-	case "five_hour", "5_hour", "fivehour":
+	case "five_hour", "5_hour", "fivehour", "session":
 		return WindowFiveHour, ""
-	case "seven_day", "7_day", "sevenday":
+	case "seven_day", "7_day", "sevenday", "weekly_all":
 		return WindowSevenDay, ""
 	}
 	if rest, ok := strings.CutPrefix(k, "seven_day_"); ok && modelFamily(rest) {

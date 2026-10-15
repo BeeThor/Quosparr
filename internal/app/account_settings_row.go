@@ -74,6 +74,13 @@ func accountSettingsStatus(c *ui.Context, l l10n.Localizer, v accountIdentityVie
 		}
 	case v.provider == store.ProviderClaude && v.claudeQuota != nil:
 		q := v.claudeQuota
+		if q.Title == "" {
+			dimText(c, l.Text(l10n.KeyClaudeNoQuotaData))
+			if q.ExtraUsage != "" {
+				dimText(c, q.ExtraUsage)
+			}
+			return
+		}
 		percent := fmt.Sprintf("%d%% %s", max(0, min(100, 100-q.UsedPercent)), l.Text(l10n.KeyLeft))
 		text := accountUpdatedSummary(l, percent, q.UpdatedAt)
 		if q.ExtraUsage != "" {
