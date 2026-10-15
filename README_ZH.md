@@ -23,6 +23,7 @@ Quosparr 是面向 macOS、Windows、Linux 的原生菜单栏 / 系统托盘应�
 - 根据官方周用量百分比与每日 Credits 推算本周额度，并与往周对比，便于发现额度缩水
 - Codex 重置动态：查看今天 Codex 速率限制是否已重置，可单独设置刷新间隔（数据来自 [Did Codex Reset](https://didcodexreset.com)）
 - 服务商账号：浏览器登录、导入本机 `auth.json`、粘贴 token / JSON（含 `/auth/session`）、导入文件或添加 API Key；确认后原子写入 `~/.codex/auth.json` 完成切号
+- API 账号：Base URL + API Key（Base URL 留空即官方 OpenAI API），可从站点获取模型列表选择模型；切换时写入 `auth.json` 与 `config.toml` 中的 `quosparr` 服务商（写入前备份），new-api 类或 OpenAI 兼容中转站的余额显示在账号列表、面板、状态栏、悬浮窗与 Widget；已在 `config.toml` 选用中转站的 Key 登录会自动带上该站点与模型；编辑当前账号时可替换 Key（留空保留），并选择是否立即改写配置文件，改写后需重启 Codex
 - 查看最近会话、项目与状态，并修复本机会话索引
 
 **Claude**
@@ -31,6 +32,7 @@ Quosparr 是面向 macOS、Windows、Linux 的原生菜单栏 / 系统托盘应�
 - 从 Claude Code 本机会话日志统计 Token 用量、API 等价成本（`anthropic-builtin-2026-10-14`）、最近会话和输出速率。同一条回复只计一次。未知模型不给精确费用。日志没有首 token 时间，该列显示“—”，速率按端到端耗时计算
 - 订阅账号可导入当前登录、粘贴凭据或从文件导入，然后切号。应用内登录会提示先在终端执行 `claude auth login`，再导入。Quosparr 不刷新当前账号；登录过期时运行一次 `claude`。其他托管账号只把刷新结果写入账号库副本
 - macOS 上官方凭据留在钥匙串，经 `/usr/bin/security` 读写。Windows 与 Linux 使用 `<config>/.credentials.json`。切号只替换 `claudeAiOauth`，保留 MCP 令牌，并只更新 `.claude.json` 里的 `oauthAccount`。正在运行的 Claude Code 不会被结束，可能写回旧登录，切换前会提示
+- API 账号：Base URL + API Key，可从站点获取模型列表并分别映射 Opus / Sonnet / Haiku / Fable 模型。切换时只把 `ANTHROPIC_BASE_URL`、`ANTHROPIC_AUTH_TOKEN` 与模型映射写入 `settings.json`（写入前备份），订阅登录保持不变；切回订阅账号时移除这些键。中转站余额显示在所有展示 Claude 额度的位置。已写在 `settings.json` 中的中转配置会自动导入。编辑当前账号时可替换 Key（留空保留），并选择是否立即改写 `settings.json`，改写后需重启 Claude Code
 
 **Grok**
 
@@ -139,6 +141,7 @@ Linux 需要 GTK3、AppIndicator、支持托盘的桌面，以及可用的 Secre
 - 服务商账号凭据是唯一例外，保存在 `~/.quosparr/accounts/<id>/auth.json`（目录 `0700`、文件 `0600`，原子写入；Windows 使用仅当前用户可访问的 ACL），账号索引不包含 token
 - 官方 `~/.codex/auth.json` 仅在 OAuth 刷新回写或你确认切号时写入；刷新非当前账号只更新账号库副本
 - Claude 凭据在 macOS 上经 `/usr/bin/security` 读取钥匙串，在 Windows 与 Linux 上读取 `<config>/.credentials.json`。托管副本位于 `~/.quosparr/accounts/claude-<stable-id>/auth.json`，只含 `claudeAiOauth`。索引 `claude-index.json` 不含 token。切号保留 MCP 令牌，并只替换 `.claude.json` 的 `oauthAccount`。Quosparr 不刷新当前账号
+- API 账号的 Key 只保存在托管副本（`~/.quosparr/accounts/<id>/auth.json` 或 `claude-api-<id>/auth.json`），索引只保存 Base URL、模型与余额缓存。余额与模型请求只发往你填写的站点，并遵循代理设置。被修改的 `config.toml` 与 `settings.json` 会先备份到 `~/.quosparr/backups`；首次写入 `settings.json` 时会按键名重新排序
 - Grok 凭据从 `$GROK_HOME/auth.json` 读取，托管副本位于 `~/.quosparr/accounts/grok-<stable-id>/auth.json`。Grok 切号只替换 OAuth / 兼容 legacy scope，保留 API Key 与未知 scope，且仅保证新会话使用新账号；已运行的 Grok 进程不会被终止，可能写回旧账号，因此切换前会给出提示
 - 会话修复只处理 `session_index.jsonl`，写入前先备份；不会删除 `~/.codex/sessions` 与 `~/.codex/archived_sessions` 下的文件
 - API 等价成本基于本机会话日志计算，不上传会话内容

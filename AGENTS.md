@@ -26,13 +26,16 @@ v1 已正式发布（`v1.0.0`、`v1.0.1`）；macOS 仅保留 Swift WidgetKit �
 - 多账号凭据是唯一例外：仅允许存放在 `~/.quosparr/accounts/<id>/auth.json`（目录 `0700`、文件 `0600`，原子写入）。账号索引 `index.json` 不得包含 token。
 - Windows 凭据与相应目录、临时写入文件使用仅当前用户可访问的 protected ACL，并关闭权限继承，不能以 chmod 代替实际权限检查
 - 读取 `~/.codex/auth.json` 时只使用必要字段。
-- 修改官方 `~/.codex/auth.json` 仅限：OAuth refresh 回写、以及用户主动切号时的原子写入。
+- 修改官方 `~/.codex/auth.json` 仅限：OAuth refresh 回写、用户主动切号时的原子写入，以及用户编辑当前 API 账号并在询问中选择“保存并应用”时的同一事务写入。
+- Codex API 账号（Base URL + API Key）的 Key 与其他 API Key 一样存于账号库托管副本，Base URL、模型与余额缓存只在 `index.json` 行内，不含 Key；用户主动切到中转账号时同一事务写官方 `auth.json`（`auth_mode=apikey`）与 `config.toml` 的 `model_provider = "quosparr"` 和 `[model_providers.quosparr]`，切走时移除该指针与 Quosparr 写入的模型，失败整体回滚；`config.toml` 只做逐行编辑并保留其他内容，写入前备份到 `~/.quosparr/backups`（目录私有、文件 `0600`，保留最近 10 份）；不改 shell rc 或环境变量；官方登录为 API Key 且 `config.toml` 的 `model_provider` 选中带 `base_url` 的服务商时，同步只读该文件，把站点与顶层模型补到尚无站点的对应账号行；从这类账号切走时，若选中的服务商指向同一站点，只移除 `model_provider` 行，保留用户的服务商表；编辑 API 账号可替换 Key（留空保留），行 ID 不变；编辑当前账号且 Key、站点或模型有变时先询问“仅保存 / 保存并应用”，仅保存只改账号库，应用后提示重启 Codex
+- 中转余额与模型列表只请求用户填写的站点，经应用代理策略、不直连回退；Key 只放在请求头，错误、日志与缓存结果中不得出现 Key 或响应正文
 - 刷新非当前托管账号 token 时只写账号库副本，不得写官方 `auth.json`；刷新当前账号时同步官方 auth 与账号库副本。
 - 会话修复只允许处理 `session_index.jsonl`，写入前必须备份。
 - 不删除 `~/.codex/sessions/**`、`~/.codex/archived_sessions/**` 或全局状态文件。
 - 读取官方 Claude 凭据时只取 `claudeAiOauth` 的必要字段；`mcpOAuth` 不解析内容，只在用户主动切号时原样保留。
 - `.claude.json` 只读取 `oauthAccount`。切号时只替换这一个键，其他内容原样保留。
 - 写官方 Claude 凭据只有用户主动切号。当前账号的 token 不由 Quosparr 刷新。
+- Claude API 账号的 Key 只存于 `~/.quosparr/accounts/claude-api-<id>/auth.json`（`{"apiKey": "..."}`，权限同上），`claude-index.json` 只保存 Base URL、Key 哈希提示、模型映射与余额缓存；用户主动切到 API 账号时只改 `<config>/settings.json` 的 `env.ANTHROPIC_BASE_URL`、`env.ANTHROPIC_AUTH_TOKEN` 及可选模型映射键，写入前备份到 `~/.quosparr/backups`，切回订阅账号时只移除 Quosparr 写入且值仍匹配的键；钥匙串、`.credentials.json` 与 `.claude.json` 不因 API 账号改动；`settings.json` 首次写入会按键名重排（内容不变）；同步时只读 `settings.json`，其中已有而账号库没有的 `ANTHROPIC_BASE_URL` + `ANTHROPIC_AUTH_TOKEN`（或 `ANTHROPIC_API_KEY`）自动导入为 API 账号并设为当前，移除时 `ANTHROPIC_API_KEY` 同样按值匹配；编辑当前 API 账号且 Key、站点或模型有变时同样先询问，仅保存不改 `settings.json`，应用后提示重启 Claude Code；Base URL 末尾的 `/v1` 会去掉（Claude Code 自行拼接 `/v1/messages`），旧版本存下的带 `/v1` 行读取时规范化，`settings.json` 仍是旧写法时按同一站点识别，编辑该账号时可选择改写
 - Claude 托管副本在 `~/.quosparr/accounts/claude-<stable-id>/auth.json`（目录 `0700`、文件 `0600`、原子写入；Windows 使用 protected ACL 并关闭继承），只保存 `{"claudeAiOauth": {...}}`。索引 `claude-index.json` 不得包含 token。
 - Claude 会话扫描只读 `projects/**`，不写不删，不读取 `last-prompt` 等用户原文。
 - 调用 `/usr/bin/security` 使用绝对路径。密钥只经 stdin 传递，超过上限时报错，不退回 argv。stderr 进入日志前只保留退出码和错误类别。
@@ -83,6 +86,7 @@ Quosparr v1 面向 macOS、Windows、Linux，主程序使用 Go + mygo/ui 原生
 - v1 已正式发布（`v1.0.0`、`v1.0.1`），现有截图展示 v1 在 macOS 与 Windows 上的界面
 - 首次无偏好配置的启动显示设置并保存默认偏好，已有配置或从旧版迁移的用户普通启动时仅驻留菜单栏；主动点击设置或显式传入 `--settings` 才再次打开设置，日常 Dev 重启不附加该参数
 - Codex 支持配额窗口、订阅到期、reset credits、周额度推算与历史对比，Grok 展示官方 CLI chat-proxy 额度及 Build / Imagine / Chat 拆分、周期、预付余额和按需使用情况，Claude 展示 Claude Code 订阅用量的 5 小时、7 天、按模型周额度和额外用量
+- Codex 与 Claude Code 另支持 API 账号（Base URL + API Key，可从站点获取模型列表；Claude 可分别映射 Opus / Sonnet / Haiku / Fable 模型），在多账号中添加、编辑与切换，并在账号列表、主面板、状态栏、悬浮窗与 Widget 显示中转站余额（new-api 类令牌额度或 OpenAI 兼容账单接口，站点不提供时明确说明，不估算）；Codex 无 Base URL 时为官方 OpenAI API Key
 - 三个供应商均保留账号管理、本地 Token 用量图表、API 等价成本与最近会话，图表支持热力图、折线图和柱状图；Codex 另有会话索引修复与公开重置动态。状态栏和 Widget 最多同时显示两个供应商，旧值 `both` 仍是 Codex + Grok；三端另有可选的置顶桌面悬浮窗（偏好对象 `floatingWindow` 仅 Go 版写入，默认省略），样式独立于状态栏，提供胶囊、卡片、圆环、电池四种，最多显示三个供应商，可调不透明度、锁定位置与是否显示在全屏应用上方；Windows 后端不支持透明内容，卡片铺满窗口并由 DWM 圆角，全屏检测为 2 秒轮询，Linux Wayland 下置顶与定位由合成器决定，三端真机交互仍待验收
 - 主应用支持浅色、深色、跟随系统，以及英文、简体中文、繁体中文、韩文、日文、俄文、法文；显示字体可选“默认”（系统字体）或本机已安装字体族，作用于主面板与设置窗口，偏好键 `fontFamily` 仅 Go 版写入，菜单栏图标保持系统字体
 - 自动测试和交叉编译不能替代三端安装、桌面与迁移验收，待验收项见 [验收清单](docs/v1-acceptance-checklist.md) 与 [发布说明](docs/v1-release.md)

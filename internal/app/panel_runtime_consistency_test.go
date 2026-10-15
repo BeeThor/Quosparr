@@ -105,7 +105,8 @@ func TestPanelRuntimeRefreshUpdatesOpenCostDetail(t *testing.T) {
 	tokens.Store(111)
 	quotaStarted, releaseQuota := make(chan struct{}), make(chan struct{})
 	var quotaSignal sync.Once
-	auth := codex.APIKeyAuth("synthetic-refresh")
+	// An OAuth login: an API key login never fetches the quota.
+	auth := codex.Auth{AuthMode: "chatgpt", Tokens: codex.Tokens{AccessToken: "synthetic-refresh", AccountID: "ada"}}
 	now := time.Now()
 	svc := runway.New(runway.Options{Preferences: p, Now: func() time.Time { return now }, Sources: runway.Sources{
 		LoadIndex:     func() (codex.AccountIndex, error) { return codex.AccountIndex{ActiveAccountID: "ada"}, nil },

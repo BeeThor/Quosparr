@@ -987,7 +987,12 @@ func meterQuota(m runway.Meter) export.WidgetQuota {
 		t := m.ResetsAt
 		reset = &t
 	}
-	return export.NewWidgetQuota(m.Title, mins, src, m.UsedPercent, m.RemainingPercent, reset)
+	q := export.NewWidgetQuota(m.Title, mins, src, m.UsedPercent, m.RemainingPercent, reset)
+	if m.ValueText != "" {
+		v := m.ValueText
+		q.ValueText = &v
+	}
+	return q
 }
 
 type resetBridge struct {

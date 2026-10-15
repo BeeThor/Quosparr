@@ -23,6 +23,7 @@ Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應�
 - 根據官方週用量百分比與每日 Credits 推算本週額度，並與前幾週比較，方便發現額度被調降。
 - Codex 重設動態：查看今天 Codex 速率限制是否已重置，可單獨設定重新整理間隔（資料來自 [Did Codex Reset](https://didcodexreset.com)）。
 - 服務商帳號：瀏覽器登入、匯入本機 `auth.json`、貼上 token / JSON（含 `/auth/session`）、匯入檔案或新增 API Key。確認後以原子方式寫入 `~/.codex/auth.json` 完成切換帳號。
+- API 帳號：Base URL + API Key（Base URL 留空即官方 OpenAI API），可從站點取得模型清單選擇模型；切換時寫入 `auth.json` 與 `config.toml` 中的 `quosparr` 服務商（寫入前備份），new-api 類或 OpenAI 相容中轉站的餘額顯示在帳號清單、面板、狀態列、懸浮視窗與 Widget；已在 `config.toml` 選用中轉站的 Key 登入會自動帶上該站點與模型；編輯目前帳號時可替換 Key（留空保留），並選擇是否立即改寫設定檔，改寫後需重新啟動 Codex
 - 查看最近的工作階段、專案與狀態，並修復本機工作階段索引。
 
 **Claude**
@@ -31,6 +32,7 @@ Quosparr 是適用於 macOS、Windows、Linux 的原生選單列 / 系統匣應�
 - 從 Claude Code 本機工作階段日誌統計 token 用量、API 等價成本（`anthropic-builtin-2026-10-14`）、最近工作階段與輸出速率。同一則回覆只計一次。未知模型不給精確費用。日誌沒有首 token 時間，該欄顯示「—」，速率按端到端耗時計算。
 - 訂閱帳號可匯入目前登入、貼上憑證或從檔案匯入，然後切換。應用內登入會提示先在終端機執行 `claude auth login`，再匯入。Quosparr 不重新整理目前帳號；登入過期時執行一次 `claude`。其他託管帳號只把重新整理結果寫入帳號庫複本。
 - macOS 上官方憑證留在鑰匙圈，經 `/usr/bin/security` 讀寫。Windows 與 Linux 使用 `<config>/.credentials.json`。切換只替換 `claudeAiOauth`，保留 MCP 權杖，並只更新 `.claude.json` 裡的 `oauthAccount`。正在執行的 Claude Code 不會被結束，可能寫回舊登入，切換前會提示。
+- API 帳號：Base URL + API Key，可從站點取得模型清單並分別映射 Opus / Sonnet / Haiku / Fable 模型。切換時只把 `ANTHROPIC_BASE_URL`、`ANTHROPIC_AUTH_TOKEN` 與模型映射寫入 `settings.json`（寫入前備份），訂閱登入保持不變；切回訂閱帳號時移除這些鍵。中轉站餘額顯示在所有呈現 Claude 額度的位置。已寫在 `settings.json` 中的中轉設定會自動匯入。編輯目前帳號時可替換 Key（留空保留），並選擇是否立即改寫 `settings.json`，改寫後需重新啟動 Claude Code
 
 **Grok**
 
@@ -139,6 +141,7 @@ Linux 需要 GTK3、AppIndicator、支援系統匣的桌面環境，以及可用
 - 服務商帳號憑證是唯一的例外，儲存在 `~/.quosparr/accounts/<id>/auth.json`（目錄 `0700`、檔案 `0600`，以原子方式寫入；Windows 使用僅限目前使用者存取的 ACL）。帳號索引不含 token。
 - 官方 `~/.codex/auth.json` 只會在 OAuth 重新整理回寫，或你確認切換帳號時寫入。重新整理非目前帳號只會更新帳號庫中的副本。
 - Claude 憑證在 macOS 上經 `/usr/bin/security` 讀取鑰匙圈，在 Windows 與 Linux 上讀取 `<config>/.credentials.json`。託管副本位於 `~/.quosparr/accounts/claude-<stable-id>/auth.json`，只含 `claudeAiOauth`。索引 `claude-index.json` 不含 token。切換保留 MCP 權杖，並只替換 `.claude.json` 的 `oauthAccount`。Quosparr 不重新整理目前帳號。
+- API 帳號的 Key 只保存在託管副本（`~/.quosparr/accounts/<id>/auth.json` 或 `claude-api-<id>/auth.json`），索引只保存 Base URL、模型與餘額快取。餘額與模型請求只發往你填寫的站點，並遵循代理設定。被修改的 `config.toml` 與 `settings.json` 會先備份到 `~/.quosparr/backups`；首次寫入 `settings.json` 時會依鍵名重新排序
 - Grok 憑證從 `$GROK_HOME/auth.json` 讀取，託管副本位於 `~/.quosparr/accounts/grok-<stable-id>/auth.json`。Grok 切換帳號只會取代 OAuth / 相容 legacy scope，並保留 API Key 與未知 scope。此操作僅保證新的工作階段使用新帳號；已在執行的 Grok 行程不會被終止，且可能寫回舊帳號，因此切換前應用程式會顯示警告。
 - 工作階段修復只處理 `session_index.jsonl`，寫入前會先備份。`~/.codex/sessions` 與 `~/.codex/archived_sessions` 下的檔案絕不會被刪除。
 - API 等價成本依本機工作階段日誌計算，不會上傳工作階段內容。

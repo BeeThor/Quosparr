@@ -142,10 +142,14 @@ func (g *claudeBridge) reload(notify bool) {
 }
 
 func (g *claudeBridge) relabelLocked(st *runway.ClaudeState) {
-	st.LastError = claudeErrorText(g.lc, st.Availability)
-	if snap, ok := st.Detail.(*claude.UsageSnapshot); ok {
-		st.Meters = claudeMeters(g.lc, *snap, st.UpdatedAt)
-		st.ExtraUsage = claudeExtraLine(snap.Extra)
+	if st.API != nil {
+		relabelClaudeAPI(g.lc, st)
+	} else {
+		st.LastError = claudeErrorText(g.lc, st.Availability)
+		if snap, ok := st.Detail.(*claude.UsageSnapshot); ok {
+			st.Meters = claudeMeters(g.lc, *snap, st.UpdatedAt)
+			st.ExtraUsage = claudeExtraLine(snap.Extra)
+		}
 	}
 	if g.localErr != nil {
 		st.LastError = g.lc.Text(l10n.KeyStatusError) + ": " + g.localErr.Error()
@@ -183,6 +187,9 @@ func buildClaudeState(mod *claude.Module, lc l10n.Localizer, gateway bool) runwa
 	if !ok {
 		st.LastError = lc.Text(l10n.KeyClaudeNotLoggedIn)
 		return st
+	}
+	if acc.IsAPI() {
+		return buildClaudeAPIState(st, lc, acc)
 	}
 	st.Accounts.Display = codex.AccountDisplay{
 		Authenticated: !acc.RequiresReauth, AccountID: acc.ID,
@@ -328,6 +335,11 @@ func claudeSidebarAccount(lc l10n.Localizer, account claude.ManagedAccount) code
 	if account.LastError != "" {
 		row.LastError = claudeErrorCodeText(lc, account.LastError)
 	}
+	if account.IsAPI() && account.API != nil {
+		// The shared account rows read a relay from these codex fields.
+		row.AuthMode, row.APIBaseURL, row.APIModel = codex.AuthModeAPIKey, account.API.BaseURL, account.API.Model
+		row.APIQuota = account.APIQuota
+	}
 	return row
 }
 
@@ -341,6 +353,10 @@ func claudeErrorCodeText(lc l10n.Localizer, code string) string {
 		return lc.Text(l10n.KeyClaudeRateLimited)
 	case claude.ErrorCodeUsageParse:
 		return lc.Text(l10n.KeyClaudeUsageParseFailed)
+	case claude.ErrorCodeAPIUnauthorized:
+		return tx(lc, xAPIKeyRejected)
+	case claude.ErrorCodeAPI:
+		return tx(lc, xAPIBalanceFailed)
 	default:
 		return lc.Text(l10n.KeyStatusError)
 	}
@@ -349,6 +365,12 @@ func claudeErrorCodeText(lc l10n.Localizer, code string) string {
 func claudeAccountQuotas(lc l10n.Localizer, accounts []claude.ManagedAccount) map[string]runway.ClaudeAccountQuota {
 	out := map[string]runway.ClaudeAccountQuota{}
 	for _, account := range accounts {
+		if account.IsAPI() {
+			if q, ok := claudeAPIAccountQuota(lc, account); ok {
+				out[account.ID] = q
+			}
+			continue
+		}
 		if len(account.CachedQuota) == 0 {
 			continue
 		}
@@ -396,6 +418,9 @@ func claudeWidget(st runway.ClaudeState) *export.ProviderSnapshot {
 	}
 	for _, m := range st.Meters {
 		p.Quota = append(p.Quota, meterQuota(m))
+	}
+	if st.API != nil && st.API.Quota != nil {
+		applyClaudeAPIBalance(&p, *st.API.Quota)
 	}
 	for day, tokens := range st.Heatmap.Local {
 		p.DailyTokens = append(p.DailyTokens, export.NewDailyTokens(day, int(tokens)))
@@ -529,10 +554,9 @@ func (rt *liveApp) switchClaude(l l10n.Localizer, id string) string {
 	if rt.claudeMod == nil {
 		return l.Text(l10n.KeyClaudeNotLoggedIn)
 	}
-	if _, err := rt.claudeMod.Apply(context.Background(), claude.Command{Kind: claude.CommandSwitch, ID: id, AllowWhileRunning: true}); err != nil {
+	if err := rt.switchClaudeAccount(context.Background(), id); err != nil {
 		return claudePublicError(l, err)
 	}
-	rt.claudeB.reload(true)
 	return ""
 }
 
@@ -589,6 +613,9 @@ func (rt *liveApp) refreshClaudeAll(ctx context.Context) string {
 }
 
 func claudePublicError(l l10n.Localizer, err error) string {
+	if text := apiErrorText(l, err); text != "" {
+		return text
+	}
 	var current *claude.CurrentAccountCannotBeRemovedError
 	switch {
 	case errors.As(err, &current):

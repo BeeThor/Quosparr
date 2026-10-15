@@ -50,11 +50,18 @@ func meterTitle(l l10n.Localizer, m runway.Meter, codex bool) string {
 }
 
 // panelCodexQuota is the quota section: one row per meter.
-func panelCodexQuota(c *ui.Context, l l10n.Localizer, snap runway.Snapshot, acts PanelActions, first *bool, st *panelState, rs resetSwitch) {
+func panelCodexQuota(c *ui.Context, l l10n.Localizer, snap runway.Snapshot, acts PanelActions, first *bool, st *panelState, rs resetSwitch, private bool) {
 	refreshing := snap.Refresh.Has(runway.SectionQuota)
 	sectionBlock(c, first, func() {
 		drawSectionHead(c, l, st, sectionSpec{title: l.Text(l10n.KeyQuota), refreshing: refreshing, refresh: sectionRefresh(acts, runway.SectionQuota)})
-		meterRows(c, l, snap.Codex.Meters, refreshing, true, rs)
+		switch v := snap.Codex; {
+		case v.APIKeyMode && v.APIBaseURL != "":
+			panelAPIBalance(c, l, v.APIBaseURL, v.APIBalance, "", refreshing, private)
+		case v.APIKeyMode:
+			dimText(c, l.Text(l10n.KeyAccountsAPIKeyHint)).MaxLines(2)
+		default:
+			meterRows(c, l, v.Meters, refreshing, true, rs)
+		}
 	})
 }
 

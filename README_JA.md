@@ -23,6 +23,7 @@ Quosparr は macOS、Windows、Linux 向けのネイティブなメニューバ�
 - 公式の週次使用率と日次 Credits から今週の枠を推定し、過去の週と比較して枠の引き下げを見つけやすくします。
 - Codex リセット更新: 今日 Codex のレート制限がリセットされたかを確認でき、専用の更新間隔を設定できます（データは [Did Codex Reset](https://didcodexreset.com) から取得）。
 - プロバイダーアカウント: ブラウザでのサインイン、ローカル `auth.json` の取り込み、token / JSON の貼り付け（`/auth/session` を含む）、ファイルの取り込み、API キーの追加に対応します。確認後に `~/.codex/auth.json` を原子的に書き込んで切り替えます。
+- API アカウント: Base URL + API キー（Base URL が空なら公式 OpenAI API）で、サイトからモデル一覧を取得して選べます。切り替え時に `auth.json` と `config.toml` の `quosparr` プロバイダーを書き込み（事前にバックアップ）、new-api 系や OpenAI 互換の中継サイトの残高をアカウント一覧、パネル、ステータスバー、フローティングウィンドウ、ウィジェットに表示します。 `config.toml` で既に中継サイトを選んでいるキーログインは、そのサイトとモデルで自動的に取り込みます。 使用中のアカウントを編集するとキーを差し替えられ（空欄で維持）、設定ファイルをすぐ書き換えるか確認します。書き換えた後は Codex を再起動してください。
 - 最近のセッション、プロジェクト、状態を表示し、ローカルのセッションインデックスを修復できます。
 
 **Claude**
@@ -31,6 +32,7 @@ Quosparr は macOS、Windows、Linux 向けのネイティブなメニューバ�
 - Claude Code のローカルセッションログから token 使用量、API 換算コスト（`anthropic-builtin-2026-10-14`）、最近のセッション、出力速度を集計します。同じ応答は一度だけ数えます。未知のモデルに正確な費用は出しません。ログに先頭 token の時刻がないため、その列は「—」で、速度は端から端までの時間で計算します。
 - サブスクリプションアカウントは、現在のログインの取り込み、資格情報の貼り付け、ファイルからの取り込みのあと切り替えます。アプリ内ログインは、端末で `claude auth login` を実行してから取り込むよう案内します。Quosparr は現在のアカウントを更新しません。期限切れなら `claude` を一度実行します。他の管理アカウントはライブラリのコピーだけを更新します。
 - macOS では公式資格情報はキーチェーンにあり、`/usr/bin/security` で読み書きします。Windows と Linux では `<config>/.credentials.json` です。切り替えは `claudeAiOauth` だけを置き換え、MCP トークンは残し、`.claude.json` の `oauthAccount` だけを更新します。実行中の Claude Code は終了せず、以前のログインを書き戻すことがあるため、切り替え前に警告します。
+- API アカウント: Base URL + API キーで、サイトからモデル一覧を取得して Opus / Sonnet / Haiku / Fable のモデルを個別に割り当てられます。切り替え時は `ANTHROPIC_BASE_URL`、`ANTHROPIC_AUTH_TOKEN` と割り当てだけを `settings.json` に書き込み（事前にバックアップ）、サブスクリプションのログインはそのままです。サブスクリプションアカウントに戻すとこれらのキーを削除します。中継サイトの残高は Claude の使用量を表示するすべての場所に出ます。 `settings.json` に既に設定された中継構成は自動で取り込みます。 使用中のアカウントを編集するとキーを差し替えられ（空欄で維持）、`settings.json` をすぐ書き換えるか確認します。書き換えた後は Claude Code を再起動してください。
 
 **Grok**
 
@@ -139,6 +141,7 @@ Linux には GTK3、AppIndicator、トレイに対応したデスクトップ、
 - プロバイダーアカウントの資格情報は唯一の例外で、`~/.quosparr/accounts/<id>/auth.json` に保存されます（ディレクトリは `0700`、ファイルは `0600`、原子的に書き込み。Windows では現在のユーザーのみがアクセスできる ACL を使用）。アカウントインデックスには token は含まれません。
 - 公式の `~/.codex/auth.json` に書き込まれるのは、OAuth のリフレッシュ時か、アカウント切り替えを確認したときだけです。現在のアカウント以外をリフレッシュした場合は、ライブラリ内のコピーだけが更新されます。
 - Claude の資格情報は、macOS では `/usr/bin/security` でキーチェーンを読み、Windows と Linux では `<config>/.credentials.json` を読みます。管理コピーは `~/.quosparr/accounts/claude-<stable-id>/auth.json` にあり、`claudeAiOauth` だけを含みます。索引 `claude-index.json` にトークンはありません。切り替えは MCP トークンを残し、`.claude.json` の `oauthAccount` だけを置き換えます。Quosparr は現在のアカウントを更新しません。
+- API アカウントのキーは管理コピー（`~/.quosparr/accounts/<id>/auth.json` または `claude-api-<id>/auth.json`）にのみ保存され、インデックスには Base URL、モデル、残高キャッシュだけが残ります。残高とモデルの取得は入力したサイトにのみ、プロキシ設定に従って送られます。変更する `config.toml` と `settings.json` は先に `~/.quosparr/backups` にバックアップされ、`settings.json` への初回書き込みではキーが名前順に並び替えられます。
 - Grok の資格情報は `$GROK_HOME/auth.json` から読み込まれ、管理コピーは `~/.quosparr/accounts/grok-<stable-id>/auth.json` にあります。Grok の切り替えでは OAuth / 互換レガシーのスコープだけが置き換えられ、API キーと未知のスコープは残ります。保証されるのは新しいセッションのみで、実行中の Grok プロセスは終了されず、以前のアカウントを書き戻す可能性があるため、切り替え前にアプリが警告を表示します。
 - セッションの修復が対象とするのは `session_index.jsonl` だけで、書き込み前にバックアップを作成します。`~/.codex/sessions` と `~/.codex/archived_sessions` 配下のファイルは削除されません。
 - API 換算コストはローカルのセッションログから計算されます。セッションの内容はアップロードされません。

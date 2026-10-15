@@ -434,7 +434,7 @@ func (a *App) openAccountsSettings(kind int) {
 		return
 	}
 	if f := accountFormOf(a.setUI); !f.busy && f.kind != kind {
-		f.kind, f.mode, f.paste, f.apiKey, f.selection = kind, "", "", "", nil
+		f.kind, f.mode, f.paste, f.api, f.selection = kind, "", "", apiDraft{}, nil
 	}
 }
 

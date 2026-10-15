@@ -73,11 +73,11 @@ func panelModule(c *ui.Context, l l10n.Localizer, m store.Module, prefs store.Pr
 	case store.ModuleQuota:
 		switch {
 		case claude:
-			panelClaudeQuota(c, l, snap, acts, first, state, state.resetSwitch(prefs.QuotaResetTimeFormat))
+			panelClaudeQuota(c, l, snap, acts, first, state, state.resetSwitch(prefs.QuotaResetTimeFormat), prefs.AccountPrivacyModeEnabled)
 		case grok:
 			panelGrokQuota(c, l, snap, acts, first, state, state.resetSwitch(prefs.QuotaResetTimeFormat))
 		default:
-			panelCodexQuota(c, l, snap, acts, first, state, state.resetSwitch(prefs.QuotaResetTimeFormat))
+			panelCodexQuota(c, l, snap, acts, first, state, state.resetSwitch(prefs.QuotaResetTimeFormat), prefs.AccountPrivacyModeEnabled)
 		}
 	case store.ModuleTokenUsage:
 		panelToken(c, l, prefs.TokenUsageChartStyle, snap, acts, first, state)

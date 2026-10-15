@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/licoy/quosparr/internal/alerts"
+	"github.com/licoy/quosparr/internal/apiquota"
 	"github.com/licoy/quosparr/internal/codexapi"
 	"github.com/licoy/quosparr/internal/export"
 	"github.com/licoy/quosparr/internal/sessions"
@@ -132,6 +133,20 @@ type ClaudeState struct {
 	// Gateway is set when settings.json names a gateway env key and a
 	// subscription credential is also present.
 	Gateway bool
+	// API is set when the current account is an API relay account; Plan is
+	// then "API" and Meters holds the balance meter when the relay reports one.
+	API *ClaudeAPIView
+}
+
+// ClaudeAPIView is what the panel shows of a current API relay account. It
+// never holds the key.
+type ClaudeAPIView struct {
+	BaseURL string
+	// Quota is the last balance reading, nil before the first one.
+	Quota *apiquota.Quota
+	// ErrorCode is the stored failure code of the last read ("" when none):
+	// "api_unauthorized" when the relay rejected the key, else "api_failed".
+	ErrorCode string
 }
 
 // ClaudeAccountQuota is the cached usage line of one managed account.
@@ -143,6 +158,9 @@ type ClaudeAccountQuota struct {
 	ResetsAt    time.Time
 	ExtraUsage  string
 	UpdatedAt   time.Time
+	// Balance is "remaining / total" (or the single known amount) of an API
+	// relay account, "" for a subscription account or without a reading.
+	Balance string
 }
 
 // ClaudeProvider is the Claude seam. Locking matches GrokProvider: State must
